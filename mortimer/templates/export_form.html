@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+
+    <h1>Export Data</h1>
+    <p class="lead">Ipsum...</p>
+    DB: {{ db }}
+
+    <form class="form-horizontal" method="post" action="">
+
+        {% csrf_token %}
+
+
+        {{ form }}
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Export</button>
+        </div>
+    </form>
+
+{% endblock %}

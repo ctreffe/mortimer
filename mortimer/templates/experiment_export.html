@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+
+    <h1>Export {{ experiment.name }}</h1>
+
+
+    <form class="form-horizontal" method="post" action=".">
+        {{ form.hidden_tag() }}
+        <div class="control-group">
+                {{ form.format.label(class='control-label') }}
+            <div class="controls">
+                {{ form.format }}
+            </div>
+        </div>
+        <div class="control-group">
+                {{ form.replace_none.label(class='control-label') }}
+            <div class="controls">
+                {{ form.replace_none }}
+            </div>
+        </div>
+        <div class="control-group">
+                {{ form.none_value.label(class='control-label') }}
+            <div class="controls">
+                {{ form.none_value }}
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+    </form>
+{% endblock %}
+

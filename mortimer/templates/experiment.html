@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+
+    <h1>{{ experiment.name }}</h1>
+
+    <ul>
+        <li><a href="{{ url_for('alfredo.start', id=experiment._id) }}">start link</a></li>
+        <li><a href="{{ url_for('experiment_edit', id=experiment._id) }}">edit experiment</a></li>
+        <li><a href="{{ url_for('experiment_export', id=experiment._id) }}">export</a></li>
+        <li>
+            Daten:
+            <ul>
+                <li>Datensätze {{ total_count }}</li>
+                <li>Davon beendete: {{ finished_count }}</li>
+                <li></li>
+            </ul>
+        </li>
+    </ul>
+
+    <a href="{{ url_for('experiment_delete', id=experiment._id) }}">delete experiment</a>
+
+{% endblock %}
