@@ -57,14 +57,16 @@ def index():
     experiments = current_app.db.Experiment.find({'access_type': 'public', 'active': True}, {'name': True})
     return "Public available experiments: %s" % escape(list(experiments))
 
-@alfredo.route('/start/<ObjectId:id>/')
+@alfredo.route('/start/<ObjectId:id>/', methods=['GET', 'POST'])
 def start(id):
     experiment = current_app.db.Experiment.get_or_404(id)
 
     if not experiment.active:
         abort(403)
 
-    # TODO handle access type
+    if experiment.access_type == 'password' \
+            and experiment.password != request.form.get('password', None):
+        return '<h1>Please enter the password</h1><form method="post" action="."><input type="password" name="password" /><button type="submit">Submit</button></form>'
 
     sid = str(uuid4())
     session['sid'] = sid
