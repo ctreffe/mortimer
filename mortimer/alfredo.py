@@ -44,9 +44,10 @@ class ExperimentManager(object):
     def remove_outdated(self):
         self.lock.acquire()
         current_time = int(time())
-        for k,v in self.experiments.iteritems():
+        for k in self.experiments.keys():
+            v = self.experiments[k]
             if current_time - v[0] > self.timeout:
-                del self.experiments[key]
+                del self.experiments[k]
         self.lock.release()
 
 experiment_manager = ExperimentManager()
