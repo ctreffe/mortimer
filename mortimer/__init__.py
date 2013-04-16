@@ -76,6 +76,10 @@ app.add_url_rule('/experiment/<ObjectId:id>/edit/', view_func=ExperimentEditView
 app.add_url_rule('/experiment/<ObjectId:id>/delete/', view_func=ExperimentDeleteView.as_view('experiment_delete'))
 app.add_url_rule('/experiment/<ObjectId:id>/export/', view_func=ExperimentExportView.as_view('experiment_export'))
 
+app.add_url_rule('/uploads/', defaults={'path': '', 'delete': False}, view_func=UploadView.as_view('uploads'))
+app.add_url_rule('/uploads/<path:path>/', defaults={'delete': False}, view_func=UploadView.as_view('uploads'))
+app.add_url_rule('/uploads/<path:path>/delete/', defaults={'delete': True}, view_func=UploadView.as_view('upload_delete'))
+
 app.add_url_rule('/data/', view_func=FooView.as_view('data_management'))
 app.add_url_rule('/settings/', view_func=FooView.as_view('settings'))
 app.add_url_rule('/login/', view_func=LoginView.as_view('login'))

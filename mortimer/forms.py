@@ -1,5 +1,7 @@
 from flask.ext.wtf import Form
-from wtforms import TextField, PasswordField, BooleanField, TextAreaField, SelectField
+from wtforms import TextField, PasswordField, BooleanField, TextAreaField, \
+    SelectField, FileField
+from wtforms.validators import Required
 
 class LoginForm(Form):
     username = TextField('Name')
@@ -17,3 +19,9 @@ class ExperimentExportForm(Form):
     format = SelectField('Format', choices=[(x,x) for x in [u'csv', u'excel_csv', u'json']])
     replace_none = BooleanField('Replace none values\nnot for json')
     none_value = TextField('None value replacement')
+
+class UploadForm(Form):
+    file = FileField('Your File', [Required()])
+
+class FolderForm(Form):
+    folder = TextField('Foler Name', [Required()])

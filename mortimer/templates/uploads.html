@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+
+
+    <h1>Uploads</h1>
+    <p class="lead">Ipsum...</p>
+    Folder:
+    <ul>
+        {% for folder in folders %}
+        <li><a href="{{ url_for('uploads', path=folder[1]) }}">{{ folder[0]
+            }}</a> <a href="{{ url_for('upload_delete', path=folder[1]) }}">delete</a></li>
+        {% endfor %}
+    </ul>
+
+    Files:
+    <ul>
+        {% for file in files %}
+        <li>{{ file[0] }} <a href="{{ url_for('upload_delete', path=file[1], delete=True) }}">delete</a></li>
+        {% endfor %}
+    </ul>
+
+
+    <h1>Create Folder</h1>
+    <form class="form-horizontal" enctype="multipart/form-data" method="post">
+        {{ folder_form.hidden_tag() }}
+        <div class="control-group">
+                {{ folder_form.folder.label(class='control-label') }}
+            <div class="controls">
+                {{ folder_form.folder }}
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Create</button>
+        </div>
+    </form>
+
+
+    <h1>Upload new Item</h1>
+    <form class="form-horizontal" enctype="multipart/form-data" method="post">
+        {{ upload_form.hidden_tag() }}
+        <div class="control-group">
+                {{ upload_form.file.label(class='control-label') }}
+            <div class="controls">
+                {{ upload_form.file }}
+            </div>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Upload</button>
+        </div>
+    </form>
+
+{% endblock %}

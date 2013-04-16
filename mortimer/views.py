@@ -1,11 +1,14 @@
 # -*- coding:utf-8 -*-
 import os
 import imp
+import shutil
 
 from flask import abort, redirect, url_for, request, render_template, flash,\
     escape, g, current_app, _app_ctx_stack, send_file
 from flask.views import View, MethodView
 from flask.ext.login import current_user, login_required, login_user, logout_user
+
+from werkzeug import secure_filename
 
 from .forms import *
 from .models import *
@@ -171,6 +174,56 @@ class ExperimentExportView(View):
 
         return render_template('experiment_export.html', experiment=experiment,
                 form=form)
+
+class UploadView(View):
+    decorators = [login_required]
+    methods = ['GET', 'POST']
+    def dispatch_request(self, path, delete):
+        path = '/'.join([secure_filename(x) for x in path.split('/')])
+        if delete:
+            full = os.path.join(current_app.instance_path, current_app.config['UPLOAD_FOLDER'], path)
+            if os.path.isdir(full):
+                shutil.rmtree(full)
+            else:
+                os.remove(full)
+            flash("%s was removed." % path)
+            return redirect(url_for('uploads'))
+        else:
+            upload_form = UploadForm()
+            folder_form = FolderForm()
+            if upload_form.validate_on_submit():
+                file = upload_form.file.data
+                filename = secure_filename(file.filename)
+                with current_app.open_instance_resource(os.path.join(
+                        current_app.config['UPLOAD_FOLDER'], path, filename), 'w') as f:
+                    f.write(file.stream.read())
+                flash('File %s uploaded' % filename)
+                return redirect(url_for('uploads', path=path))
+            if folder_form.validate_on_submit():
+                folder_name = secure_filename(folder_form.folder.data)
+                os.makedirs(os.path.join(current_app.instance_path,
+                        current_app.config['UPLOAD_FOLDER'], path, folder_name))
+                flash("Folder %s created" % folder_name)
+                return redirect(url_for('uploads', path=(folder_name if not path
+                    else path + '/' + folder_name)))
+
+
+
+            files = []
+            folders = []
+            for f in os.listdir(os.path.join(current_app.instance_path,
+                current_app.config['UPLOAD_FOLDER'], path)):
+                rel = os.path.join(path, secure_filename(f))
+                full = os.path.join(current_app.instance_path, current_app.config['UPLOAD_FOLDER'], path, secure_filename(f))
+                if os.path.isdir(full):
+                    folders.append((f, rel))
+                elif os.path.isfile(full):
+                    files.append((f, rel))
+
+
+
+            return render_template('uploads.html', upload_form=upload_form,
+                folder_form=folder_form, files=files, folders=folders)
 
 class FooView(View):
     def dispatch_request(self):

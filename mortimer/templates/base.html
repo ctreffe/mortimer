@@ -17,6 +17,7 @@
             <ul class="nav">
                 {% if current_user.is_authenticated() %}
                     <li><a href="{{ url_for('experiments') }}">Experiments</a></li>
+                    <li><a href="{{ url_for('uploads') }}">Uploads</a></li>
                     <li><a href="{{ url_for('data_management') }}">Data Management</a></li>
                 <{% endif %}
             </ul>
