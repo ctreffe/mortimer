@@ -27,7 +27,7 @@ class User(Document, UserMixin):
         return self._id
 
     def set_password(self, password):
-        self.password_hash = current_app.bcrypt.generate_password_hash(password)
+        self.password_hash = unicode(current_app.bcrypt.generate_password_hash(password))
 
     def validate_password(self, password):
         return current_app.bcrypt.check_password_hash(self.password_hash, password)

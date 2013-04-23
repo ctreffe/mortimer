@@ -2,7 +2,8 @@
 
 import os
 
-from flask import Flask, g, session, url_for, abort, request, Response, send_file, render_template
+from flask import Flask, g, session, url_for, abort, request, Response,\
+    send_file, render_template, redirect
 from flask.ext.login import LoginManager, login_required
 from flask.ext.mongokit import MongoKit
 from flask.ext.bcrypt import Bcrypt
@@ -84,6 +85,18 @@ app.add_url_rule('/data/', view_func=FooView.as_view('data_management'))
 app.add_url_rule('/settings/', view_func=FooView.as_view('settings'))
 app.add_url_rule('/login/', view_func=LoginView.as_view('login'))
 app.add_url_rule('/logout/', view_func=LogoutView.as_view('logout'))
+
+@app.route('/add_user/<username>/<password>')
+def add_user(username, password):
+    u = db.User()
+    u.username = unicode(username)
+    u.mail = u'dummy@example.com'
+    u.active = True
+    u.set_password(password)
+    u.save()
+    flash("user %s created." % username)
+    return redirect(url_for('index'))
+
 
 
 if __name__ == '__main__':
