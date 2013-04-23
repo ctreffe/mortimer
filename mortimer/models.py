@@ -52,28 +52,13 @@ class Experiment(Document):
         'config': unicode,
         'script': unicode,
         'expName': unicode,
-        'expVersion': unicode
+        'expVersion': unicode,
+        'external': bool
     }
-    required_fields = ['name', 'owner', 'active', 'access_type', 'password', 'config',
-        'script']
+    required_fields = ['name', 'owner', 'external']
+    #TODO requrements
 
     def __unicode__(self):
         return u'Experiment<name: %s>' % self.name
     def __str__(self):
         return self.__unicode__().encode('utf-8')
-
-class ExternalExperiment(Document):
-    __collection__ = 'external_experiments'
-    #__database__ = 'mortimer'
-    use_dot_notation = True
-    structure = {
-        'name': unicode,
-        'owner': ObjectId,
-        'database': unicode,
-        'collection': unicode,
-        'expName': unicode,
-        'expVersion': unicode
-    }
-    required_fields = ['name', 'owner', 'database', 'collection', 'expName', 'expVersion']
-
-

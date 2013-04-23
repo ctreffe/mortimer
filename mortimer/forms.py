@@ -9,11 +9,15 @@ class LoginForm(Form):
 
 class ExperimentForm(Form):
     name = TextField('Name')
+    external = BooleanField('External Experiment')
+    expName = TextField('expVersion')
+    expVersion = TextField('expVersion')
     active = BooleanField('Active')
     access_type = SelectField('Access Type', choices=[(x, x) for x in [u'public', u'password']])
     password = TextField('Password')
     config = TextAreaField('Config')
     script = TextAreaField('Script')
+    # TODO external / not external required fields
 
 class ExperimentExportForm(Form):
     format = SelectField('Format', choices=[(x,x) for x in [u'csv', u'excel_csv', u'json']])

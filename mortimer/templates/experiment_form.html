@@ -2,6 +2,21 @@
 
 {% block content %}
 
+    <script type="text/javascript">
+        $(document).ready(function() {
+
+            $("#external").change(function() {
+                $("#external-control-group").toggle();
+                $("#internal-control-group").toggle();
+            });
+            if ($("#external").checked) {
+                $("#external-control-group").show();
+                $("#internal-control-group").hide();
+            }
+
+        });
+    </script>
+
 
 
     <h1>Experiment Form</h1>
@@ -22,6 +37,27 @@
                 {{ form.name }}
             </div>
         </div>
+        <div class="control-group">
+                {{ form.external.label(class='control-label') }}
+            <div class="controls">
+                {{ form.external }}
+            </div>
+        </div>
+        <div id="external-control-group" style="display: none;">
+        <div class="control-group">
+                {{ form.expName.label(class='control-label') }}
+            <div class="controls">
+                {{ form.expName }}
+            </div>
+        </div>
+        <div class="control-group">
+                {{ form.expVersion.label(class='control-label') }}
+            <div class="controls">
+                {{ form.expVersion }}
+            </div>
+        </div>
+        </div>
+        <div id="internal-control-group">
         <div class="control-group">
                 {{ form.active.label(class='control-label') }}
             <div class="controls">
@@ -51,6 +87,7 @@
             <div class="controls">
                 {{ form.script }}
             </div>
+        </div>
         </div>
 
         <div class="form-actions">

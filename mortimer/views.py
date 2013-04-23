@@ -49,7 +49,8 @@ class ExperimentView(View):
     def dispatch_request(self, id):
         experiment = current_app.db.Experiment.get_or_404(id)
         res = current_app.alfred_col.aggregate([
-            {'$match': {'expName': 'test_test', 'expVersion': '1'}},
+            {'$match': {'expName': experiment.expName, 'expVersion':
+                experiment.expVersion}},
             {'$project': {'expFinished': 1}},
             {'$group': {'_id': '$expFinished', 'count' : {'$sum' : 1}}}
         ])['result']
@@ -89,33 +90,36 @@ class ExperimentEditView(MethodView):
         if form.validate_on_submit():
             experiment.owner = current_user.get_id()
             experiment.name = form.name.data
-            experiment.active = form.active.data
-            experiment.access_type = form.access_type.data
-            experiment.password = form.password.data
-            experiment.config = form.config.data
-            experiment.script = form.script.data
+            experiment.external = form.external.data
+            if experiment.external:
+                experiment.expName = form.expName.data
+                experiment.expVersion = form.expVersion.data
+            else:
+                experiment.active = form.active.data
+                experiment.access_type = form.access_type.data
+                experiment.password = form.password.data
+                experiment.config = form.config.data
+                experiment.script = form.script.data
 
-            experiment.save()
+                # save experiment module
+                with current_app.open_instance_resource(os.path.join(
+                        current_app.config['SCRIPT_FOLDER'],
+                        str(experiment._id) + '.py'), 'w') as f:
+                    f.write('# -*- coding:utf-8 -*-\n')
+                    f.write(experiment.script.encode('utf-8'))
 
-            # save experiment module
-            with current_app.open_instance_resource(os.path.join(
-                    current_app.config['SCRIPT_FOLDER'],
-                    str(experiment._id) + '.py'), 'w') as f:
-                f.write('# -*- coding:utf-8 -*-\n')
-                f.write(experiment.script.encode('utf-8'))
-
-            f, pathname, desc = imp.find_module(str(experiment._id), 
-                [os.path.join(current_app.instance_path,
-                current_app.config['SCRIPT_FOLDER'])]
-            )
-            try:
-                module = imp.load_module(str(experiment._id), f, pathname, desc)
-            finally:
-                f.close()
-            script = module.Script()
-            script.experiment = script.generate_experiment()
-            experiment.expName = unicode(script.experiment.name)
-            experiment.expVersion = unicode(script.experiment.version)
+                f, pathname, desc = imp.find_module(str(experiment._id), 
+                    [os.path.join(current_app.instance_path,
+                    current_app.config['SCRIPT_FOLDER'])]
+                )
+                try:
+                    module = imp.load_module(str(experiment._id), f, pathname, desc)
+                finally:
+                    f.close()
+                script = module.Script()
+                script.experiment = script.generate_experiment()
+                experiment.expName = unicode(script.experiment.name)
+                experiment.expVersion = unicode(script.experiment.version)
 
             experiment.save()
 
@@ -134,7 +138,9 @@ class ExperimentEditView(MethodView):
             form.password.data = experiment.password
             form.config.data = experiment.config
             form.script.data = experiment.script
-            #TODO load exp form id
+            form.external.data = experiment.get('external', None)
+            form.expName.data = experiment.expName
+            form.expVersion.data = experiment.expVersion
         return render_template('experiment_form.html', form=form)
 
 class ExperimentListView(View):
@@ -148,6 +154,8 @@ class ExperimentExportView(View):
     methods = ['GET', 'POST']
     def dispatch_request(self, id):
         experiment = current_app.db.Experiment.get_or_404(id)
+        if experiment.owner != current_user.get_id():
+            abort(403)
         form = ExperimentExportForm()
 
         if form.validate_on_submit():

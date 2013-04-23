@@ -5,9 +5,12 @@
 
 
     <h1>{{ experiment.name }}</h1>
+    {% if experiment.external %}<h2>External</h2>{% endif %}
 
     <ul>
+        {% if not experiment.external %}
         <li><a href="{{ url_for('alfredo.start', id=experiment._id) }}">start link</a></li>
+        {% endif %}
         <li><a href="{{ url_for('experiment_edit', id=experiment._id) }}">edit experiment</a></li>
         <li><a href="{{ url_for('experiment_export', id=experiment._id) }}">export</a></li>
         <li>
