@@ -157,11 +157,10 @@ class ExperimentExportView(View):
         if experiment.owner != current_user.get_id():
             abort(403)
         form = ExperimentExportForm()
-
         if form.validate_on_submit():
             cur = current_app.alfred_col.find({'expName': experiment.expName,
                 'expVersion': experiment.expVersion})
-            
+
             none_value = None
             if form.replace_none.data:
                 none_value = form.none_value.data
@@ -178,6 +177,11 @@ class ExperimentExportView(View):
                 f = export.to_excel_csv(cur, none_value=none_value)
                 return send_file(f, mimetype='text/csv',
                     as_attachment=True, attachment_filename='export.csv', cache_timeout=0)
+            elif form.format.data == 'excel':
+                f = export.to_excel(cur, none_value=none_value)
+                return send_file(f, mimetype='application/excel',
+                        cache_timeout=0, as_attachment=True,
+                        attachment_filename='export.xlsx')
 
 
         return render_template('experiment_export.html', experiment=experiment,

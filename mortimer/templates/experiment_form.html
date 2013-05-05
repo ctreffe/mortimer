@@ -4,15 +4,15 @@
 
     <script type="text/javascript">
         $(document).ready(function() {
+            if ($("#external").val()=='y') {
+                $("#external-control-group").show();
+                $("#internal-control-group").hide();
+            }
 
             $("#external").change(function() {
                 $("#external-control-group").toggle();
                 $("#internal-control-group").toggle();
             });
-            if ($("#external").checked) {
-                $("#external-control-group").show();
-                $("#internal-control-group").hide();
-            }
 
         });
     </script>

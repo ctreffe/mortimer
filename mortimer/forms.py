@@ -20,7 +20,8 @@ class ExperimentForm(Form):
     # TODO external / not external required fields
 
 class ExperimentExportForm(Form):
-    format = SelectField('Format', choices=[(x,x) for x in [u'csv', u'excel_csv', u'json']])
+    format = SelectField('Format', choices=[(x,x) for x in [u'csv',
+        u'excel_csv', u'json', u'excel']])
     replace_none = BooleanField('Replace none values\nnot for json')
     none_value = TextField('None value replacement')
 

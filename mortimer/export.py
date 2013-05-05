@@ -2,6 +2,7 @@ import json
 import csv
 import re
 import io
+from tempfile import TemporaryFile
 
 def to_json(cursor):
     sIO = io.StringIO(json.dumps(list(cursor)))
@@ -9,18 +10,14 @@ def to_json(cursor):
     return sIO
 
 def to_csv(cursor, none_value=None, remove_linebreaks=False, dialect='excel', **writerparams):
-    docs = list(cursor)
-    h = Header(*docs)
-    rows = [h.getFlatHeaders(False)] + h.getDataFromDocs(docs)
-    if none_value is not None or remove_linebreaks:
+    rows = cursor_to_rows(cursor, none_value)
+    if remove_linebreaks:
         for i in range(1,len(rows)):
             for j in range(len(rows[i])):
-                if rows[i][j] is None:
-                    rows[i][j] = none_value
                 if isinstance(rows[i][j], str) or isinstance(rows[i][j], unicode):
                     rows[i][j].replace('\n', '')
     csvfile = io.BytesIO()
-    writer = csv.writer(csvfile)#, dialect=dialect, **writerparams)
+    writer = csv.writer(csvfile, dialect=dialect, **writerparams)
     for row in rows:
         writer.writerow([unicode(cell).encode('utf-8') for cell in row])
     csvfile.seek(0)
@@ -30,10 +27,41 @@ def to_excel_csv(cursor, none_value=None, **writerparams):
     return to_csv(cursor, none_value=none_value, remove_linebreaks=True,
             delimiter=';', dialect='excel', **writerparams)
 
+def to_excel(cursor, none_value=None):
+    from openpyxl import Workbook
+    wb = Workbook(encoding='utf-8')
+    sheet = wb.get_active_sheet()
+    docs = cursor_to_rows(cursor, none_value)
+    for i in range(len(docs)):
+        for j in range(len(docs[i])):
+            tmp = docs[i][j]
+            if not( isinstance(tmp, str) and isinstance(tmp, unicode) and \
+                    isinstance(tmp, float) and isinstance(tmp, int)):
+                tmp = unicode(tmp)
+            sheet.cell(row=i, column=j).value = tmp
+    #f = TemporaryFile()
+    f = io.BytesIO()
+    wb.save(f)
+    f.seek(0)
+    return f
+
+
 def natural_sort(l): 
     convert = lambda text: int(text) if text.isdigit() else text.lower() 
     alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key[0]) ] 
     return sorted(l, key = alphanum_key)
+
+def cursor_to_rows(cursor, none_value=None):
+    docs = list(cursor)
+    h = Header(*docs)
+    rows = [h.getFlatHeaders(False)] + h.getDataFromDocs(docs)
+    if none_value is not None:
+        for i in range(1,len(rows)):
+            for j in range(len(rows[i])):
+                if rows[i][j] is None:
+                    rows[i][j] = none_value
+    return rows
+
 
 class Header(object):
     def __init__(self, *docs):
