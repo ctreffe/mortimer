@@ -5,7 +5,9 @@ import io
 from tempfile import TemporaryFile
 
 def to_json(cursor):
-    sIO = io.StringIO(json.dumps(list(cursor)))
+    sIO = io.BytesIO()
+    l = list(cursor)
+    json.dump(l, sIO)
     sIO.seek(0)
     return sIO
 

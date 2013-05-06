@@ -168,19 +168,19 @@ class ExperimentExportView(View):
             if form.format.data == 'json':
                 f = export.to_json(cur)
                 return send_file(f, mimetype='application/json',
-                    as_attachment=True, attachment_filename='export.json', cache_timeout=0)
+                    as_attachment=True, attachment_filename='export.json', cache_timeout=1)
             elif form.format.data == 'csv':
                 f = export.to_csv(cur, none_value=none_value)
                 return send_file(f, mimetype='text/csv',
-                    as_attachment=True, attachment_filename='export.csv', cache_timeout=0)
+                    as_attachment=True, attachment_filename='export.csv', cache_timeout=1)
             elif form.format.data == 'excel_csv':
                 f = export.to_excel_csv(cur, none_value=none_value)
                 return send_file(f, mimetype='text/csv',
-                    as_attachment=True, attachment_filename='export.csv', cache_timeout=0)
+                    as_attachment=True, attachment_filename='export.csv', cache_timeout=1)
             elif form.format.data == 'excel':
                 f = export.to_excel(cur, none_value=none_value)
                 return send_file(f, mimetype='application/excel',
-                        cache_timeout=0, as_attachment=True,
+                        cache_timeout=1, as_attachment=True,
                         attachment_filename='export.xlsx')
 
 
