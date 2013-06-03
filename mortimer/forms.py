@@ -10,7 +10,7 @@ class LoginForm(Form):
 class ExperimentForm(Form):
     name = TextField('Name')
     external = BooleanField('External Experiment')
-    expName = TextField('expVersion')
+    expName = TextField('expName')
     expVersion = TextField('expVersion')
     active = BooleanField('Active')
     access_type = SelectField('Access Type', choices=[(x, x) for x in [u'public', u'password']])
