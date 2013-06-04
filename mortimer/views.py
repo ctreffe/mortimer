@@ -89,7 +89,6 @@ class ExperimentEditView(MethodView):
                 abort(403)
         else:
             experiment = current_app.db.Experiment()
-            experiment._id = ObjectId()
         if form.validate_on_submit():
             experiment.owner = current_user.get_id()
             experiment.name = form.name.data
@@ -103,6 +102,7 @@ class ExperimentEditView(MethodView):
                 experiment.password = form.password.data
                 experiment.config = form.config.data
                 experiment.script = form.script.data
+                experiment.save()
 
                 # save experiment module
                 with current_app.open_instance_resource(os.path.join(
