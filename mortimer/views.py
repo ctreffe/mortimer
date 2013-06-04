@@ -10,6 +10,8 @@ from flask.ext.login import current_user, login_required, login_user, logout_use
 
 from werkzeug import secure_filename
 
+from bson.objectid import ObjectId
+
 from .forms import *
 from .models import *
 from . import export
@@ -87,6 +89,7 @@ class ExperimentEditView(MethodView):
                 abort(403)
         else:
             experiment = current_app.db.Experiment()
+            experiment._id = ObjectId()
         if form.validate_on_submit():
             experiment.owner = current_user.get_id()
             experiment.name = form.name.data

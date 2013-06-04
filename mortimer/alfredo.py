@@ -92,7 +92,7 @@ def start(id):
 
     return redirect(url_for('alfredo.experiment'))
 
-@alfredo.route('/experiment/', methods=['GET', 'POST'])
+@alfredo.route('/experiment', methods=['GET', 'POST'])
 def experiment():
     sid = session['sid']
     script = experiment_manager.get(sid)
