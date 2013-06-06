@@ -5,7 +5,7 @@ from threading import Lock
 from uuid import uuid4
 
 from flask import Blueprint, current_app, escape, session, send_file, \
-        redirect, url_for, abort, request
+        redirect, url_for, abort, request, make_response
 
 alfredo = Blueprint('alfredo', __name__, template_folder='templates')
 
@@ -56,7 +56,7 @@ experiment_manager = ExperimentManager()
 @alfredo.route('/')
 def index():
     experiments = current_app.db.Experiment.find({'access_type': 'public', 'active': True}, {'name': True})
-    return "Public available experiments: %s" % escape(list(experiments))
+    return "Welcome to Alfredo :-)"#"Public available experiments: %s" % escape(list(experiments))
 
 @alfredo.route('/start/<ObjectId:id>/', methods=['GET', 'POST'])
 def start(id):
@@ -127,7 +127,9 @@ def experiment():
     else:
         abort(400)
 
-    return script.experiment.userInterfaceController.render()
+    resp = make_response(script.experiment.userInterfaceController.render())
+    resp.cache_control.no_cache = True
+    return resp
 
 @alfredo.route('/staticfile/<identifier>')
 def staticfile(identifier):
@@ -137,7 +139,9 @@ def staticfile(identifier):
         path, content_type = script.experiment.userInterfaceController.getStaticFile(identifier)
     except KeyError:
        abort(404)
-    return send_file(path, mimetype=content_type)
+    resp = make_response(send_file(path, mimetype=content_type))
+    #resp.cache_control.no_cache = True
+    return resp
 
 @alfredo.route('/dynamicfile/<identifier>')
 def dynamicfile(identifier):
@@ -147,7 +151,9 @@ def dynamicfile(identifier):
         strIO, content_type = script.experiment.userInterfaceController.getDynamicFile(identifier)
     except KeyError:
         abort(404)
-    return send_file(strIO, mimetype=content_type)
+    resp = make_response(send_file(strIO, mimetype=content_type))
+    resp.cache_control.no_cache = True
+    return resp
 
 @alfredo.route('/callable/<identifier>', methods=['GET', 'POST'])
 def callable(identifier):
@@ -159,7 +165,9 @@ def callable(identifier):
         abort(404)
     rv = f(**request.values.to_dict())
     if rv is not None:
-        return rv
+        resp = make_response(rv)
     else:
-        return redirect(url_for('alfredo.experiment'))
+        resp = make_respone(redirect(url_for('alfredo.experiment')))
+    resp.cache_control.no_cache = True
+    return resp
 
