@@ -94,7 +94,10 @@ def start(id):
 
 @alfredo.route('/experiment', methods=['GET', 'POST'])
 def experiment():
-    sid = session['sid']
+    try:
+        sid = session['sid']
+    except KeyError:
+        abort(412)
     script = experiment_manager.get(sid)
 
     move = request.values.get('move', None)
