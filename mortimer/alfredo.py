@@ -1,13 +1,33 @@
 import os
+import sys
 import imp
 from time import time
 from threading import Lock
 from uuid import uuid4
+import re
 
-from flask import Blueprint, current_app, escape, session, send_file, \
-        redirect, url_for, abort, request, make_response
+from flask import Blueprint, current_app, session, send_file, redirect, url_for, abort, request, make_response
 
-alfredo = Blueprint('alfredo', __name__, template_folder='templates')
+
+def import_module(name):
+    # Fast path: see if the module has already been imported.
+    try:
+        return sys.modules[name]
+    except KeyError:
+        pass
+
+    # If any of the following calls raises an exception,
+    # there's a problem we can't handle -- let the caller handle it.
+    fp, path, desc = imp.find_module(name,
+                                     [os.path.join(current_app.instance_path, current_app.config['SCRIPT_FOLDER'])])
+
+    try:
+        return imp.load_module(name, fp, path, desc)
+    finally:
+        # Since we may exit via an exception, close fp explicitly.
+        if fp:
+            fp.close()
+
 
 class ExperimentManager(object):
     def __init__(self, timeout=3600):
@@ -21,16 +41,14 @@ class ExperimentManager(object):
         self.experiments[key] = (int(time()), experiment)
         self.lock.release()
 
-
     def remove(self, key):
         self.remove_outdated()
         self.lock.acquire()
         try:
             del self.experiments[key]
-        except:
+        except KeyError:
             pass
         self.lock.release()
-
 
     def get(self, key):
         self.remove_outdated()
@@ -50,37 +68,33 @@ class ExperimentManager(object):
                 del self.experiments[k]
         self.lock.release()
 
+
 experiment_manager = ExperimentManager()
+alfredo = Blueprint('alfredo', __name__, template_folder='templates')
 
 
 @alfredo.route('/')
 def index():
-    experiments = current_app.db.Experiment.find({'access_type': 'public', 'active': True}, {'name': True})
-    return "Welcome to Alfredo :-)"#"Public available experiments: %s" % escape(list(experiments))
+    return "Welcome to Alfredo :-)"
 
-@alfredo.route('/start/<ObjectId:id>/', methods=['GET', 'POST'])
-def start(id):
-    experiment = current_app.db.Experiment.get_or_404(id)
+
+@alfredo.route('/start/<ObjectId:expid>/', methods=['GET', 'POST'])
+def start(expid):
+    experiment = current_app.db.Experiment.get_or_404(expid)
 
     if not experiment.active:
         abort(403)
 
     if experiment.access_type == 'password' \
             and experiment.password != request.form.get('password', None):
-        return '<h1>Please enter the password</h1><form method="post" action="."><input type="password" name="password" /><button type="submit">Submit</button></form>'
+        return '<h1>Please enter the password</h1><form method="post" action=".">'\
+            '<input type="password" name="password" /><button type="submit">Submit</button></form>'
 
     sid = str(uuid4())
     session['sid'] = sid
 
     # create experiment
-    f, pathname, desc = imp.find_module(str(experiment._id), 
-        [os.path.join(current_app.instance_path,
-        current_app.config['SCRIPT_FOLDER'])]
-    )
-    try:
-        module = imp.load_module(str(experiment._id), f, pathname, desc)
-    finally:
-        f.close()
+    module = import_module(str(experiment._id))
     script = module.Script()
     script.experiment = script.generate_experiment()
 
@@ -92,12 +106,14 @@ def start(id):
 
     return redirect(url_for('alfredo.experiment'))
 
+
 @alfredo.route('/experiment', methods=['GET', 'POST'])
 def experiment():
     try:
         sid = session['sid']
     except KeyError:
         abort(412)
+        return
     script = experiment_manager.get(sid)
 
     move = request.values.get('move', None)
@@ -131,6 +147,7 @@ def experiment():
     resp.cache_control.no_cache = True
     return resp
 
+
 @alfredo.route('/staticfile/<identifier>')
 def staticfile(identifier):
     try:
@@ -138,10 +155,11 @@ def staticfile(identifier):
         script = experiment_manager.get(sid)
         path, content_type = script.experiment.userInterfaceController.getStaticFile(identifier)
     except KeyError:
-       abort(404)
+        abort(404)
     resp = make_response(send_file(path, mimetype=content_type))
     #resp.cache_control.no_cache = True
     return resp
+
 
 @alfredo.route('/dynamicfile/<identifier>')
 def dynamicfile(identifier):
@@ -154,6 +172,7 @@ def dynamicfile(identifier):
     resp = make_response(send_file(strIO, mimetype=content_type))
     resp.cache_control.no_cache = True
     return resp
+
 
 @alfredo.route('/callable/<identifier>', methods=['GET', 'POST'])
 def callable(identifier):
