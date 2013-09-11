@@ -9,7 +9,7 @@
 
     <ul>
         {% if not experiment.external %}
-        <li><a href="{{ url_for('alfredo.start', id=experiment._id) }}">start link</a></li>
+        <li><a href="{{ url_for('alfredo.start', expid=experiment._id) }}">start link</a></li>
         {% endif %}
         <li><a href="{{ url_for('experiment_edit', id=experiment._id) }}">edit experiment</a></li>
         <li><a href="{{ url_for('experiment_export', id=experiment._id) }}">export</a></li>
