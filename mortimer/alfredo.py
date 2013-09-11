@@ -9,7 +9,7 @@ import re
 from flask import Blueprint, current_app, session, send_file, redirect, url_for, abort, request, make_response
 
 
-def import_module(name):
+def import_script(name):
     # Fast path: see if the module has already been imported.
     try:
         return sys.modules[name]
@@ -94,7 +94,7 @@ def start(expid):
     session['sid'] = sid
 
     # create experiment
-    module = import_module(str(experiment._id))
+    module = import_script(str(experiment._id))
     script = module.Script()
     script.experiment = script.generate_experiment()
 
