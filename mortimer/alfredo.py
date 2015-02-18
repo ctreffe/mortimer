@@ -54,9 +54,16 @@ class ExperimentManager(object):
         self.remove_outdated()
         self.lock.acquire()
         rv = self.experiments.get(key, (None, None))[1]
+
         self.lock.release()
         if rv is None:
+            try:
+                print "Tried to access experiment with key %s" % key
+                print "Available Keys: %s" % self.experiments.keys()
+            except:
+                pass
             abort(412)
+        self.save(key, rv)
         return rv
 
     def remove_outdated(self):
@@ -65,6 +72,7 @@ class ExperimentManager(object):
         for k in self.experiments.keys():
             v = self.experiments[k]
             if current_time - v[0] > self.timeout:
+                print "delete exp with key %s and last access time %s" % (k, v[0])
                 del self.experiments[k]
         self.lock.release()
 
@@ -186,7 +194,6 @@ def callable(identifier):
     if rv is not None:
         resp = make_response(rv)
     else:
-        resp = make_respone(redirect(url_for('alfredo.experiment')))
+        resp = make_response(redirect(url_for('alfredo.experiment')))
     resp.cache_control.no_cache = True
     return resp
-
