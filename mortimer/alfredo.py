@@ -190,7 +190,11 @@ def callable(identifier):
         f = script.experiment.userInterfaceController.getCallable(identifier)
     except KeyError:
         abort(404)
-    rv = f(**request.values.to_dict())
+    if request.content_type == "application/json":
+        values = request.to_json()
+    else
+        values = request.values.to_dict()
+    rv = f(**values)
     if rv is not None:
         resp = make_response(rv)
     else:
