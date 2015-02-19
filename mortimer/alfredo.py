@@ -192,7 +192,7 @@ def callable(identifier):
         abort(404)
     if request.content_type == "application/json":
         values = request.to_json()
-    else
+    else:
         values = request.values.to_dict()
     rv = f(**values)
     if rv is not None:
