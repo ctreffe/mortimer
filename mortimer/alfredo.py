@@ -191,7 +191,7 @@ def callable(identifier):
     except KeyError:
         abort(404)
     if request.content_type == "application/json":
-        values = request.to_json()
+        values = request.get_json()
     else:
         values = request.values.to_dict()
     rv = f(**values)
