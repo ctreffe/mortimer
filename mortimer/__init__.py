@@ -10,6 +10,8 @@ from flask.ext.bcrypt import Bcrypt
 
 from pymongo import MongoClient
 
+from bson.objectid import ObjectId
+
 from .models import *
 from .views import *
 from .alfredo import alfredo
@@ -47,7 +49,7 @@ login_manager.login_view = 'login'
 
 @login_manager.user_loader
 def load_user(id):
-    return db.User.get_from_id(id)
+    return db.User.get_from_id(ObjectId(id))
 
 login_manager.setup_app(app)
 
