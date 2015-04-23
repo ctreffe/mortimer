@@ -28,6 +28,11 @@ ALFRED_COLLECTION = 'test_col'
 ALFRED_USERNAME = None
 ALFRED_PASSWORD = None
 
+MONGODB_HOST = 'localhost'
+MONGODB_DATABASE = 'flask'
+MONGODB_USERNAME = None
+MONGODB_PASSWORD = None
+
 # Initalize Flask
 app = Flask(__name__)
 app.config.from_object(__name__)
