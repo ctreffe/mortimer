@@ -72,7 +72,7 @@ class ExperimentDeleteView(View):
     decorators = [login_required]
     def dispatch_request(self, id):
         experiment = current_app.db.Experiment.get_or_404(id)
-        if experiment.owner != current_user.get_id():
+        if experiment.owner != ObjectId(current_user.get_id()):
             abort(403)
         experiment.collection.remove({'_id': experiment._id})
         flash('Experiment %s was deleted.' % experiment.name)
@@ -85,12 +85,12 @@ class ExperimentEditView(MethodView):
         form = ExperimentForm()
         if id is not None:
             experiment = current_app.db.Experiment.get_or_404(id)
-            if experiment.owner != current_user.get_id():
+            if experiment.owner != ObjectId(current_user.get_id()):
                 abort(403)
         else:
             experiment = current_app.db.Experiment()
         if form.validate_on_submit():
-            experiment.owner = current_user.get_id()
+            experiment.owner = ObjectId(current_user.get_id())
             experiment.name = form.name.data
             experiment.external = form.external.data
             if experiment.external:
@@ -133,7 +133,7 @@ class ExperimentEditView(MethodView):
         form = ExperimentForm()
         if id is not None:
             experiment = current_app.db.Experiment.get_or_404(id)
-            if experiment.owner != current_user.get_id():
+            if experiment.owner != ObjectId(current_user.get_id()):
                 abort(403)
             form.name.data = experiment.name
             form.active.data = experiment.active
@@ -149,7 +149,7 @@ class ExperimentEditView(MethodView):
 class ExperimentListView(View):
     decorators = [login_required]
     def dispatch_request(self):
-        experiments = current_app.db.Experiment.find({'owner': current_user.get_id()})
+        experiments = current_app.db.Experiment.find({'owner': ObjectId(current_user.get_id())})
         return render_template('experiment_list.html', experiments=experiments)
 
 class ExperimentExportView(View):
@@ -157,7 +157,7 @@ class ExperimentExportView(View):
     methods = ['GET', 'POST']
     def dispatch_request(self, id):
         experiment = current_app.db.Experiment.get_or_404(id)
-        if experiment.owner != current_user.get_id():
+        if experiment.owner != ObjectId(current_user.get_id()):
             abort(403)
         form = ExperimentExportForm()
         if form.validate_on_submit():
