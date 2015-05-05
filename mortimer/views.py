@@ -213,13 +213,13 @@ class UploadView(View):
                         current_app.config['UPLOAD_FOLDER'], path, filename), 'w') as f:
                     f.write(file.stream.read())
                 flash('File %s uploaded' % filename)
-                return redirect(url_for('uploads', path=path))
+                return redirect(url_for('upload-path', path=path))
             if folder_form.validate_on_submit():
                 folder_name = secure_filename(folder_form.folder.data)
                 os.makedirs(os.path.join(current_app.instance_path,
                         current_app.config['UPLOAD_FOLDER'], path, folder_name))
                 flash("Folder %s created" % folder_name)
-                return redirect(url_for('uploads', path=(folder_name if not path
+                return redirect(url_for('upload-path', path=(folder_name if not path
                     else path + '/' + folder_name)))
 
 
