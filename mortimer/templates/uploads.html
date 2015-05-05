@@ -9,7 +9,7 @@
     Folder:
     <ul>
         {% for folder in folders %}
-        <li><a href="{{ url_for('uploads', path=folder[1]) }}">{{ folder[0]
+        <li><a href="{{ url_for('upload-path', path=folder[1]) }}">{{ folder[0]
             }}</a> <a href="{{ url_for('upload_delete', path=folder[1]) }}">delete</a></li>
         {% endfor %}
     </ul>
