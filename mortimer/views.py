@@ -149,7 +149,7 @@ class ExperimentEditView(MethodView):
 class ExperimentListView(View):
     decorators = [login_required]
     def dispatch_request(self):
-        experiments = current_app.db.Experiment.find({'owner': ObjectId(current_user.get_id())})
+        experiments = current_app.db.Experiment.find({'owner': ObjectId(current_user.get_id())}).sort('name')
         return render_template('experiment_list.html', experiments=experiments)
 
 class ExperimentExportView(View):
@@ -193,8 +193,25 @@ class ExperimentExportView(View):
 class UploadView(View):
     decorators = [login_required]
     methods = ['GET', 'POST']
+
+    def split_path(self, path):
+        folders = []
+        while 1:
+            path, folder = os.path.split(path)
+            if folder != "":
+                folders.append(folder)
+            else:
+                if path != "":
+                    folders.append(path)
+                break
+        folders.reverse()
+        return folders
+
     def dispatch_request(self, path, delete):
-        path = '/'.join([secure_filename(x) for x in path.split('/')])
+        path = [secure_filename(x) for x in self.split_path(path)]
+
+        parent_directory = '/'.join(path[0:-1]) if len(path) > 1 else None
+        path = '/'.join(path)
         if delete:
             full = os.path.join(current_app.instance_path, current_app.config['UPLOAD_FOLDER'], path)
             if os.path.isdir(full):
@@ -235,10 +252,13 @@ class UploadView(View):
                 elif os.path.isfile(full):
                     files.append((f, rel))
 
+            files = sorted(files)
+            folders = sorted(folders)
 
 
             return render_template('uploads.html', upload_form=upload_form,
-                folder_form=folder_form, files=files, folders=folders)
+                folder_form=folder_form, files=files, folders=folders, cur_path=path,
+                parent_directory=parent_directory)
 
 class FooView(View):
     def dispatch_request(self):

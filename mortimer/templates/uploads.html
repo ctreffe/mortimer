@@ -5,7 +5,12 @@
 
 
     <h1>Uploads</h1>
-    <p class="lead">Ipsum...</p>
+    <p class="lead">{{ cur_path }}</p>
+    {% if parent_directory %}
+        <p><a href="{{ url_for('upload-path', path=parent_directory) }}"> {{ parent_directory }}</a></p>
+    {% else %}
+        <p><a href="{{ url_for('uploads') }}"> Root Folder </a></p>
+    {% endif %}
     Folder:
     <ul>
         {% for folder in folders %}
