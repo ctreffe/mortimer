@@ -4,7 +4,7 @@ import os
 
 from flask import Flask, g, session, url_for, abort, request, Response,\
     send_file, render_template, redirect
-from flask_login import LoginManager, login_required
+from flask_login import LoginManager, login_required, current_user
 from flask_mongokit import MongoKit
 from flask_bcrypt import Bcrypt
 
@@ -95,6 +95,8 @@ app.add_url_rule('/logout/', view_func=LogoutView.as_view('logout'))
 
 @app.route('/add_user/<username>/<password>')
 def add_user(username, password):
+    if current_user.username != "ctreffe":
+        abort()
     u = db.User()
     u.username = unicode(username)
     u.mail = u'dummy@example.com'
