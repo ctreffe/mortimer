@@ -4,9 +4,9 @@ import os
 
 from flask import Flask, g, session, url_for, abort, request, Response,\
     send_file, render_template, redirect
-from flask.ext.login import LoginManager, login_required
-from flask.ext.mongokit import MongoKit
-from flask.ext.bcrypt import Bcrypt
+from flask_login import LoginManager, login_required
+from flask_mongokit import MongoKit
+from flask_bcrypt import Bcrypt
 
 from pymongo import MongoClient
 
