@@ -1,8 +1,8 @@
 # -*- coding:utf-8 -*-
 
 from flask import current_app
-from flask.ext.login import UserMixin
-from flask.ext.mongokit import Document
+from flask_login import UserMixin
+from flask_mongokit import Document
 from mongokit import IS
 from bson.objectid import ObjectId
 
