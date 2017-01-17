@@ -56,7 +56,7 @@ login_manager.login_view = 'login'
 def load_user(id):
     return db.User.get_from_id(ObjectId(id))
 
-login_manager.setup_app(app)
+login_manager.init_app(app)
 
 # Mongo
 db = MongoKit(app)
