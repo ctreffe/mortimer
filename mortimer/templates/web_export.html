@@ -1,0 +1,89 @@
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="content-section">
+    {% if type == "web" %}
+        <form method="POST" enctype="multipart/form-data" action="{{ url_for('web_experiments.web_export', experiment_title=experiment.title, username=experiment.author) }}" class="needs-validation" novalidate>
+    {% else %}
+        <form method="POST" enctype="multipart/form-data" action="{{ url_for('local_experiments.local_export', experiment_title=experiment.title, username=experiment.author) }}" class="needs-validation" novalidate>
+    {% endif %}
+
+            {{ form.hidden_tag() }}
+            <fieldset class="form-group">
+                <legend class="border-bottom mb-4"><b>{{ experiment.title }}</b>: {{ legend }}</legend>
+
+                <div class="form-group">
+                    {{ form.file_type.label(class="form-control-label") }}
+                    {% if form.file_type.errors %}
+                        {{ form.file_type(class="form-control form-control-lg is-invalid") }} <!-- , placeholder=form.file_type.label.text -->
+
+                        <div class="invalid-feedback">
+                            {% for error in form.file_type.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        
+                    {% else %}
+                    {{ form.file_type(class="form-control form-control-lg") }}
+                    {% endif %}
+                </div>
+
+                 <div class="form-group">
+                    {{ form.version.label(class="form-control-label") }}
+                    {% if form.version.errors %}
+                        {{ form.version(class="form-control form-control-lg is-invalid") }} <!-- , placeholder=form.version.label.text -->
+
+                        <div class="invalid-feedback">
+                            {% for error in form.version.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        
+                    {% else %}
+                    {{ form.version(class="form-control form-control-lg") }}
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.none_value.label(class="form-control-label") }}
+                    {% if form.none_value.errors %}
+                        {{ form.none_value(class="form-control form-control-lg is-invalid") }} <!-- , placeholder=form.none_value.label.text -->
+
+                        <div class="invalid-feedback">
+                            {% for error in form.none_value.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        
+                    {% else %}
+                    {{ form.none_value(class="form-control form-control-lg") }}
+                    {% endif %}
+                </div>
+
+                <div class="form-check  ">
+                    
+                    {% if form.replace_none.errors %}
+                        {{ form.replace_none(class="form-check-input is-invalid") }}
+
+                        <div class="invalid-feedback">
+                            {% for error in form.replace_none.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        
+                    {% else %}
+                    {{ form.replace_none(class="form-check-input") }}
+                    {% endif %}
+                    {{ form.replace_none.label(class="form-check-label") }}
+                </div>
+
+            </fieldset>
+
+            <div class="form-group">
+                {{ form.submit(class="btn btn-outline-primary", id="submit")}}
+            </div>
+        </form>
+    </div>
+
+{% endblock content %}
