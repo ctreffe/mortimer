@@ -7,7 +7,7 @@ class Config:
     MONGODB_ALFRED = os.environ.get("MONGODB_ALFRED")
     # abt5.psych.bio.uni-goettinggen.de:49130
     # MONGODB_DB = 'mortimer'
-    MAIL_SERVER = "smtp.googlemail.com"
+    MAIL_SERVER = os.environ.get("MAIL_SERVER")
     MAIL_PORT = 587
     MAIL_USE_TLS = True
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
