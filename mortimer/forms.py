@@ -12,6 +12,7 @@ class RegistrationForm(FlaskForm):
     email = StringField("Email", validators=[DataRequired(), Email()])
     password = PasswordField("Password", validators=[DataRequired()])
     confirm_password = PasswordField("Confirm Password", validators=[DataRequired(), EqualTo("password")])
+    parole = PasswordField("Parole", validators=[DataRequired()])
 
     # functions for validation of user input
     # return errors if user tries to register username or email that is already in use.
@@ -24,6 +25,10 @@ class RegistrationForm(FlaskForm):
         user = User.objects(email__exact=email.data).first()
         if user is not None:
             raise ValidationError("That email is taken. Please choose a different one.")
+
+    def validate_parole(self, parole):
+        if parole == "mortimer_entry_parole":
+            raise ValidationError("Incorrect parole. You can write to alfred@psych.uni-goettingen.de to get the correct parole.")
 
     submit = SubmitField("Sign Up")
 
