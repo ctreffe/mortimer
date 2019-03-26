@@ -78,6 +78,25 @@
                     {% endif %}
                     
                 </div>
+
+                <div class="form-group">
+                    {{ form.parole.label(class="form-control-label") }}
+                    {% if form.parole.errors %}
+                        {{ form.parole(class="form-control form-control-lg is-invalid") }}
+
+                        <div class="invalid-feedback">
+                            {% for error in form.parole.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    
+                    {% else %}    
+                    {{ form.parole(class="form-control form-control-lg") }}
+                    {% endif %}
+                    <small id="passwordHelpBlock" class="form-text text-muted">
+                      {{ password_hint }}
+                    </small>
+                </div>
             </fieldset>
             <div class="form-group">
                 {{ form.submit(class="btn btn-outline-primary")}}
