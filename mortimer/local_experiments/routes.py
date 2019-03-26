@@ -1,13 +1,9 @@
-import os
-import io
 from mortimer import export
-from flask import Blueprint, render_template, url_for, flash, redirect, abort, current_app, send_file, request
-from mortimer.forms import WebExperimentForm, UpdateExperimentForm, NewScriptForm, ExperimentExportForm, LocalExperimentForm
-from mortimer.models import User, WebExperiment, LocalExperiment
-from mortimer.utils import display_directory, filter_directories, extract_version
+from flask import Blueprint, render_template, url_for, flash, redirect, abort, send_file, request
+from mortimer.forms import ExperimentExportForm, LocalExperimentForm
+from mortimer.models import User, LocalExperiment
 from mortimer import alfred_local_db
 from flask_login import current_user, login_required
-from werkzeug.utils import secure_filename
 from datetime import datetime
 
 
@@ -40,8 +36,31 @@ def local_experiment(username, experiment_title):
     if experiment.author != current_user.username:
         abort(403)
 
+    datasets = {}
+
+    datasets["all_datasets"] = alfred_local_db.count_documents({"expAuthorMail": current_user.email, "expName": experiment_title})
+    datasets["all_finished_datasets"] = alfred_local_db.count_documents({"expAuthorMail": current_user.email, "expName": experiment_title, "expFinished": True})
+    datasets["all_unfinished_datasets"] = datasets["all_datasets"] - datasets["all_finished_datasets"]
+
+    versions = []
+    created = []
+    cur = alfred_local_db.find({"expAuthorMail": current_user.email, "expName": experiment_title})
+    for exp in cur:
+        if exp["expVersion"] not in versions:
+            versions.append(exp["expVersion"])
+        created.append(exp["start_time"])
+
+    if created:
+        first_activity = datetime.fromtimestamp(min(created)).strftime('%Y-%m-%d, %H:%M')
+        last_activity = datetime.fromtimestamp(max(created)).strftime('%Y-%m-%d, %H:%M')
+    else:
+        first_activity = "none"
+        last_activity = "none"
+
     return render_template("local_experiment.html",
-                           experiment=experiment, expid=str(experiment.id))
+                           experiment=experiment, expid=str(experiment.id), datasets=datasets,
+                           first_activity=first_activity, last_activity=last_activity,
+                           versions=versions)
 
 
 @local_experiments.route("/experiments")

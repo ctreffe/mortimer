@@ -9,22 +9,65 @@
       <small class="text-muted">{{ experiment.date_created.strftime('%Y-%m-%d') }}</small>
     </div>
     <legend class="border-bottom"><b>{{ experiment.title }}</b></legend>
-    
-     <div>
-        <button type="button" class="btn btn-danger btn mt-1 mb-1" data-toggle="modal" data-target="#deleteModal">Delete</button>
-      </div>
 
-      <a class="btn btn-success mt-1 mb-1" href="{{ url_for('local_experiments.local_export', experiment_title=experiment.title, username=experiment.author) }}">Export Data</a>
+    <div class="row">
+      <div class="col-md-3"><b>Last activity</b>:</div><div class="col-md-3"><span class="badge badge-light">{{ last_activity }}</span></div>
+    </div>
+    <div class="row">
+      <div class="col-md-3"><b>First activity</b>:</div><div class="col-md-3"><span class="badge badge-light">{{ first_activity }}</span></div>
+    </div>
+
+    <div class="row">
+      <div class="col-md-3"><b>Available Versions</b>:</div><div class="col-md-3">
+        {% if versions %}
+        {% for version in versions %}
+        <span class="badge badge-dark"> {{ version }}</span>
+        {% endfor %}
+        {% else %}
+        <span class="badge badge-warning"> Experiment not found in database</span>
+        {% endif %}
+      </div>
+    </div>
+
+    <h6 class="border-bottom pt-4"><b>Description</b></h6>
+
+      <p class="article-content">{{ experiment.description }}</p>  
 
     <!--  <p class="article-content">{{ experiment.script }}</p> -->
   </div>
+
+
 </div>
 
+<div class="article content-section">
+  <legend><b>Options</b></legend>
 
-    <div class="article content-section">
-      <h4>Description</h4>
+        <a class="btn btn-primary mt-1 mb-1" href="{{ url_for('local_experiments.local_export', experiment_title=experiment.title, username=experiment.author) }}">Export Data</a>
+        <button type="button" class="btn btn-danger btn mt-1 mb-1" data-toggle="modal" data-target="#deleteModal">Delete from Mortimer</button>
+      
+</div>
 
-      <p class="article-content">{{ experiment.description }}</p>  
+<div class="article content-section">
+  <legend><b>Datasets</b></legend>
+
+      <table class="table table-striped">
+  <thead>
+    <tr>
+      <th scope="col">N</th>
+      <th scope="col" class="text-center"><span class="badge badge-success">Finished</span></th>
+      <th scope="col" class="text-center"><span class="badge badge-warning">Unfinished</span></th>
+      <th scope="col" class="text-center"><span class="badge badge-dark">Total</span></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">All Versions</th>
+      <td class="text-center">{{ datasets["all_finished_datasets"] }}</td>
+      <td class="text-center">{{ datasets["all_unfinished_datasets"] }}</td>
+      <td class="text-center">{{ datasets["all_datasets"] }}</td>
+    </tr>
+  </tbody>
+</table>
 
     </div>
 
