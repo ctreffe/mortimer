@@ -1,10 +1,9 @@
 import os
 import shutil
-import io
 from mortimer import export
 from flask import Blueprint, render_template, url_for, flash, redirect, request, abort, current_app, send_file
-from mortimer.forms import WebExperimentForm, UpdateExperimentForm, NewScriptForm, ExperimentExportForm, LocalExperimentForm
-from mortimer.models import User, WebExperiment, LocalExperiment
+from mortimer.forms import WebExperimentForm, UpdateExperimentForm, NewScriptForm, ExperimentExportForm
+from mortimer.models import User, WebExperiment
 from mortimer.utils import display_directory, filter_directories, extract_version, extract_title
 from mortimer import alfred_web_db
 from flask_login import current_user, login_required
@@ -89,6 +88,28 @@ def experiment(username, experiment_title):
     if experiment.author != current_user.username:
         abort(403)
 
+    if experiment.active:
+        status = "active"
+        toggle_button = "Deactivate"
+    else:
+        status = "inactive"
+        toggle_button = "Activate"
+
+    script_title = extract_title(experiment.script_fullpath)
+    if experiment.title != script_title:
+        title_unequal = True
+    else:
+        title_unequal = False
+
+    datasets = {}
+
+    datasets["all_datasets"] = alfred_web_db.count_documents({"expAuthorMail": current_user.email, "expName": experiment_title})
+    datasets["all_finished_datasets"] = alfred_web_db.count_documents({"expAuthorMail": current_user.email, "expName": experiment_title, "expFinished": True})
+    datasets["all_unfinished_datasets"] = datasets["all_datasets"] - datasets["all_finished_datasets"]
+    datasets["datasets_current_version"] = alfred_web_db.count_documents({"expAuthorMail": current_user.email, "expName": experiment_title, "expVersion": experiment.version})
+    datasets["finished_datasets_current_version"] = alfred_web_db.count_documents({"expAuthorMail": current_user.email, "expName": experiment_title, "expVersion": experiment.version, "expFinished": True})
+    datasets["unfinished_datasets_current_version"] = datasets["datasets_current_version"] - datasets["finished_datasets_current_version"]
+
     form = NewScriptForm()
 
     if form.validate_on_submit() and form.script.data:
@@ -129,7 +150,8 @@ def experiment(username, experiment_title):
             return redirect(url_for('web_experiments.experiment', username=experiment.author, experiment_title=experiment.title))
 
     return render_template("experiment.html",
-                           experiment=experiment, expid=str(experiment.id), form=form)
+                           experiment=experiment, expid=str(experiment.id), form=form, status=status, toggle_button=toggle_button,
+                           datasets=datasets, title_unequal=title_unequal, script_title=script_title)
 
 
 @web_experiments.route("/<username>/<experiment_title>/update", methods=["GET", "POST"])
@@ -413,4 +435,24 @@ def web_export(username, experiment_title):
                              cache_timeout=1, as_attachment=True,
                              attachment_filename='export.xlsx')
 
-    return render_template("web_export.html", form=form, experiment=experiment, legend="Download data")
+    return render_template("web_export.html", form=form, experiment=experiment, legend="Download data", type="web")
+
+
+@web_experiments.route("/de_activate/<username>/<experiment_title>", methods=["POST"])
+@login_required
+def de_activate_experiment(username, experiment_title):
+    experiment = WebExperiment.objects.get_or_404(title=experiment_title, author=username)
+
+    if experiment.author != current_user.username:
+        abort(403)
+
+    if not experiment.active:
+        experiment.active = True
+        experiment.save()
+        flash("Experiment activated.", "success")
+    elif experiment.active:
+        experiment.active = False
+        experiment.save()
+        flash("Experiment deactivated.", "info")
+
+    return redirect(url_for('web_experiments.experiment', username=current_user.username, experiment_title=experiment.title))

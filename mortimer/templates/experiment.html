@@ -9,24 +9,145 @@
       <small class="text-muted">{{ experiment.date_created.strftime('%Y-%m-%d') }}</small>
     </div>
     <legend class="border-bottom"><b>{{ experiment.title }}</b></legend>
-    
-     <div>
-        <a class="btn btn-primary btn- mt-1 mb-1" href="{{ url_for('web_experiments.manage_resources', experiment_title=experiment.title, username=experiment.author) }}">Manage Resources</a>
-        <a class="btn btn-secondary btn- mt-1 mb-1" href="{{ url_for('web_experiments.update_experiment', experiment_title=experiment.title, username=experiment.author) }}">Edit</a>
-        <button type="button" class="btn btn-danger btn mt-1 mb-1" data-toggle="modal" data-target="#deleteModal">Delete</button>
+
+  <div class="row">
+    <div class="col-md-3"><b>Status</b>:</div>
+  {% if status == "active" %}
+      <div class="col-md-3"><span class="badge badge-success">{{ status }}</span></div>
+  {% else %}
+    <div class="col-md-3"><span class="badge badge-warning">{{ status }}</span></div>
+  {% endif %}
+    </div>
+    <div class="row">
+      <div class="col-md-3"><b>Created</b>:</div><div class="col-md-3"><span class="badge badge-light">{{ experiment.date_created.strftime('%Y-%m-%d, %H:%M') }}</span></div>
+    </div>
+    <div class="row">
+      <div class="col-md-3"><b>Last Update</b>:</div><div class="col-md-3"><span class="badge badge-light">{{ experiment.last_update.strftime('%Y-%m-%d, %H:%M') }}</span></div>
+    </div>
+    <div class="row">
+      <div class="col-md-3"><b>Latest Version</b>:</div><div class="col-md-3"><span class="badge badge-dark">{{ experiment.version }}</span></div>
+    </div>
+    <div class="row">
+      <div class="col-md-3"><b>Available Versions</b>:</div><div class="col-md-3">
+        {% for version in experiment.available_versions %}
+        <span class="badge badge-dark"> {{ version }}</span>
+        {% endfor %}
       </div>
+    </div>
+    <div class="row">
+      <div class="col-md-3"><b>Title</b>:</div><div class="col-md-5">
+        {% if title_unequal %}
+        <span class="badge badge-warning">Different titles in mortimer and script.py. Please change!</span>
+        {% else %}
+        <span class="badge badge-success">All good!</span>
+        {% endif %}
+      </div>
+    </div>
+    {% if title_unequal %}
+    <div class="row">
+      <div class="col-md-3"><b>script.py Title</b>:</div><div class="col-md-3"><span class="badge badge-light">{{ script_title }}</span></div>
+    </div>
+    {% endif %}
 
-      <a class="btn btn-success mt-1 mb-1" href="{{ url_for('alfredo.start', expid=expid, experiment_title=experiment.title, username=experiment.author) }}">Start Experiment</a>
+    <h6 class="border-bottom pt-4"><b>Description</b></h6>
 
-      <a class="btn btn-success mt-1 mb-1" href="{{ url_for('web_experiments.web_export', experiment_title=experiment.title, username=experiment.author) }}">Export Data</a>
+      <p class="article-content">{{ experiment.description }}</p>  
 
     <!--  <p class="article-content">{{ experiment.script }}</p> -->
   </div>
 </div>
 
+  <div class="article content-section">
+    <legend class="border-bottom"><b>Options</b></legend>
+      <div class="row">
+
+        <form method="POST" action="{{ url_for('web_experiments.de_activate_experiment', experiment_title=experiment.title, username=experiment.author) }}">
+          <input class="btn btn-primary ml-3 mt-2 mb-2" type="submit" value="{{ toggle_button }}">
+        </form>
+
+        <a class="btn btn-outline-primary ml-1 mt-2 mb-2" href="{{ url_for('web_experiments.web_export', experiment_title=experiment.title, username=experiment.author) }}">Download Data</a>
+      
+        <a class="btn btn-outline-primary ml-1 mt-2 mb-2" href="{{ url_for('web_experiments.manage_resources', experiment_title=experiment.title, username=experiment.author) }}">Manage Resources</a>
+        
+        
+        <a class="btn btn-secondary ml-1 mt-2 mb-2" href="{{ url_for('web_experiments.update_experiment', experiment_title=experiment.title, username=experiment.author) }}">Edit</a>
+      
+        <button type="button" class="btn btn-danger ml-1 mt-2 mb-2" data-toggle="modal" data-target="#deleteModal">Delete</button>
+      
+      </div>
+
+      
+      
+
+    </div>
+
 
     <div class="article content-section">
-      <h4>Description</h4>
+      <legend class="border-bottom"><b>Access Experiment</b></legend>
+
+      {% if experiment.active == True %}
+
+      <div class="input-group mb-3">
+      <input type="text" class="form-control" aria-describedby="basic-addon2" id="link-to-exp" value="{{ url_for('alfredo.start', expid=expid, experiment_title=experiment.title, username=experiment.author, _external=True) }}">
+      <div class="input-group-append">
+        <button class="btn btn-outline-secondary" type="button" data-clipboard-target="#link-to-exp">
+          <img src="../static/clippy.svg" alt="Copy to clipboard" width="20"> Copy Link
+        </button>
+        <a class="btn btn-success" href="{{ url_for('alfredo.start', expid=expid, experiment_title=experiment.title, username=experiment.author) }}">Start</a>
+      </div>
+    </div>
+
+    {% else %}
+
+    <div class="input-group mb-3">
+      <input type="text" class="form-control" aria-describedby="basic-addon2" id="link-to-exp" placeholder="(inactive)">
+      <div class="input-group-append">
+        <button class="btn btn-outline-secondary" type="button" data-clipboard-target="#link-to-exp">
+          <img src="../static/clippy.svg" alt="Copy to clipboard" width="20"> Copy Link
+        </button>
+        <a class="btn btn-success" href="#">Start</a>
+      </div>
+    </div>
+
+    {% endif %}
+
+    </div>
+
+<div class="article content-section">
+  <legend><b>Datasets</b></legend>
+
+      <table class="table table-striped">
+  <thead>
+    <tr>
+      <th scope="col">N</th>
+      <th scope="col" class="text-center"><span class="badge badge-success">Finished</span></th>
+      <th scope="col" class="text-center"><span class="badge badge-warning">Unfinished</span></th>
+      <th scope="col" class="text-center"><span class="badge badge-dark">Total</span></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">Current Version ({{ experiment.version }})</th>
+      <td class="text-center">{{ datasets["finished_datasets_current_version"] }}</td>
+      <td class="text-center">{{ datasets["unfinished_datasets_current_version"] }}</td>
+      <td class="text-center">{{ datasets["datasets_current_version"] }}</td>
+    </tr>
+    <tr>
+      <th scope="row">All Versions</th>
+      <td class="text-center">{{ datasets["all_finished_datasets"] }}</td>
+      <td class="text-center">{{ datasets["all_unfinished_datasets"] }}</td>
+      <td class="text-center">{{ datasets["all_datasets"] }}</td>
+    </tr>
+  </tbody>
+</table>
+
+    </div>
+
+    
+
+
+    <div class="article content-section">
+      <legend class="border-bottom"><b>Description</b></legend>
 
       <p class="article-content">{{ experiment.description }}</p>  
 
@@ -39,9 +160,6 @@
         <legend class="border-bottom"><b>{{ form.script.label() }}</b></legend>
         <div class="row">
           <div class="col-xs ml-3">
-            <div class="form-group">
-              {{ form.submit(class="btn btn-primary btn-sm")}}
-          </div>
           </div>
           <div class="col-xs ml-2">
             <div class="form-group">
@@ -56,6 +174,9 @@
           
 
         </div>
+        <div class="form-group ml-2">
+              {{ form.submit(class="btn btn-primary btn-sm")}}
+          </div>
 
         
           
@@ -89,3 +210,11 @@
 
 
 {% endblock content %}
+
+{% block custom_js %}
+  <!-- Copy to Clipboard Javascript -->
+  <script src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js"></script>
+  <script type="text/javascript">
+    new ClipboardJS('.btn');
+  </script>
+{% endblock %}
