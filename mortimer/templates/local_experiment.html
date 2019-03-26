@@ -11,14 +11,17 @@
     <legend class="border-bottom"><b>{{ experiment.title }}</b></legend>
 
     <div class="row">
-      <div class="col-md-3"><b>Last activity</b>:</div><div class="col-md-3"><span class="badge badge-light">{{ last_activity }}</span></div>
+      <div class="col-md-3"><small><b>Created in Mortimer</b></small>:</div><div class="col-md-3"><span class="badge badge-light">{{ experiment.date_created.strftime('%Y-%m-%d, %H:%M') }}</span></div>
     </div>
     <div class="row">
-      <div class="col-md-3"><b>First activity</b>:</div><div class="col-md-3"><span class="badge badge-light">{{ first_activity }}</span></div>
+      <div class="col-md-3"><small><b>Last Finished Dataset</b></small>:</div><div class="col-md-3"><span class="badge badge-light">{{ last_activity }}</span></div>
+    </div>
+    <div class="row">
+      <div class="col-md-3"><small><b>First Finished Dataset</b></small>:</div><div class="col-md-3"><span class="badge badge-light">{{ first_activity }}</span></div>
     </div>
 
     <div class="row">
-      <div class="col-md-3"><b>Available Versions</b>:</div><div class="col-md-3">
+      <div class="col-md-3"><small><b>Version History</b></small>:</div><div class="col-md-3">
         {% if versions %}
         {% for version in versions %}
         <span class="badge badge-dark"> {{ version }}</span>
@@ -66,6 +69,16 @@
       <td class="text-center">{{ datasets["all_unfinished_datasets"] }}</td>
       <td class="text-center">{{ datasets["all_datasets"] }}</td>
     </tr>
+    {% for version, info in versions.items() %}
+
+    <tr>
+      <th scope="row">Version {{ version }} </th>
+      <td class="text-center">{{ info["finished"] }}</td>
+      <td class="text-center">{{  info["unfinished"] }}</td>
+      <td class="text-center">{{ info["total"] }}</td>
+    </tr>
+
+    {% endfor %}
   </tbody>
 </table>
 

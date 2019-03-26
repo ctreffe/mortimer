@@ -110,6 +110,27 @@ def experiment(username, experiment_title):
     datasets["finished_datasets_current_version"] = alfred_web_db.count_documents({"expAuthorMail": current_user.email, "expName": experiment_title, "expVersion": experiment.version, "expFinished": True})
     datasets["unfinished_datasets_current_version"] = datasets["datasets_current_version"] - datasets["finished_datasets_current_version"]
 
+    versions = {}
+    finished = []
+    cur = alfred_web_db.find({"expAuthorMail": current_user.email, "expName": experiment_title})
+    for exp in cur:
+        if exp["expVersion"] not in versions.keys():
+            versions[exp["expVersion"]] = {"total": 1, "finished": 0, "unfinished": 0}
+        else:
+            versions[exp["expVersion"]]["total"] += 1
+        if exp["expFinished"]:
+            versions[exp["expVersion"]]["finished"] += 1
+        else:
+            versions[exp["expVersion"]]["unfinished"] += 1
+        finished.append(exp["start_time"])
+
+    if finished:
+        first_activity = datetime.fromtimestamp(min(finished)).strftime('%Y-%m-%d, %H:%M')
+        last_activity = datetime.fromtimestamp(max(finished)).strftime('%Y-%m-%d, %H:%M')
+    else:
+        first_activity = "none"
+        last_activity = "none"
+
     form = NewScriptForm()
 
     if form.validate_on_submit() and form.script.data:
@@ -138,7 +159,7 @@ def experiment(username, experiment_title):
             if old_version != experiment.version:
                 flash(f"Version number changed from {old_version} to {experiment.version}.", "info")
             else:
-                flash("Version number did not change. If that was intended, no need to worry. If you made big changes, you might want to change the version number.", "warning")
+                flash("Version number did not change. If that was intended, no need to worry. If you made changes that affect the data structure (e.g. adding a new page), you might want to change the version number.", "danger")
 
             title = extract_title(experiment.script_fullpath)
             if title != experiment_title:
@@ -151,7 +172,7 @@ def experiment(username, experiment_title):
 
     return render_template("experiment.html",
                            experiment=experiment, expid=str(experiment.id), form=form, status=status, toggle_button=toggle_button,
-                           datasets=datasets, title_unequal=title_unequal, script_title=script_title)
+                           datasets=datasets, title_unequal=title_unequal, script_title=script_title, first_activity=first_activity, last_activity=last_activity, versions=versions)
 
 
 @web_experiments.route("/<username>/<experiment_title>/update", methods=["GET", "POST"])

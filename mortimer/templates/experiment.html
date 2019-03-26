@@ -11,7 +11,7 @@
     <legend class="border-bottom"><b>{{ experiment.title }}</b></legend>
 
   <div class="row">
-    <div class="col-md-3"><b>Status</b>:</div>
+    <div class="col-md-3"><small><b>Status</b></small>:</div>
   {% if status == "active" %}
       <div class="col-md-3"><span class="badge badge-success">{{ status }}</span></div>
   {% else %}
@@ -19,23 +19,26 @@
   {% endif %}
     </div>
     <div class="row">
-      <div class="col-md-3"><b>Created</b>:</div><div class="col-md-3"><span class="badge badge-light">{{ experiment.date_created.strftime('%Y-%m-%d, %H:%M') }}</span></div>
+      <div class="col-md-3"><small><b>Created in Mortimer</b></small>:</div><div class="col-md-3"><span class="badge badge-light">{{ experiment.date_created.strftime('%Y-%m-%d, %H:%M') }}</span></div>
     </div>
     <div class="row">
-      <div class="col-md-3"><b>Last Update</b>:</div><div class="col-md-3"><span class="badge badge-light">{{ experiment.last_update.strftime('%Y-%m-%d, %H:%M') }}</span></div>
+      <div class="col-md-3"><small><b>Last Finished Dataset</b></small>:</div><div class="col-md-3"><span class="badge badge-light">{{ last_activity }}</span></div>
     </div>
     <div class="row">
-      <div class="col-md-3"><b>Latest Version</b>:</div><div class="col-md-3"><span class="badge badge-dark">{{ experiment.version }}</span></div>
+      <div class="col-md-3"><small><b>First Finished Dataset</b></small>:</div><div class="col-md-3"><span class="badge badge-light">{{ first_activity }}</span></div>
     </div>
     <div class="row">
-      <div class="col-md-3"><b>Available Versions</b>:</div><div class="col-md-3">
+      <div class="col-md-3"><small><b>Latest Version</b></small>:</div><div class="col-md-3"><span class="badge badge-dark">{{ experiment.version }}</span></div>
+    </div>
+    <div class="row">
+      <div class="col-md-3"><small><b>Version History</b></small>:</div><div class="col-md-3">
         {% for version in experiment.available_versions %}
         <span class="badge badge-dark"> {{ version }}</span>
         {% endfor %}
       </div>
     </div>
     <div class="row">
-      <div class="col-md-3"><b>Title</b>:</div><div class="col-md-5">
+      <div class="col-md-3"><small><b>Title Conflict</b></small>:</div><div class="col-md-5">
         {% if title_unequal %}
         <span class="badge badge-warning">Different titles in mortimer and script.py. Please change!</span>
         {% else %}
@@ -45,7 +48,7 @@
     </div>
     {% if title_unequal %}
     <div class="row">
-      <div class="col-md-3"><b>script.py Title</b>:</div><div class="col-md-3"><span class="badge badge-light">{{ script_title }}</span></div>
+      <div class="col-md-3"><small><b>script.py Title</b></small>:</div><div class="col-md-3"><span class="badge badge-light">{{ script_title }}</span></div>
     </div>
     {% endif %}
 
@@ -65,9 +68,9 @@
           <input class="btn btn-primary ml-3 mt-2 mb-2" type="submit" value="{{ toggle_button }}">
         </form>
 
-        <a class="btn btn-outline-primary ml-1 mt-2 mb-2" href="{{ url_for('web_experiments.web_export', experiment_title=experiment.title, username=experiment.author) }}">Download Data</a>
+        <a class="btn btn-primary ml-1 mt-2 mb-2" href="{{ url_for('web_experiments.web_export', experiment_title=experiment.title, username=experiment.author) }}">Export Data</a>
       
-        <a class="btn btn-outline-primary ml-1 mt-2 mb-2" href="{{ url_for('web_experiments.manage_resources', experiment_title=experiment.title, username=experiment.author) }}">Manage Resources</a>
+        <a class="btn btn-primary ml-1 mt-2 mb-2" href="{{ url_for('web_experiments.manage_resources', experiment_title=experiment.title, username=experiment.author) }}">Manage Resources</a>
         
         
         <a class="btn btn-secondary ml-1 mt-2 mb-2" href="{{ url_for('web_experiments.update_experiment', experiment_title=experiment.title, username=experiment.author) }}">Edit</a>
@@ -93,7 +96,7 @@
         <button class="btn btn-outline-secondary" type="button" data-clipboard-target="#link-to-exp">
           <img src="../static/clippy.svg" alt="Copy to clipboard" width="20"> Copy Link
         </button>
-        <a class="btn btn-success" href="{{ url_for('alfredo.start', expid=expid, experiment_title=experiment.title, username=experiment.author) }}">Start</a>
+        <a class="btn btn-success" target="_blank" rel="noopener noreferrer" href="{{ url_for('alfredo.start', expid=expid, experiment_title=experiment.title, username=experiment.author) }}">Start</a>
       </div>
     </div>
 
@@ -127,17 +130,21 @@
   </thead>
   <tbody>
     <tr>
-      <th scope="row">Current Version ({{ experiment.version }})</th>
-      <td class="text-center">{{ datasets["finished_datasets_current_version"] }}</td>
-      <td class="text-center">{{ datasets["unfinished_datasets_current_version"] }}</td>
-      <td class="text-center">{{ datasets["datasets_current_version"] }}</td>
-    </tr>
-    <tr>
       <th scope="row">All Versions</th>
       <td class="text-center">{{ datasets["all_finished_datasets"] }}</td>
       <td class="text-center">{{ datasets["all_unfinished_datasets"] }}</td>
       <td class="text-center">{{ datasets["all_datasets"] }}</td>
     </tr>
+    {% for version, info in versions.items() %}
+
+    <tr>
+      <th scope="row">Version {{ version }} </th>
+      <td class="text-center">{{ info["finished"] }}</td>
+      <td class="text-center">{{  info["unfinished"] }}</td>
+      <td class="text-center">{{ info["total"] }}</td>
+    </tr>
+
+    {% endfor %}
   </tbody>
 </table>
 

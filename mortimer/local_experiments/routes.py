@@ -42,12 +42,18 @@ def local_experiment(username, experiment_title):
     datasets["all_finished_datasets"] = alfred_local_db.count_documents({"expAuthorMail": current_user.email, "expName": experiment_title, "expFinished": True})
     datasets["all_unfinished_datasets"] = datasets["all_datasets"] - datasets["all_finished_datasets"]
 
-    versions = []
+    versions = {}
     created = []
     cur = alfred_local_db.find({"expAuthorMail": current_user.email, "expName": experiment_title})
     for exp in cur:
-        if exp["expVersion"] not in versions:
-            versions.append(exp["expVersion"])
+        if exp["expVersion"] not in versions.keys():
+            versions[exp["expVersion"]] = {"total": 1, "finished": 0, "unfinished": 0}
+        else:
+            versions[exp["expVersion"]]["total"] += 1
+        if exp["expFinished"]:
+            versions[exp["expVersion"]]["finished"] += 1
+        else:
+            versions[exp["expVersion"]]["unfinished"] += 1
         created.append(exp["start_time"])
 
     if created:
