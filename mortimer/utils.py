@@ -56,9 +56,6 @@ def display_directory(directories: list, parent_directory: str, experiment, call
     case if two subdirectories in different top foldern have the same name.
     """
 
-    print("\n----------------------------")
-    print(f"FUNCTION CALLED ON {directories}\nPARENT DIRECTORY: {parent_directory}")
-
     call_id += 1
 
     experiment_title = experiment.title
@@ -85,8 +82,13 @@ def display_directory(directories: list, parent_directory: str, experiment, call
                 continue
             filepath = os.path.join(path, f)
             url = url_for('web_experiments.delete_file', experiment_title=experiment_title, username=experiment_author, relative_path=filepath)
-            display_one = f"""<div class=\"m-1\">
-            <button type="button" class="btn btn-outline-danger btn-sm mt-1 mb-1" data-toggle="modal" data-target="#deleteModal_{filepath}">Delete</button> <span class=\"ml-2\">{f}</span>
+            display_one = f"""<div class=\"row m-1\">
+            <div class="col-md-10 float-left">
+             <span class=\"ml-2\">- {f}</span>
+            </div>
+            <div class="col-md-2 btn btn-outline-danger btn-sm"
+             <button type="button" data-toggle="modal" data-target="#deleteModal_{filepath}">Delete</button>
+            </div>
             </div>
 
                 <div class="modal fade" id="deleteModal_{filepath}" tabindex="-1" role="dialog" aria-labelledby="deleteModal_{filepath}Label" aria-hidden="true">
@@ -122,7 +124,8 @@ def display_directory(directories: list, parent_directory: str, experiment, call
 
         out = f"""<div>
                     <p>
-                        <code style="color:black">{path}</code>
+                        <span><code style="color:black">{path}</code></span>
+                        <span class="float-md-right">
                         <button class=\"btn btn-outline-primary btn-sm ml-2\" type=\"button\" data-toggle=\"collapse\" data-target=\"#collapse_{directory}_{call_id}\" aria-expanded=\"false\" aria-controls=\"collapseExample\">
                         Show Files
                         </button>
@@ -131,6 +134,7 @@ def display_directory(directories: list, parent_directory: str, experiment, call
                         </button>
                         <a class=\"btn btn-outline-success btn-sm\" href=\"{upload_url}\">Upload Files</a>
                         <button type="button" class="btn btn-outline-danger btn-sm mt-1 mb-1" data-toggle="modal" data-target="#deleteModal_{directory}">Delete Directory</button>
+                        </span>
                     </p>
 
                     <div class="collapse" id="NewDirectory_{directory}_{call_id}">
@@ -142,7 +146,7 @@ def display_directory(directories: list, parent_directory: str, experiment, call
                         </form>
                     </div>
 
-                    <div class=\"collapse\" id=\"collapse_{directory}_{call_id}\">
+                    <div class=\"collapse pt-3\" id=\"collapse_{directory}_{call_id}\">
                     {file_display} <br>
                     </div>
 
