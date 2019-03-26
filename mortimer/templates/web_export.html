@@ -82,6 +82,12 @@
 
             <div class="form-group">
                 {{ form.submit(class="btn btn-outline-primary", id="submit")}}
+                {% if type == "web" %}
+                    <a class="btn btn-outline-primary" href="{{ url_for('web_experiments.experiment', experiment_title=experiment.title, username=experiment.author) }}">Back to Experiment</a>
+                {% else %}
+                    <a class="btn btn-outline-primary" href="{{ url_for('local_experiments.local_experiment', experiment_title=experiment.title, username=experiment.author) }}">Back to Experiment</a>
+                {% endif %}
+                
             </div>
         </form>
     </div>
