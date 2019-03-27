@@ -64,7 +64,28 @@
                     {{ form.none_value(class="form-control form-control-lg") }}
                     {% endif %}
                     <small id="passwordHelpBlock" class="form-text text-muted">
-                      Here, you can define a value that should be inserted for missing values.
+                      Here, you can define a value that should be inserted for missing
+                    </small>
+                </div>
+
+                <div class="form-check  ">
+                    
+                    {% if form.replace_none_with_empty_string.errors %}
+                        {{ form.replace_none_with_empty_string(class="form-check-input is-invalid") }}
+
+                        <div class="invalid-feedback">
+                            {% for error in form.replace_none_with_empty_string.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        
+                    {% else %}
+                    {{ form.replace_none_with_empty_string(class="form-check-input") }}
+                    {% endif %}
+                    {{ form.replace_none_with_empty_string.label(class="form-check-label") }}
+
+                    <small id="passwordHelpBlock" class="form-text text-muted">
+                      If you check this box, the input to the field <code>{{ form.none_value.label }}</code> will be discarded.
                     </small>
                 </div>
 

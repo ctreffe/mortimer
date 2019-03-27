@@ -481,6 +481,8 @@ def web_export(username, experiment_title):
         # if form.replace_none.data:
         if form.none_value.data:
             none_value = form.none_value.data
+        if form.replace_none_with_empty_string.data:
+            none_value = ""
 
         if form.file_type.data == 'json':
             f = export.to_json(cur)
