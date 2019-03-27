@@ -2,7 +2,9 @@
 
 {% block content %}
 
-    <h1 class="mb-3">Local Experiments by {{ user.username }} ({{ experiments.total }})</h1>
+    <h1 class="mb-3">Local Experiments by {{ user.username }}</h1>
+
+    <a class="btn btn-block btn-primary mb-3" href="{{ url_for('local_experiments.new_local_experiment') }}">New Local Experiment</a>
 
     {% for experiment in experiments.items %}
         <article class="media content-section">

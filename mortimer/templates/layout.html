@@ -60,10 +60,8 @@
           <h3>Navigation</h3>
           <p class='text-muted'>What would you like to do?
             <ul class="list-group">
-              <li class="list-group-item list-group-item-light"><a class="nav-link p-0" href="{{ url_for('web_experiments.new_experiment') }}">New Web Experiment</a></li>
-              <li class="list-group-item list-group-item-light"><a class="nav-link p-0" href="{{ url_for('web_experiments.user_experiments', username=current_user.username) }}">My Web Experiments</a></li>
-              <li class="list-group-item list-group-item-light"><a class="nav-link p-0" href="{{ url_for('local_experiments.new_local_experiment') }}">New Local Experiment</a></li>
-              <li class="list-group-item list-group-item-light"><a class="nav-link p-0" href="{{ url_for('local_experiments.user_experiments', username=current_user.username) }}">My Local Experiments</a></li>
+              <li class="list-group-item list-group-item-light"><a class="nav-link p-0" href="{{ url_for('web_experiments.user_experiments', username=current_user.username) }}">Web Experiments</a></li>
+              <li class="list-group-item list-group-item-light"><a class="nav-link p-0" href="{{ url_for('local_experiments.user_experiments', username=current_user.username) }}">Local Experiments</a></li>
             </ul>
           </p>
         </div>
