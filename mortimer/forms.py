@@ -5,6 +5,7 @@ from wtforms import StringField, SubmitField, BooleanField, PasswordField, TextA
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from mortimer.models import User, WebExperiment, LocalExperiment
 from mortimer.config import Config
+from werkzeug.utils import secure_filename
 import re
 
 
@@ -70,7 +71,10 @@ class WebExperimentForm(FlaskForm):
     script = FileField("script.py", validators=[FileAllowed(['py'])])
 
     def validate_title(self, title):
-        # , version=self.version
+        secure_title = secure_filename(title.data)
+        if title.data != secure_title:
+            raise ValidationError(f"Titles with slashes or spaces can cause problems. Suggestion: {secure_title}.")
+
         experiment = WebExperiment.objects(title__exact=title.data, author__exact=current_user.username).first()
         if experiment is not None:
             raise ValidationError("You already have a web experiment with this title. Please choose a unique title.")
@@ -154,6 +158,7 @@ class ExperimentExportForm(FlaskForm):
     file_type = SelectField('File Type', choices=[(x, x) for x in ['csv', 'excel_csv', 'json', 'excel']])
     version = SelectMultipleField('Version')
     # replace_none = BooleanField('Replace none values\nnot for json')
-    none_value = StringField('Replace "None" values with:')
+    replace_none_with_empty_string = BooleanField('Replace "None" values with empty string (recommended for R users).')
+    none_value = StringField('Replace "None" values with custom string:')
 
     submit = SubmitField("Download")
