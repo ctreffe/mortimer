@@ -23,7 +23,7 @@ def new_experiment():
 
     if form.validate_on_submit():
 
-        experiment = WebExperiment(title=form.title.data, author=current_user.username,
+        experiment = WebExperiment(title=secure_filename(form.title.data), author=current_user.username,
                                    description=form.description.data)
 
         experiment.path = os.path.join(current_app.root_path,
@@ -63,9 +63,9 @@ def new_experiment():
                 experiment.available_versions.append(experiment.version)
                 title = extract_title(experiment.script_fullpath)
                 if title != experiment.title:
-                    flash(f"The experiment name in the script ({title}) and in mortimer ({experiment.title}) should be the same. Otherwise you will not be able to download your data. You can change the experiment title in mortimer at any time.", "warning")
+                    flash(f"The experiment name in the script ({title}) and in mortimer ({experiment.title}) should be the same. Otherwise you will not be able to download your data. You can change the experiment title in mortimer and the script when you click on Edit.", "warning")
                 experiment.save()
-                return redirect(url_for('web_experiments.user_experiments', username=current_user.username))
+                return redirect(url_for('web_experiments.experiment', experiment_title=experiment.title, username=current_user.username))
             except Exception as e:
                 flash(f"Error: {e}", "danger")
                 return redirect(url_for('web_experiments.new_experiment'))
@@ -233,6 +233,8 @@ def update_experiment(username, experiment_title):
             experiment.script = form.script.data
             with open(experiment.script_fullpath, "w") as f:
                 f.write(form.script.data)
+            if experiment.version == extract_version(experiment.script_fullpath):
+                flash("You changed the script.py, but did not change the version number. If that was intended, no need to worry. If you made changes that affect the data structure (e.g. adding a new page), you might want to change the version number.", "danger")
 
         # experiment.versions.append(ExperimentVersion(version=form.version.data))
         # experiment.script = form.script.data
