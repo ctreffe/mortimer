@@ -108,7 +108,11 @@ def start(expid, experiment_title, username):
     # create experiment
     module = import_script(experiment.id)
     # script.generate_experiment.start()
-    script = module.script
+    try:
+        script = module.script
+    except AttributeError:
+        script = module.Script()
+
     script.experiment = script.generate_experiment()
 
     # start experiment
