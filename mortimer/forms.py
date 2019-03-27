@@ -28,7 +28,7 @@ class RegistrationForm(FlaskForm):
             raise ValidationError("That email is taken. Please choose a different one.")
 
     def validate_parole(self, parole):
-        if parole != Config.PAROLE:
+        if parole.data != Config.PAROLE:
             raise ValidationError("Incorrect parole. You can write to alfred@psych.uni-goettingen.de to get the correct parole.")
 
     submit = SubmitField("Sign Up")
@@ -99,15 +99,7 @@ class UpdateExperimentForm(FlaskForm):
     title = StringField("Title")
     description = TextAreaField("Description")
     password = StringField("Password")
-
-    # def validate_title(self, title):
-    #     experiment = WebExperiment.objects(title__exact=title.data, author__exact=current_user.username).first()
-    #     if experiment is not None:
-    #         raise ValidationError("You already have a web experiment with this title. Please choose a unique title.")
-
-    # def validate_enable_password(self, enable_password):
-    #     if enable_password and not self.password:
-    #         raise ValidationError("You need to specify a password.")
+    script = TextAreaField("Script")
 
     submit = SubmitField("Update")
 
@@ -161,7 +153,7 @@ class ExperimentExportForm(FlaskForm):
 
     file_type = SelectField('File Type', choices=[(x, x) for x in ['csv', 'excel_csv', 'json', 'excel']])
     version = SelectMultipleField('Version')
-    replace_none = BooleanField('Replace none values\nnot for json')
-    none_value = StringField('None value replacement')
+    # replace_none = BooleanField('Replace none values\nnot for json')
+    none_value = StringField('Replace "None" values with:')
 
     submit = SubmitField("Download")
