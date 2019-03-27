@@ -45,6 +45,7 @@ class WebExperiment(db.Document):
     last_update = db.DateTimeField(default=datetime.utcnow, required=True)
     description = db.StringField()
 
+    script = db.StringField()
     script_name = db.StringField()
     script_fullpath = db.StringField()
     path = db.StringField()

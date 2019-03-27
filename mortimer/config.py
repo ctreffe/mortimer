@@ -21,3 +21,4 @@ class Config:
     DROPZONE_UPLOAD_BTN_ID = 'upload'
 
     PAROLE = os.environ.get("PAROLE")
+    EXP_PER_PAGE = 10

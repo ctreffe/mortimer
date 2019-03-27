@@ -3,6 +3,7 @@ from flask import Blueprint, render_template, url_for, flash, redirect, abort, s
 from mortimer.forms import ExperimentExportForm, LocalExperimentForm
 from mortimer.models import User, LocalExperiment
 from mortimer import alfred_local_db
+from mortimer.config import Config
 from flask_login import current_user, login_required
 from datetime import datetime
 
@@ -91,7 +92,7 @@ def user_experiments(username):
 
     experiments = LocalExperiment.objects(author=user.username)\
         .order_by("-date_created")\
-        .paginate(page=page, per_page=5)
+        .paginate(page=page, per_page=Config.EXP_PER_PAGE)
 
     return render_template("user_local_experiments.html", experiments=experiments, user=user)
 
@@ -133,7 +134,8 @@ def local_export(username, experiment_title):
             cur = alfred_local_db.find({"expAuthorMail": current_user.email, "expName": experiment_title, "expVersion": {"$in": form.version.data}})
 
         none_value = None
-        if form.replace_none.data:
+        # if form.replace_none.data:
+        if form.none_value.data:
             none_value = form.none_value.data
 
         if form.file_type.data == 'json':

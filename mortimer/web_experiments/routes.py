@@ -6,9 +6,11 @@ from mortimer.forms import WebExperimentForm, UpdateExperimentForm, NewScriptFor
 from mortimer.models import User, WebExperiment
 from mortimer.utils import display_directory, filter_directories, extract_version, extract_title
 from mortimer import alfred_web_db
+from mortimer.config import Config
 from flask_login import current_user, login_required
 from werkzeug.utils import secure_filename
 from datetime import datetime
+from uuid import uuid4
 
 web_experiments = Blueprint("web_experiments", __name__)
 
@@ -31,7 +33,8 @@ def new_experiment():
         # double-check for unique experiments with users
         user_experiments_titles = []
         for id in current_user.experiments:
-            user_experiments_titles.append(WebExperiment.objects.get(id=id).title)
+            if WebExperiment.objects(id=id):
+                user_experiments_titles.append(WebExperiment.objects.get(id=id).title)
 
         if experiment.title in user_experiments_titles:
             flash("Action aborted: An experiment with this title is already associated with your account. The data was not saved.", "danger")
@@ -46,11 +49,14 @@ def new_experiment():
 
         if form.script.data:
             script_file = form.script.data
-            script_name = str(experiment.id) + ".py"
+            script_name = str(uuid4()) + ".py"
             path = os.path.join(experiment.path, script_name)
             script_file.save(path)
             experiment.script_name = script_name
             experiment.script_fullpath = path
+
+            with open(experiment.script_fullpath, "r") as f:
+                experiment.script = f.read()
 
             try:
                 experiment.version = extract_version(experiment.script_fullpath)
@@ -59,10 +65,16 @@ def new_experiment():
                 if title != experiment.title:
                     flash(f"The experiment name in the script ({title}) and in mortimer ({experiment.title}) should be the same. Otherwise you will not be able to download your data. You can change the experiment title in mortimer at any time.", "warning")
                 experiment.save()
-                return redirect(url_for('main.home'))
+                return redirect(url_for('web_experiments.user_experiments', username=current_user.username))
             except Exception as e:
                 flash(f"Error: {e}", "danger")
                 return redirect(url_for('web_experiments.new_experiment'))
+
+        if form.password.data:
+            experiment.public = False
+            experiment.password = form.password.data
+        else:
+            experiment.public = True
 
         # saves the experiment to the data base
         experiment.save()
@@ -146,23 +158,16 @@ def experiment(username, experiment_title):
         if experiment.script_name:
             os.rename(experiment.script_fullpath, os.path.join(experiment.path, "old_script"))
         script_file = form.script.data
-        script_name = str(experiment.id) + ".py"
-        path = os.path.join(experiment.path, script_name)
-        script_file.save(path)
-        experiment.script_name = script_name
-        experiment.script_fullpath = path
+        script_file.save(experiment.script_fullpath)
         experiment.last_update = datetime.utcnow
+
+        with open(experiment.script_fullpath, "r") as f:
+            form.script.data = f.read()
 
         try:
             os.remove(os.path.join(experiment.path, "old_script"))
         except FileNotFoundError:
             pass
-
-        if form.password.data:
-            experiment.public = False
-            experiment.password = form.password.data
-        else:
-            experiment.public = True
 
         try:
             old_version = experiment.version
@@ -212,21 +217,22 @@ def update_experiment(username, experiment_title):
         if form.title.data:
 
             if form.title.data != experiment.title:
-                print("\n\n---------------")
-                print(form.title.data)
-                print(experiment.title)
                 if WebExperiment.objects(title=form.title.data, author=username):
                     flash("You already have a web experiment with this title. Please choose a unique title. The changes were not saved.", "danger")
                     return redirect(url_for('web_experiments.experiment', experiment_title=experiment.title, username=experiment.author))
                 else:
                     experiment.title = form.title.data
-        if form.description.data:
-            experiment.description = form.description.data
+        experiment.description = form.description.data
         if form.password.data:
             experiment.public = False
             experiment.password = form.password.data
         else:
             experiment.public = True
+
+        if form.script.data != experiment.script:
+            experiment.script = form.script.data
+            with open(experiment.script_fullpath, "w") as f:
+                f.write(form.script.data)
 
         # experiment.versions.append(ExperimentVersion(version=form.version.data))
         # experiment.script = form.script.data
@@ -238,6 +244,7 @@ def update_experiment(username, experiment_title):
     form.title.data = experiment.title
     form.description.data = experiment.description
     form.password.data = experiment.password
+    form.script.data = experiment.script
 
     return render_template("update_experiment.html", title="Update Experiment",
                            experiment=experiment, form=form, legend="Update Experiment")
@@ -336,7 +343,7 @@ def user_experiments(username):
 
     experiments = WebExperiment.objects(author=user.username)\
         .order_by("-date_created")\
-        .paginate(page=page, per_page=5)
+        .paginate(page=page, per_page=Config.EXP_PER_PAGE)
 
     return render_template("user_experiments.html", experiments=experiments, user=user)
 
@@ -469,7 +476,8 @@ def web_export(username, experiment_title):
 
         none_value = None
 
-        if form.replace_none.data:
+        # if form.replace_none.data:
+        if form.none_value.data:
             none_value = form.none_value.data
 
         if form.file_type.data == 'json':
