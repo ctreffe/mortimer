@@ -115,7 +115,7 @@ def local_export(username, experiment_title):
     # form.version.choices = [(version, version) for version in experiment.available_versions]
 
     if form.validate_on_submit():
-        if form.version.data == "all versions":
+        if "all versions" in form.version.data:
             results = alfred_local_db.count_documents({"expAuthorMail": current_user.email, "expName": experiment_title})
             if results == 0:
                 flash("No data found for this experiment.", "warning")
@@ -123,12 +123,14 @@ def local_export(username, experiment_title):
 
             cur = alfred_local_db.find({"expAuthorMail": current_user.email, "expName": experiment_title})
         else:
-            results = alfred_local_db.count_documents({"expAuthorMail": current_user.email, "expName": experiment_title, "expVersion": form.version.data})
-            if results == 0:
+            for version in form.version.data:
+                results = []
+            results.append(alfred_local_db.count_documents({"expAuthorMail": current_user.email, "expName": experiment_title, "expVersion": form.version.data}))
+            if max(results) == 0:
                 flash("No data found for this experiment.", "warning")
                 return redirect(url_for('web_experiments.web_export', username=experiment.author, experiment_title=experiment.title))
 
-            cur = alfred_local_db.find({"expAuthorMail": current_user.email, "expName": experiment_title, "expVersion": form.version.data})
+            cur = alfred_local_db.find({"expAuthorMail": current_user.email, "expName": experiment_title, "expVersion": {"$in": form.version.data}})
 
         none_value = None
         if form.replace_none.data:

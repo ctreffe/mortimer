@@ -1,7 +1,7 @@
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileField, FileAllowed
 from flask_login import current_user
-from wtforms import StringField, SubmitField, BooleanField, PasswordField, TextAreaField, SelectField
+from wtforms import StringField, SubmitField, BooleanField, PasswordField, TextAreaField, SelectField, SelectMultipleField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from mortimer.models import User, WebExperiment, LocalExperiment
 import re
@@ -159,7 +159,7 @@ class ResetPasswordForm(FlaskForm):
 class ExperimentExportForm(FlaskForm):
 
     file_type = SelectField('File Type', choices=[(x, x) for x in ['csv', 'excel_csv', 'json', 'excel']])
-    version = SelectField('Version')
+    version = SelectMultipleField('Version')
     replace_none = BooleanField('Replace none values\nnot for json')
     none_value = StringField('None value replacement')
 

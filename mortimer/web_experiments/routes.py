@@ -73,7 +73,7 @@ def new_experiment():
 
         flash("Your Experiment has been created.", "success")
 
-        return redirect(url_for('main.home'))
+        return redirect(url_for('web_experiments.user_experiments', username=current_user.username))
 
     return render_template("create_experiment.html", title="New Experiment", form=form,
                            legend="New Experiment")
@@ -259,7 +259,7 @@ def delete_experiment(username, experiment_title):
     experiment.delete()
     flash("Experiment deleted.", "info")
 
-    return redirect(url_for('main.home'))
+    return redirect(url_for('web_experiments.user_experiments', username=current_user.username))
 
 
 @web_experiments.route("/<username>/<experiment_title>/upload_resources/<path:relative_path>", methods=["POST", "GET"])
@@ -450,7 +450,7 @@ def web_export(username, experiment_title):
     form.file_type.choices = [("csv", "csv")]
 
     if form.validate_on_submit():
-        if form.version.data == "all versions":
+        if "all versions" in form.version.data:
             results = alfred_web_db.count_documents({"expAuthorMail": current_user.email, "expName": experiment_title})
             if results == 0:
                 flash("No data found for this experiment.", "warning")
@@ -458,12 +458,14 @@ def web_export(username, experiment_title):
 
             cur = alfred_web_db.find({"expAuthorMail": current_user.email, "expName": experiment_title})
         else:
-            results = alfred_web_db.count_documents({"expAuthorMail": current_user.email, "expName": experiment_title, "expVersion": form.version.data})
-            if results == 0:
+            for version in form.version.data:
+                results = []
+                results.append(alfred_web_db.count_documents({"expAuthorMail": current_user.email, "expName": experiment_title, "expVersion": version}))
+            if max(results) == 0:
                 flash("No data found for this experiment.", "warning")
                 return redirect(url_for('web_experiments.web_export', username=experiment.author, experiment_title=experiment.title))
 
-            cur = alfred_web_db.find({"expAuthorMail": current_user.email, "expName": experiment_title, "expVersion": form.version.data})
+            cur = alfred_web_db.find({"expAuthorMail": current_user.email, "expName": experiment_title, "expVersion": {"$in": form.version.data}})
 
         none_value = None
 
