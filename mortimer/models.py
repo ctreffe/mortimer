@@ -13,6 +13,7 @@ def load_user(user_id):
 class User(db.Document, UserMixin):
     username = db.StringField(required=True, unique=True, max_length=20)
     email = db.EmailField(required=True, unique=True)
+    role = db.StringField(required=True, default="user")
     password = db.StringField(required=True)
     experiments = db.ListField(db.ObjectIdField())
 
