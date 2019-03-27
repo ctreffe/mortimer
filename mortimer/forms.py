@@ -4,6 +4,7 @@ from flask_login import current_user
 from wtforms import StringField, SubmitField, BooleanField, PasswordField, TextAreaField, SelectField, SelectMultipleField
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from mortimer.models import User, WebExperiment, LocalExperiment
+from mortimer.config import Config
 import re
 
 
@@ -27,7 +28,7 @@ class RegistrationForm(FlaskForm):
             raise ValidationError("That email is taken. Please choose a different one.")
 
     def validate_parole(self, parole):
-        if parole == "mortimer_entry_parole":
+        if parole != Config.PAROLE:
             raise ValidationError("Incorrect parole. You can write to alfred@psych.uni-goettingen.de to get the correct parole.")
 
     submit = SubmitField("Sign Up")

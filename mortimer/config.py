@@ -19,3 +19,5 @@ class Config:
     DROPZONE_MAX_FILES = 30
     DROPZONE_UPLOAD_ON_CLICK = True
     DROPZONE_UPLOAD_BTN_ID = 'upload'
+
+    PAROLE = os.environ.get("PAROLE")
