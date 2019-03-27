@@ -65,6 +65,7 @@ class UpdateAccountForm(FlaskForm):
 class WebExperimentForm(FlaskForm):
     title = StringField("Title", validators=[DataRequired()])
     description = TextAreaField("Description")
+    password = StringField("Password")
     script = FileField("script.py", validators=[FileAllowed(['py'])])
 
     def validate_title(self, title):
@@ -96,11 +97,16 @@ class LocalExperimentForm(FlaskForm):
 class UpdateExperimentForm(FlaskForm):
     title = StringField("Title")
     description = TextAreaField("Description")
+    password = StringField("Password")
 
-    def validate_title(self, title):
-        experiment = WebExperiment.objects(title__exact=title.data).first()
-        if experiment is not None:
-            raise ValidationError("An experiment with this title already exists. Please choose a unique title.")
+    # def validate_title(self, title):
+    #     experiment = WebExperiment.objects(title__exact=title.data, author__exact=current_user.username).first()
+    #     if experiment is not None:
+    #         raise ValidationError("You already have a web experiment with this title. Please choose a unique title.")
+
+    # def validate_enable_password(self, enable_password):
+    #     if enable_password and not self.password:
+    #         raise ValidationError("You need to specify a password.")
 
     submit = SubmitField("Update")
 

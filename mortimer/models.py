@@ -54,7 +54,7 @@ class WebExperiment(db.Document):
     public = db.BooleanField(default=True)
     password = db.StringField()
     web = db.BooleanField()
-    active = db.BooleanField(default=True)
+    active = db.BooleanField(default=False)
 
     def __repr__(self):
         return f"Experiment(Title: {self.title}, Version: {self.version}, Created: {self.date_created}, Author: {self.author})"

@@ -10,14 +10,7 @@
     </div>
     <legend class="border-bottom"><b>{{ experiment.title }}</b></legend>
 
-  <div class="row">
-    <div class="col-md-3"><small><b>Status</b></small>:</div>
-  {% if status == "active" %}
-      <div class="col-md-3"><span class="badge badge-success">{{ status }}</span></div>
-  {% else %}
-    <div class="col-md-3"><span class="badge badge-warning">{{ status }}</span></div>
-  {% endif %}
-    </div>
+  
     <div class="row">
       <div class="col-md-3"><small><b>Created in Mortimer</b></small>:</div><div class="col-md-3"><span class="badge badge-light">{{ experiment.date_created.strftime('%Y-%m-%d, %H:%M') }}</span></div>
     </div>
@@ -27,14 +20,21 @@
     <div class="row">
       <div class="col-md-3"><small><b>First Finished Dataset</b></small>:</div><div class="col-md-3"><span class="badge badge-light">{{ first_activity }}</span></div>
     </div>
-    <div class="row">
-      <div class="col-md-3"><small><b>Latest Version</b></small>:</div><div class="col-md-3"><span class="badge badge-dark">{{ experiment.version }}</span></div>
+    <div class="row pt-2">
+    <div class="col-md-3"><small><b>Status</b></small>:</div>
+  {% if status == "active" %}
+      <div class="col-md-3"><span class="badge badge-success">{{ status }}</span></div>
+  {% else %}
+    <div class="col-md-3"><span class="badge badge-warning">{{ status }}</span></div>
+  {% endif %}
     </div>
     <div class="row">
-      <div class="col-md-3"><small><b>Version History</b></small>:</div><div class="col-md-3">
-        {% for version in experiment.available_versions %}
-        <span class="badge badge-dark"> {{ version }}</span>
-        {% endfor %}
+      <div class="col-md-3"><small><b>script.py</b></small>:</div><div class="col-md-5">
+        {% if not experiment.script_fullpath %}
+        <span class="badge badge-warning">unavailable</span>
+        {% else %}
+        <span class="badge badge-success">available</span>
+        {% endif %}
       </div>
     </div>
     <div class="row">
@@ -51,6 +51,31 @@
       <div class="col-md-3"><small><b>script.py Title</b></small>:</div><div class="col-md-3"><span class="badge badge-light">{{ script_title }}</span></div>
     </div>
     {% endif %}
+    <div class="row">
+      <div class="col-md-3"><small><b>Passsword Protection</b></small>:</div><div class="col-md-5">
+        <span class="badge badge-primary">{{ password_protection }}</span>
+      </div>
+    </div>
+    {% if not experiment.public %}
+    <div class="row">
+      <div class="col-md-3"><small><b>Passsword</b></small>:</div><div class="col-md-5">
+        <span class="badge badge-light">{{ experiment.password }}</span>
+      </div>
+    </div>
+    {% endif %}
+    <div class="row pt-2">
+      <div class="col-md-3"><small><b>Latest Version</b></small>:</div><div class="col-md-3"><span class="badge badge-dark">{{ experiment.version }}</span></div>
+    </div>
+    <div class="row">
+      <div class="col-md-3"><small><b>Version History</b></small>:</div><div class="col-md-3">
+        {% for version in experiment.available_versions %}
+        <span class="badge badge-dark"> {{ version }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    
+    
+    
 
     <h6 class="border-bottom pt-4"><b>Description</b></h6>
 
@@ -75,7 +100,7 @@
         
         <a class="btn btn-secondary ml-1 mt-2 mb-2" href="{{ url_for('web_experiments.update_experiment', experiment_title=experiment.title, username=experiment.author) }}">Edit</a>
       
-        <button type="button" class="btn btn-danger ml-1 mt-2 mb-2" data-toggle="modal" data-target="#deleteModal">Delete</button>
+        <button type="button" class="btn btn-danger ml-1 mt-2 mb-2" data-toggle="modal" data-target="#deleteModal">Delete from Mortimer</button>
       
       </div>
 
@@ -192,7 +217,7 @@
         </button>
       </div>
       <div class="modal-body">
-        Are you sure that you want to delete this experiment? The data stored in Mortimer will be lost!
+        Are you sure that you want to delete this experiment? The data stored in Mortimer will be lost! <br><br>The experimental data in the Alfred database will <b>not</b> be deleted by this.
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>

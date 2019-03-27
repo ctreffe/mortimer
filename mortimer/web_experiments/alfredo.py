@@ -1,6 +1,7 @@
 import sys
 import importlib.util
 from flask import Blueprint, abort, request, session, url_for, redirect, make_response, flash, send_file
+from flask_login import current_user
 from threading import Lock
 from time import time
 from uuid import uuid4
@@ -95,10 +96,10 @@ def start(expid, experiment_title, username):
     if not experiment.active:
         abort(403)
 
-    if not experiment.public \
-            and experiment.password != request.form.get('password', None):
-        return '<h1>Please enter the password</h1><form method="post" action=".">'\
-            '<input type="password" name="password" /><button type="submit">Submit</button></form>'
+    if not experiment.public and experiment.password != request.form.get('password', None):
+        exp_url = url_for('alfredo.start', expid=str(experiment.id), experiment_title=experiment.title, username=current_user.username)
+        return f'''<div align="center"><h1>Please enter the password</h1><form method="post" action="{exp_url}">
+            <input type="password" name="password" /><button type="submit">Submit</button></form></div>'''
 
     sid = str(uuid4())
     session['sid'] = sid

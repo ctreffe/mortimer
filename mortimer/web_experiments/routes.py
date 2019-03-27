@@ -95,11 +95,20 @@ def experiment(username, experiment_title):
         status = "inactive"
         toggle_button = "Activate"
 
-    script_title = extract_title(experiment.script_fullpath)
-    if experiment.title != script_title:
-        title_unequal = True
+    if experiment.script_fullpath:
+        script_title = extract_title(experiment.script_fullpath)
+        if experiment.title != script_title:
+            title_unequal = True
+        else:
+            title_unequal = False
     else:
+        script_title = ""
         title_unequal = False
+
+    if experiment.public:
+        password_protection = "disabled"
+    else:
+        password_protection = "enabled"
 
     datasets = {}
 
@@ -135,7 +144,7 @@ def experiment(username, experiment_title):
 
     if form.validate_on_submit() and form.script.data:
         if experiment.script_name:
-            os.rename(experiment.script_fullpath, experiment.path + "old_script")
+            os.rename(experiment.script_fullpath, os.path.join(experiment.path, "old_script"))
         script_file = form.script.data
         script_name = str(experiment.id) + ".py"
         path = os.path.join(experiment.path, script_name)
@@ -143,7 +152,17 @@ def experiment(username, experiment_title):
         experiment.script_name = script_name
         experiment.script_fullpath = path
         experiment.last_update = datetime.utcnow
-        os.remove(experiment.path + "old_script")
+
+        try:
+            os.remove(os.path.join(experiment.path, "old_script"))
+        except FileNotFoundError:
+            pass
+
+        if form.password.data:
+            experiment.public = False
+            experiment.password = form.password.data
+        else:
+            experiment.public = True
 
         try:
             old_version = experiment.version
@@ -172,7 +191,9 @@ def experiment(username, experiment_title):
 
     return render_template("experiment.html",
                            experiment=experiment, expid=str(experiment.id), form=form, status=status, toggle_button=toggle_button,
-                           datasets=datasets, title_unequal=title_unequal, script_title=script_title, first_activity=first_activity, last_activity=last_activity, versions=versions)
+                           datasets=datasets, title_unequal=title_unequal, script_title=script_title,
+                           first_activity=first_activity, last_activity=last_activity, versions=versions,
+                           password_protection=password_protection)
 
 
 @web_experiments.route("/<username>/<experiment_title>/update", methods=["GET", "POST"])
@@ -187,10 +208,25 @@ def update_experiment(username, experiment_title):
     form = UpdateExperimentForm()
 
     if form.validate_on_submit():
+
         if form.title.data:
-            experiment.title = form.title.data
+
+            if form.title.data != experiment.title:
+                print("\n\n---------------")
+                print(form.title.data)
+                print(experiment.title)
+                if WebExperiment.objects(title=form.title.data, author=username):
+                    flash("You already have a web experiment with this title. Please choose a unique title. The changes were not saved.", "danger")
+                    return redirect(url_for('web_experiments.experiment', experiment_title=experiment.title, username=experiment.author))
+                else:
+                    experiment.title = form.title.data
         if form.description.data:
             experiment.description = form.description.data
+        if form.password.data:
+            experiment.public = False
+            experiment.password = form.password.data
+        else:
+            experiment.public = True
 
         # experiment.versions.append(ExperimentVersion(version=form.version.data))
         # experiment.script = form.script.data
@@ -201,6 +237,7 @@ def update_experiment(username, experiment_title):
 
     form.title.data = experiment.title
     form.description.data = experiment.description
+    form.password.data = experiment.password
 
     return render_template("update_experiment.html", title="Update Experiment",
                            experiment=experiment, form=form, legend="Update Experiment")
@@ -468,6 +505,9 @@ def de_activate_experiment(username, experiment_title):
         abort(403)
 
     if not experiment.active:
+        if not experiment.script_fullpath:
+            flash("You need to upload a script.py before you can activate your experiment.", "warning")
+            return redirect(url_for('web_experiments.experiment', username=current_user.username, experiment_title=experiment.title))
         experiment.active = True
         experiment.save()
         flash("Experiment activated.", "success")
