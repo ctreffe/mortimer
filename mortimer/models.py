@@ -50,6 +50,7 @@ class WebExperiment(db.Document):
     script_name = db.StringField()
     script_fullpath = db.StringField()
     path = db.StringField()
+    directory_name = db.StringField()
     user_directories = db.ListField(db.StringField())
     config = db.StringField()
 

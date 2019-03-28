@@ -71,9 +71,6 @@ class WebExperimentForm(FlaskForm):
     script = FileField("script.py", validators=[FileAllowed(['py'])])
 
     def validate_title(self, title):
-        secure_title = secure_filename(title.data)
-        if title.data != secure_title:
-            raise ValidationError(f"Titles with slashes or spaces can cause problems. Suggestion: {secure_title}.")
 
         experiment = WebExperiment.objects(title__exact=title.data, author__exact=current_user.username).first()
         if experiment is not None:
@@ -104,11 +101,6 @@ class UpdateExperimentForm(FlaskForm):
     description = TextAreaField("Description")
     password = StringField("Password")
     script = TextAreaField("Script")
-
-    def validate_title(self, title):
-        secure_title = secure_filename(title.data)
-        if title.data != secure_title:
-            raise ValidationError(f"Titles with slashes or spaces can cause problems. Suggestion: {secure_title}.")
 
     submit = SubmitField("Update")
 

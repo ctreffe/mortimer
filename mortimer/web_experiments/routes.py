@@ -23,12 +23,12 @@ def new_experiment():
 
     if form.validate_on_submit():
 
-        experiment = WebExperiment(title=secure_filename(form.title.data), author=current_user.username,
+        experiment = WebExperiment(title=form.title.data, author=current_user.username,
                                    description=form.description.data)
 
+        experiment.directory_name = str(uuid4())
         experiment.path = os.path.join(current_app.root_path,
-                                       "experiments",
-                                       current_user.username, experiment.title)
+                                       "experiments", experiment.directory_name)
 
         # double-check for unique experiments with users
         user_experiments_titles = []
@@ -96,7 +96,7 @@ def new_experiment():
                            legend="New Experiment")
 
 
-@web_experiments.route("/<username>/<experiment_title>", methods=["POST", "GET"])
+@web_experiments.route("/<username>/<path:experiment_title>", methods=["POST", "GET"])
 @login_required
 def experiment(username, experiment_title):
 
@@ -221,7 +221,7 @@ def experiment(username, experiment_title):
                            password_protection=password_protection, author_mail=author_mail)
 
 
-@web_experiments.route("/<username>/<experiment_title>/update", methods=["GET", "POST"])
+@web_experiments.route("/<username>/<path:experiment_title>/update", methods=["GET", "POST"])
 @login_required
 def update_experiment(username, experiment_title):
 
@@ -241,12 +241,14 @@ def update_experiment(username, experiment_title):
                     flash("You already have a web experiment with this title. Please choose a unique title. The changes were not saved.", "danger")
                     return redirect(url_for('web_experiments.experiment', experiment_title=experiment.title, username=experiment.author))
                 else:
-                    experiment.title = secure_filename(form.title.data)
+                    experiment.title = form.title.data
+                    new_directory_name = str(uuid4())
                     new_path = os.path.join(current_app.root_path,
                                             "experiments",
-                                            current_user.username, experiment.title)
+                                            new_directory_name)
                     os.rename(experiment.path, new_path)
                     experiment.path = new_path
+                    experiment.directory_name = new_directory_name
                     if experiment.script_name:
                         experiment.script_fullpath = os.path.join(experiment.path, experiment.script_name)
         experiment.description = form.description.data
@@ -279,7 +281,7 @@ def update_experiment(username, experiment_title):
                            experiment=experiment, form=form, legend="Update Experiment")
 
 
-@web_experiments.route("/<username>/<experiment_title>/delete", methods=["POST", "GET"])  # only allow POST requests
+@web_experiments.route("/<username>/<path:experiment_title>/delete", methods=["POST", "GET"])  # only allow POST requests
 @login_required
 def delete_experiment(username, experiment_title):
 
@@ -298,7 +300,7 @@ def delete_experiment(username, experiment_title):
     return redirect(url_for('web_experiments.user_experiments', username=current_user.username))
 
 
-@web_experiments.route("/<username>/<experiment_title>/upload_resources/<path:relative_path>", methods=["POST", "GET"])
+@web_experiments.route("/<username>/<path:experiment_title>/upload_resources/<path:relative_path>", methods=["POST", "GET"])
 @login_required
 def upload_resources(username, experiment_title, relative_path):
     experiment = WebExperiment.objects.get_or_404(title=experiment_title, author=username)
@@ -329,7 +331,7 @@ def upload_resources(username, experiment_title, relative_path):
     return render_template("upload_resources.html", experiment=experiment, legend="Upload Resources", relative_path=relative_path)
 
 
-@web_experiments.route("/<username>/<experiment_title>/manage_resources", methods=["POST", "GET"])
+@web_experiments.route("/<username>/<path:experiment_title>/manage_resources", methods=["POST", "GET"])
 @login_required
 def manage_resources(username, experiment_title):
     experiment = WebExperiment.objects.get_or_404(title=experiment_title, author=username)
@@ -377,7 +379,7 @@ def user_experiments(username):
     return render_template("user_experiments.html", experiments=experiments, user=user)
 
 
-@web_experiments.route("/<username>/<experiment_title>/delete_all_files", methods=["POST"])  # only allow POST requests
+@web_experiments.route("/<username>/<path:experiment_title>/delete_all_files", methods=["POST"])  # only allow POST requests
 @login_required
 def delete_all_files(username, experiment_title):
 
@@ -397,8 +399,8 @@ def delete_all_files(username, experiment_title):
     return redirect(url_for('web_experiments.manage_resources', experiment_title=experiment.title, username=experiment.author))
 
 
-@web_experiments.route("/<username>/<experiment_title>/new_directory", methods=["POST"], defaults={"relative_path": None})
-@web_experiments.route("/<username>/<experiment_title>/<path:relative_path>/new_directory", methods=["POST"])
+@web_experiments.route("/<username>/<path:experiment_title>/new_directory", methods=["POST"], defaults={"relative_path": None})
+@web_experiments.route("/<username>/<path:experiment_title>/<path:relative_path>/new_directory", methods=["POST"])
 @login_required
 def new_directory(username: str, experiment_title: str, relative_path: str=None):
     """
@@ -435,7 +437,7 @@ def new_directory(username: str, experiment_title: str, relative_path: str=None)
     return redirect(url_for('web_experiments.manage_resources', experiment_title=experiment.title, username=experiment.author))
 
 
-@web_experiments.route("/<username>/<experiment_title>/<path:relative_path>/delete_directory", methods=["POST"])
+@web_experiments.route("/<username>/<path:experiment_title>/<path:relative_path>/delete_directory", methods=["POST"])
 @login_required
 def delete_directory(username, experiment_title, relative_path):
     experiment = WebExperiment.objects.get_or_404(title=experiment_title, author=username)
@@ -454,7 +456,7 @@ def delete_directory(username, experiment_title, relative_path):
     return redirect(url_for('web_experiments.manage_resources', experiment_title=experiment.title, username=experiment.author))
 
 
-@web_experiments.route("/<username>/<experiment_title>/<path:relative_path>/delete_file", methods=["POST"])
+@web_experiments.route("/<username>/<path:experiment_title>/<path:relative_path>/delete_file", methods=["POST"])
 @login_required
 def delete_file(username, experiment_title, relative_path):
     experiment = WebExperiment.objects.get_or_404(title=experiment_title, author=username)
@@ -468,7 +470,7 @@ def delete_file(username, experiment_title, relative_path):
     return redirect(url_for('web_experiments.manage_resources', experiment_title=experiment.title, username=experiment.author))
 
 
-@web_experiments.route("/<username>/<experiment_title>/web_export", methods=["POST", "GET"])
+@web_experiments.route("/<username>/<path:experiment_title>/web_export", methods=["POST", "GET"])
 @login_required
 def web_export(username, experiment_title):
     experiment = WebExperiment.objects.get_or_404(title=experiment_title, author=username)
@@ -537,7 +539,7 @@ def web_export(username, experiment_title):
     return render_template("web_export.html", form=form, experiment=experiment, legend="Download data", type="web")
 
 
-@web_experiments.route("/de_activate/<username>/<experiment_title>", methods=["POST"])
+@web_experiments.route("/de_activate/<username>/<path:experiment_title>", methods=["POST"])
 @login_required
 def de_activate_experiment(username, experiment_title):
     experiment = WebExperiment.objects.get_or_404(title=experiment_title, author=username)
