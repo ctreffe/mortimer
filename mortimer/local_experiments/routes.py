@@ -28,7 +28,7 @@ def new_local_experiment():
     return render_template("create_local_experiment.html", form=form, legend="New Local Experiment")
 
 
-@local_experiments.route("/<username>/local/<experiment_title>", methods=["POST", "GET"])
+@local_experiments.route("/<username>/local/<path:experiment_title>", methods=["POST", "GET"])
 @login_required
 def local_experiment(username, experiment_title):
 
@@ -97,7 +97,7 @@ def user_experiments(username):
     return render_template("user_local_experiments.html", experiments=experiments, user=user)
 
 
-@local_experiments.route("/<username>/<experiment_title>/local_export", methods=["POST", "GET"])
+@local_experiments.route("/<username>/<path:experiment_title>/local_export", methods=["POST", "GET"])
 @login_required
 def local_export(username, experiment_title):
     experiment = LocalExperiment.objects.get_or_404(title=experiment_title, author=username)
@@ -166,7 +166,7 @@ def local_export(username, experiment_title):
     return render_template("web_export.html", form=form, experiment=experiment, legend="Download data")
 
 
-@local_experiments.route("/<username>/<experiment_title>/delete", methods=["POST", "GET"])  # only allow POST requests
+@local_experiments.route("/<username>/<path:experiment_title>/delete", methods=["POST", "GET"])  # only allow POST requests
 @login_required
 def delete_experiment(username, experiment_title):
 
