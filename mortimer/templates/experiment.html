@@ -132,12 +132,12 @@
       {% if experiment.active == True %}
 
       <div class="input-group mb-3">
-      <input type="text" class="form-control" aria-describedby="basic-addon2" id="link-to-exp" value="{{ url_for('alfredo.start', expid=expid, experiment_title=experiment.title, username=experiment.author, _external=True) }}">
+      <input type="text" class="form-control" aria-describedby="basic-addon2" id="link-to-exp" value="{{ url_for('alfredo.start', expid=expid, _external=True) }}">
       <div class="input-group-append">
         <button class="btn btn-outline-secondary" type="button" data-clipboard-target="#link-to-exp">
           <img src="../static/clippy.svg" alt="Copy to clipboard" width="20"> Copy Link
         </button>
-        <a class="btn btn-success" target="_blank" rel="noopener noreferrer" href="{{ url_for('alfredo.start', expid=expid, experiment_title=experiment.title, username=experiment.author) }}">Start</a>
+        <a class="btn btn-success" target="_blank" rel="noopener noreferrer" href="{{ url_for('alfredo.start', expid=expid) }}">Start</a>
       </div>
     </div>
 

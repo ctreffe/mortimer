@@ -7,6 +7,7 @@ from time import time
 from uuid import uuid4
 from mortimer.models import WebExperiment
 from mortimer.utils import extract_author_mail
+from bson.objectid import ObjectId
 import re
 import os
 
@@ -86,9 +87,9 @@ def index():
     return "Welcome to Alfredo :-)"
 
 
-@alfredo.route('/start/<expid>/<username>/<experiment_title>', methods=['GET', 'POST'])
-def start(expid, experiment_title, username):
-    experiment = WebExperiment.objects.get_or_404(title=experiment_title, author=username)
+@alfredo.route('/start/<expid>', methods=['GET', 'POST'])
+def start(expid):
+    experiment = WebExperiment.objects.get_or_404(id=ObjectId(expid))
 
     if not experiment.script_name:
         flash("You need to add a script.py file, before you can start an experiment.", "warning")
@@ -98,7 +99,7 @@ def start(expid, experiment_title, username):
         abort(403)
 
     if not experiment.public and experiment.password != request.form.get('password', None):
-        exp_url = url_for('alfredo.start', expid=str(experiment.id), experiment_title=experiment.title, username=current_user.username)
+        exp_url = url_for('alfredo.start', expid=str(experiment.id))
         return f'''<div align="center"><h1>Please enter the password</h1><form method="post" action="{exp_url}">
             <input type="password" name="password" /><button type="submit">Submit</button></form></div>'''
 
