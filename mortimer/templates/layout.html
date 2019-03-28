@@ -60,8 +60,13 @@
           <h3>Navigation</h3>
           <p class='text-muted'>What would you like to do?
             <ul class="list-group">
+              {% if current_user.is_authenticated %}
               <li class="list-group-item list-group-item-light"><a class="nav-link p-0" href="{{ url_for('web_experiments.user_experiments', username=current_user.username) }}">Web Experiments</a></li>
               <li class="list-group-item list-group-item-light"><a class="nav-link p-0" href="{{ url_for('local_experiments.user_experiments', username=current_user.username) }}">Local Experiments</a></li>
+              {% else %}
+              <li class="list-group-item list-group-item-light"><a class="nav-link p-0" href="{{ url_for('web_experiments.experiments') }}">Web Experiments</a></li>
+              <li class="list-group-item list-group-item-light"><a class="nav-link p-0" href="{{ url_for('local_experiments.experiments') }}">Local Experiments</a></li>
+              {% endif %}
             </ul>
           </p>
         </div>
