@@ -127,6 +127,11 @@ def experiment(username, experiment_title):
     else:
         password_protection = "enabled"
 
+    if experiment.script_name:
+        author_mail = extract_author_mail(experiment.script_fullpath)
+    else:
+        author_mail = "(no script.py)"
+
     datasets = {}
 
     datasets["all_datasets"] = alfred_web_db.count_documents({"expAuthorMail": current_user.email, "expName": experiment_title})
@@ -213,7 +218,7 @@ def experiment(username, experiment_title):
                            experiment=experiment, expid=str(experiment.id), form=form, status=status, toggle_button=toggle_button,
                            datasets=datasets, title_unequal=title_unequal, script_title=script_title,
                            first_activity=first_activity, last_activity=last_activity, versions=versions,
-                           password_protection=password_protection)
+                           password_protection=password_protection, author_mail=author_mail)
 
 
 @web_experiments.route("/<username>/<experiment_title>/update", methods=["GET", "POST"])

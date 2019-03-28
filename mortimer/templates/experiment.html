@@ -51,6 +51,22 @@
       <div class="col-md-3"><small><b>script.py Title</b></small>:</div><div class="col-md-3"><span class="badge badge-light">{{ script_title }}</span></div>
     </div>
     {% endif %}
+    {% if experiment.script_name %}
+    <div class="row">
+      <div class="col-md-3"><small><b>Author Conflict</b></small>:</div><div class="col-md-5">
+        {% if author_mail != current_user.email %}
+        <span class="badge badge-warning">Different authors in mortimer and script.py. Please change!</span>
+        {% else %}
+        <span class="badge badge-success">All good!</span>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+    {% if experiment.script_name and author_mail != current_user.email %}
+    <div class="row">
+      <div class="col-md-3"><small><b>Authors</b></small>:</div><div class="col-md-7"><small>Script: </small><span class="badge badge-light">{{ author_mail }}</span><small>, Mortimer: </small><span class="badge badge-light">{{ current_user.email }}</span></div>
+    </div>
+    {% endif %}
     <div class="row">
       <div class="col-md-3"><small><b>Passsword Protection</b></small>:</div><div class="col-md-5">
         <span class="badge badge-primary">{{ password_protection }}</span>
