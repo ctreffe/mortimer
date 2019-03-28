@@ -236,7 +236,7 @@ def update_experiment(username, experiment_title):
                     flash("You already have a web experiment with this title. Please choose a unique title. The changes were not saved.", "danger")
                     return redirect(url_for('web_experiments.experiment', experiment_title=experiment.title, username=experiment.author))
                 else:
-                    experiment.title = form.title.data
+                    experiment.title = secure_filename(form.title.data)
                     new_path = os.path.join(current_app.root_path,
                                             "experiments",
                                             current_user.username, experiment.title)
