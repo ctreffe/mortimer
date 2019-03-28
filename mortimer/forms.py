@@ -105,6 +105,11 @@ class UpdateExperimentForm(FlaskForm):
     password = StringField("Password")
     script = TextAreaField("Script")
 
+    def validate_title(self, title):
+        secure_title = secure_filename(title.data)
+        if title.data != secure_title:
+            raise ValidationError(f"Titles with slashes or spaces can cause problems. Suggestion: {secure_title}.")
+
     submit = SubmitField("Update")
 
 
