@@ -37,7 +37,7 @@ def create_app(config_class=Config):
     app.register_blueprint(users)
     app.register_blueprint(web_experiments)
     app.register_blueprint(main)
-    app.register_blueprint(alfredo, url_prefix='/alfredo')
+    app.register_blueprint(alfredo)
     app.register_blueprint(local_experiments, url_prefix='/local')
 
     db.init_app(app)
