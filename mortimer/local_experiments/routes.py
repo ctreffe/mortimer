@@ -166,7 +166,7 @@ def local_export(username, experiment_title):
     return render_template("web_export.html", form=form, experiment=experiment, legend="Download data")
 
 
-@local_experiments.route("/<username>/<path:experiment_title>/delete", methods=["POST", "GET"])  # only allow POST requests
+@local_experiments.route("/<username>/<path:experiment_title>/delete", methods=["POST"])  # only allow POST requests
 @login_required
 def delete_experiment(username, experiment_title):
 
