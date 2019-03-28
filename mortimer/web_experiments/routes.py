@@ -54,6 +54,8 @@ def new_experiment():
             script_file.save(path)
             experiment.script_name = script_name
             experiment.script_fullpath = path
+            experiment.title_from_script = extract_title(experiment.script_fullpath)
+            experiment.author_mail_from_script = extract_author_mail(experiment.script_fullpath)
 
             with open(experiment.script_fullpath, "r") as f:
                 experiment.script = f.read()
@@ -113,7 +115,7 @@ def experiment(username, experiment_title):
         toggle_button = "Activate"
 
     if experiment.script_fullpath:
-        script_title = extract_title(experiment.script_fullpath)
+        script_title = experiment.title_from_script
         if experiment.title != script_title:
             title_unequal = True
         else:
@@ -128,7 +130,7 @@ def experiment(username, experiment_title):
         password_protection = "enabled"
 
     if experiment.script_name:
-        author_mail = extract_author_mail(experiment.script_fullpath)
+        author_mail = experiment.author_mail_from_script
     else:
         author_mail = "(no script.py)"
 
@@ -190,6 +192,9 @@ def experiment(username, experiment_title):
             if experiment.version not in experiment.available_versions:
                 experiment.available_versions.append(experiment.version)
 
+            experiment.title_from_script = extract_title(experiment.script_fullpath)
+            experiment.author_mail_from_script = extract_author_mail(experiment.script_fullpath)
+
             experiment.save()
 
             flash("New script.py was uploaded successfully", "success")
@@ -199,14 +204,12 @@ def experiment(username, experiment_title):
             else:
                 flash("Version number did not change. If that was intended, no need to worry. If you made changes that affect the data structure (e.g. adding a new page), you might want to change the version number.", "danger")
 
-            title = extract_title(experiment.script_fullpath)
-            if title != experiment_title:
-                flash(f"The experiment name in the script ({title}) and in mortimer ({experiment.title}) should be the same. Otherwise you will not be able to download your data. You can change the experiment title in mortimer at any time.", "warning")
+            if experiment.title_from_script != experiment_title:
+                flash(f"The experiment name in the script ({experiment.title_from_script}) and in mortimer ({experiment.title}) should be the same. Otherwise you will not be able to download your data. You can change the experiment title in mortimer at any time.", "warning")
 
-            author_mail = extract_author_mail(experiment.script_fullpath)
-            if not author_mail:
+            if not experiment.author_mail_from_script:
                 flash("You need to add a field 'exp_author_mail' to your script.py next to expName and expVersion. Make sure to also reference this variable in the generate_experiment() method of your Script class.", "warning")
-            if author_mail != current_user.email:
+            if experiment.author_mail_from_script != current_user.email:
                 flash("The exp_author_mail in your script.py needs to be the same email adress that you used to register in mortimer. Otherwise you will not be able to export your data", "danger")
 
             return redirect(url_for('web_experiments.experiment', username=experiment.author, experiment_title=experiment.title))
@@ -242,15 +245,6 @@ def update_experiment(username, experiment_title):
                     return redirect(url_for('web_experiments.experiment', experiment_title=experiment.title, username=experiment.author))
                 else:
                     experiment.title = form.title.data
-                    new_directory_name = str(uuid4())
-                    new_path = os.path.join(current_app.root_path,
-                                            "experiments",
-                                            new_directory_name)
-                    os.rename(experiment.path, new_path)
-                    experiment.path = new_path
-                    experiment.directory_name = new_directory_name
-                    if experiment.script_name:
-                        experiment.script_fullpath = os.path.join(experiment.path, experiment.script_name)
         experiment.description = form.description.data
         if form.password.data:
             experiment.public = False
@@ -258,7 +252,7 @@ def update_experiment(username, experiment_title):
         else:
             experiment.public = True
 
-        if experiment.script_name and form.script.data != experiment.script:
+        if experiment.script_name and (form.script.data != experiment.script):
             experiment.script = form.script.data
             with open(experiment.script_fullpath, "w") as f:
                 f.write(form.script.data)
@@ -551,8 +545,8 @@ def de_activate_experiment(username, experiment_title):
         if not experiment.script_fullpath:
             flash("You need to upload a script.py before you can activate your experiment.", "warning")
             return redirect(url_for('web_experiments.experiment', username=current_user.username, experiment_title=experiment.title))
-        if extract_author_mail(experiment.script_fullpath) != current_user.email:
-            flash("The exp_author_mail in your script.py needs to be the same email adress that you used to register in mortimer. Otherwise you will not be able to export your data", "danger")
+        if experiment.title != experiment.title_from_script or current_user.email != experiment.author_mail_from_script:
+            flash("Your experiment title and the author mail need to be the same in Mortimer and in your script.py", "danger")
             return redirect(url_for('web_experiments.experiment', username=current_user.username, experiment_title=experiment.title))
         experiment.active = True
         experiment.save()
