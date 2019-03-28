@@ -38,7 +38,7 @@ def create_app(config_class=Config):
     app.register_blueprint(web_experiments)
     app.register_blueprint(main)
     app.register_blueprint(alfredo)
-    app.register_blueprint(local_experiments, url_prefix='/local')
+    app.register_blueprint(local_experiments)
 
     db.init_app(app)
     bcrypt.init_app(app)

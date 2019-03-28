@@ -70,7 +70,7 @@ def local_experiment(username, experiment_title):
                            versions=versions)
 
 
-@local_experiments.route("/experiments")
+@local_experiments.route("/local/experiments")
 def experiments():
 
     if current_user.is_authenticated:
@@ -80,7 +80,7 @@ def experiments():
         return redirect(url_for("users.login"))
 
 
-@local_experiments.route("/<string:username>/experiments")
+@local_experiments.route("/local/<string:username>/experiments")
 @login_required
 def user_experiments(username):
 
@@ -166,7 +166,7 @@ def local_export(username, experiment_title):
     return render_template("web_export.html", form=form, experiment=experiment, legend="Download data")
 
 
-@local_experiments.route("/<username>/<path:experiment_title>/delete", methods=["POST"])  # only allow POST requests
+@local_experiments.route("/local/<username>/<path:experiment_title>/delete", methods=["POST"])  # only allow POST requests
 @login_required
 def delete_experiment(username, experiment_title):
 
