@@ -296,3 +296,17 @@ def extract_title(filename):
                 name.append(m.group("name"))
 
     return name[0]
+
+
+def extract_author_mail(filename):
+    p = re.compile(r"(exp_author_mail|expAuthorMail) *= *[\"\'](?P<author_mail>.*)[\"\']")
+
+    name = []
+
+    with open(filename, "r") as f:
+        for line in f.readlines():
+            m = p.search(line)
+            if m is not None:
+                name.append(m.group("author_mail"))
+
+    return name[0]

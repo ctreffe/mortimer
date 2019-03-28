@@ -6,6 +6,7 @@ from threading import Lock
 from time import time
 from uuid import uuid4
 from mortimer.models import WebExperiment
+from mortimer.utils import extract_author_mail
 import re
 import os
 

@@ -4,7 +4,7 @@ from mortimer import export
 from flask import Blueprint, render_template, url_for, flash, redirect, request, abort, current_app, send_file
 from mortimer.forms import WebExperimentForm, UpdateExperimentForm, NewScriptForm, ExperimentExportForm
 from mortimer.models import User, WebExperiment
-from mortimer.utils import display_directory, filter_directories, extract_version, extract_title
+from mortimer.utils import display_directory, filter_directories, extract_version, extract_title, extract_author_mail
 from mortimer import alfred_web_db
 from mortimer.config import Config
 from flask_login import current_user, login_required
@@ -64,6 +64,11 @@ def new_experiment():
                 title = extract_title(experiment.script_fullpath)
                 if title != experiment.title:
                     flash(f"The experiment name in the script ({title}) and in mortimer ({experiment.title}) should be the same. Otherwise you will not be able to download your data. You can change the experiment title in mortimer and the script when you click on Edit.", "warning")
+                author_mail = extract_author_mail(experiment.script_fullpath)
+                if not author_mail:
+                    flash("You need to add a field 'exp_author_mail' to your script.py next to expName and expVersion. Make sure to also reference this variable in the generate_experiment() method of your Script class.", "warning")
+                if author_mail != current_user.email:
+                    flash("The exp_author_mail in your script.py needs to be the same email adress that you used to register in mortimer. Otherwise you will not be able to export your data", "danger")
                 experiment.save()
                 return redirect(url_for('web_experiments.experiment', experiment_title=experiment.title, username=current_user.username))
             except Exception as e:
@@ -162,7 +167,7 @@ def experiment(username, experiment_title):
         experiment.last_update = datetime.utcnow
 
         with open(experiment.script_fullpath, "r") as f:
-            form.script.data = f.read()
+            experiment.script = f.read()
 
         try:
             os.remove(os.path.join(experiment.path, "old_script"))
@@ -188,6 +193,12 @@ def experiment(username, experiment_title):
             title = extract_title(experiment.script_fullpath)
             if title != experiment_title:
                 flash(f"The experiment name in the script ({title}) and in mortimer ({experiment.title}) should be the same. Otherwise you will not be able to download your data. You can change the experiment title in mortimer at any time.", "warning")
+
+            author_mail = extract_author_mail(experiment.script_fullpath)
+            if not author_mail:
+                flash("You need to add a field 'exp_author_mail' to your script.py next to expName and expVersion. Make sure to also reference this variable in the generate_experiment() method of your Script class.", "warning")
+            if author_mail != current_user.email:
+                flash("The exp_author_mail in your script.py needs to be the same email adress that you used to register in mortimer. Otherwise you will not be able to export your data", "danger")
 
             return redirect(url_for('web_experiments.experiment', username=experiment.author, experiment_title=experiment.title))
         except Exception as e:
@@ -521,6 +532,9 @@ def de_activate_experiment(username, experiment_title):
     if not experiment.active:
         if not experiment.script_fullpath:
             flash("You need to upload a script.py before you can activate your experiment.", "warning")
+            return redirect(url_for('web_experiments.experiment', username=current_user.username, experiment_title=experiment.title))
+        if extract_author_mail(experiment.script_fullpath) != current_user.email:
+            flash("The exp_author_mail in your script.py needs to be the same email adress that you used to register in mortimer. Otherwise you will not be able to export your data", "danger")
             return redirect(url_for('web_experiments.experiment', username=current_user.username, experiment_title=experiment.title))
         experiment.active = True
         experiment.save()
