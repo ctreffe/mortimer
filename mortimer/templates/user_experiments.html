@@ -13,10 +13,9 @@
         <article class="media content-section">
           <div class="media-body">
             <div class="article-metadata">
-              <a class="mr-2" href="#">{{ experiment.author }}</a>
               <small class="text-muted">{{ experiment.date_created.strftime('%Y-%m-%d') }}</small>
             </div>
-            <h2><a class="article-title" href="{{ url_for('web_experiments.experiment', experiment_title=experiment.title, username=experiment.author) }}">{{ experiment.title }}</a><button type="button" class="btn btn-danger btn-sm ml-3 mt-1 float-right" data-toggle="modal" data-target="#deleteModal{{ experiment.title }}">Delete from Mortimer</button></h2>
+            <h3><a class="article-title" href="{{ url_for('web_experiments.experiment', experiment_title=experiment.title, username=experiment.author) }}">{{ experiment.title }}</a><button type="button" class="btn btn-danger btn-sm ml-3 mt-1 float-right" data-toggle="modal" data-target="#deleteModal{{ experiment.title }}">Delete from Mortimer</button></h3>
             <!-- <p class="article-content">{{ experiment.script }}</p> -->
           </div>
         </article>
