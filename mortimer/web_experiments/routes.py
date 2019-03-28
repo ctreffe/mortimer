@@ -162,7 +162,11 @@ def experiment(username, experiment_title):
     if form.validate_on_submit() and form.script.data:
         if experiment.script_name:
             os.rename(experiment.script_fullpath, os.path.join(experiment.path, "old_script"))
+        else:
+            experiment.script_name = str(uuid4()) + ".py"
+            experiment.script_fullpath = os.path.join(experiment.path, experiment.script_name)
         script_file = form.script.data
+
         script_file.save(experiment.script_fullpath)
         experiment.last_update = datetime.utcnow
 
@@ -233,6 +237,13 @@ def update_experiment(username, experiment_title):
                     return redirect(url_for('web_experiments.experiment', experiment_title=experiment.title, username=experiment.author))
                 else:
                     experiment.title = form.title.data
+                    new_path = os.path.join(current_app.root_path,
+                                            "experiments",
+                                            current_user.username, experiment.title)
+                    os.rename(experiment.path, new_path)
+                    experiment.path = new_path
+                    if experiment.script_name:
+                        experiment.script_fullpath = os.path.join(experiment.path, experiment.script_name)
         experiment.description = form.description.data
         if form.password.data:
             experiment.public = False
@@ -240,7 +251,7 @@ def update_experiment(username, experiment_title):
         else:
             experiment.public = True
 
-        if form.script.data != experiment.script:
+        if experiment.script_name and form.script.data != experiment.script:
             experiment.script = form.script.data
             with open(experiment.script_fullpath, "w") as f:
                 f.write(form.script.data)
