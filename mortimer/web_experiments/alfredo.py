@@ -133,43 +133,38 @@ def experiment():
     except KeyError:
         abort(412)
         return
-
     script = experiment_manager.get(sid)
 
-    if request.method == "POST":
+    move = request.values.get('move', None)
+    directjump = request.values.get('directjump', None)
+    par = request.values.get('par', None)
 
-        move = request.values.get('move', None)
-        directjump = request.values.get('directjump', None)
-        par = request.values.get('par', None)
+    kwargs = request.values.to_dict()
+    kwargs.pop('move', None)
+    kwargs.pop('directjump', None)
+    kwargs.pop('par', None)
 
-        kwargs = request.values.to_dict()
-        kwargs.pop('move', None)
-        kwargs.pop('directjump', None)
-        kwargs.pop('par', None)
+    script.experiment.userInterfaceController.updateWithUserInput(kwargs)
+    if move is None and directjump is None and par is None and kwargs == {}:
+        pass
+    elif directjump and par:
+        posList = list(map(int, par.split('.')))
+        script.experiment.userInterfaceController.moveToPosition(posList)
+    elif move == 'started':
+        pass
+    elif move == 'forward':
+        script.experiment.userInterfaceController.moveForward()
+    elif move == 'backward':
+        script.experiment.userInterfaceController.moveBackward()
+    elif move == 'jump' and par and re.match(r'^\d+(\.\d+)*$', par):
+        posList = list(map(int, par.split('.')))
+        script.experiment.userInterfaceController.moveToPosition(posList)
+    else:
+        abort(400)
 
-        script.experiment.userInterfaceController.updateWithUserInput(kwargs)
-        if move is None and directjump is None and par is None and kwargs == {}:
-            pass
-        elif directjump and par:
-            posList = list(map(int, par.split('.')))
-            script.experiment.userInterfaceController.moveToPosition(posList)
-        elif move == 'started':
-            pass
-        elif move == 'forward':
-            script.experiment.userInterfaceController.moveForward()
-        elif move == 'backward':
-            script.experiment.userInterfaceController.moveBackward()
-        elif move == 'jump' and par and re.match(r'^\d+(\.\d+)*$', par):
-            posList = list(map(int, par.split('.')))
-            script.experiment.userInterfaceController.moveToPosition(posList)
-        else:
-            abort(400)
-        return redirect(url_for('alfredo.experiment'))
-
-    elif request.method == "GET":
-        resp = make_response(script.experiment.userInterfaceController.render())
-        resp.cache_control.no_cache = True
-        return resp
+    resp = make_response(script.experiment.userInterfaceController.render())
+    resp.cache_control.no_cache = True
+    return resp
 
 
 @alfredo.route('/staticfile/<identifier>')
