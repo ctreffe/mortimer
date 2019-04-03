@@ -256,6 +256,8 @@ def update_experiment(username, experiment_title):
             experiment.script = form.script.data
             with open(experiment.script_fullpath, "w") as f:
                 f.write(form.script.data)
+            experiment.title_from_script = extract_title(experiment.script_fullpath)
+            experiment.author_mail_from_script = extract_author_mail(experiment.script_fullpath)
             if experiment.version == extract_version(experiment.script_fullpath):
                 flash("You changed the script.py, but did not change the version number. If that was intended, no need to worry. If you made changes that affect the data structure (e.g. adding a new page), you might want to change the version number.", "danger")
 
