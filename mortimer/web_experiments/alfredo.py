@@ -142,7 +142,11 @@ def experiment():
         par = request.values.get('par', None)
         page_token = request.values.get('page_token', None)
 
-        if page_token in session['page_tokens']:
+        try:
+            token_list = session['page_tokens']
+            token_list.remove(page_token)
+            session['page_tokens'] = token_list
+        except ValueError:
             return redirect(url_for('alfredo.experiment'))
 
         kwargs = request.values.to_dict()
@@ -171,7 +175,11 @@ def experiment():
 
     elif request.method == "GET":
         page_token = str(uuid4())
-        session['page_tokens'].append(page_token)
+
+        token_list = session['page_tokens']
+        token_list.append(page_token)
+        session['page_tokens'] = token_list
+
         resp = make_response(script.experiment.user_interface_controller.render(page_token))
         resp.cache_control.no_cache = True
         return resp
