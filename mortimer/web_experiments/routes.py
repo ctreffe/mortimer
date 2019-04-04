@@ -68,7 +68,7 @@ def new_experiment():
                     flash(f"The experiment name in the script ({title}) and in mortimer ({experiment.title}) should be the same. Otherwise you will not be able to download your data. You can change the experiment title in mortimer and the script when you click on Edit.", "warning")
                 author_mail = extract_author_mail(experiment.script_fullpath)
                 if not author_mail:
-                    flash("You need to add a field 'exp_author_mail' to your script.py next to expName and expVersion. Make sure to also reference this variable in the generate_experiment() method of your Script class.", "warning")
+                    flash("You need to add a field 'exp_author_mail' to your script.py next to exp_name and exp_version. Make sure to also reference this variable in the generate_experiment() method of your Script class.", "warning")
                 if author_mail != current_user.email:
                     flash("The exp_author_mail in your script.py needs to be the same email adress that you used to register in mortimer. Otherwise you will not be able to export your data", "danger")
                 experiment.save()
@@ -136,11 +136,11 @@ def experiment(username, experiment_title):
 
     datasets = {}
 
-    datasets["all_datasets"] = alfred_web_db.count_documents({"expAuthorMail": current_user.email, "expName": experiment_title})
-    datasets["all_finished_datasets"] = alfred_web_db.count_documents({"expAuthorMail": current_user.email, "expName": experiment_title, "expFinished": True})
+    datasets["all_datasets"] = alfred_web_db.count_documents({"exp_author_mail": current_user.email, "exp_name": experiment_title})
+    datasets["all_finished_datasets"] = alfred_web_db.count_documents({"exp_author_mail": current_user.email, "exp_name": experiment_title, "expFinished": True})
     datasets["all_unfinished_datasets"] = datasets["all_datasets"] - datasets["all_finished_datasets"]
-    datasets["datasets_current_version"] = alfred_web_db.count_documents({"expAuthorMail": current_user.email, "expName": experiment_title, "expVersion": experiment.version})
-    datasets["finished_datasets_current_version"] = alfred_web_db.count_documents({"expAuthorMail": current_user.email, "expName": experiment_title, "expVersion": experiment.version, "expFinished": True})
+    datasets["datasets_current_version"] = alfred_web_db.count_documents({"exp_author_mail": current_user.email, "exp_name": experiment_title, "exp_version": experiment.version})
+    datasets["finished_datasets_current_version"] = alfred_web_db.count_documents({"exp_author_mail": current_user.email, "exp_name": experiment_title, "expVersion": experiment.version, "expFinished": True})
     datasets["unfinished_datasets_current_version"] = datasets["datasets_current_version"] - datasets["finished_datasets_current_version"]
 
     versions = {}
