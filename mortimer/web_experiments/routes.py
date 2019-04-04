@@ -396,7 +396,7 @@ def delete_all_files(username, experiment_title):
 
 
 @web_experiments.route("/<username>/<path:experiment_title>/new_directory", methods=["POST"], defaults={"relative_path": None})
-@web_experiments.route("/<username>/<path:experiment_title>/<path:relative_path>/new_directory", methods=["POST"])
+@web_experiments.route("/<username>/<path:experiment_title>/new_directory/<path:relative_path>", methods=["POST"])
 @login_required
 def new_directory(username: str, experiment_title: str, relative_path: str=None):
     """
