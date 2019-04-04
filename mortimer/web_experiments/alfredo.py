@@ -1,12 +1,10 @@
 import sys
 import importlib.util
 from flask import Blueprint, abort, request, session, url_for, redirect, make_response, flash, send_file
-from flask_login import current_user
 from threading import Lock
 from time import time
 from uuid import uuid4
 from mortimer.models import WebExperiment
-from mortimer.utils import extract_author_mail
 from bson.objectid import ObjectId
 import re
 import os
@@ -105,6 +103,7 @@ def start(expid):
 
     sid = str(uuid4())
     session['sid'] = sid
+    session['page_tokens'] = []
 
     os.chdir(experiment.path)
     # create experiment
@@ -141,33 +140,39 @@ def experiment():
         move = request.values.get('move', None)
         directjump = request.values.get('directjump', None)
         par = request.values.get('par', None)
+        page_token = request.values.get('page_token', None)
+
+        if page_token in session['page_tokens']:
+            return redirect(url_for('alfredo.experiment'))
 
         kwargs = request.values.to_dict()
         kwargs.pop('move', None)
         kwargs.pop('directjump', None)
         kwargs.pop('par', None)
 
-        script.experiment.userInterfaceController.updateWithUserInput(kwargs)
+        script.experiment.user_interface_controller.update_with_user_input(kwargs)
         if move is None and directjump is None and par is None and kwargs == {}:
             pass
         elif directjump and par:
             posList = list(map(int, par.split('.')))
-            script.experiment.userInterfaceController.moveToPosition(posList)
+            script.experiment.user_interface_controller.move_to_position(posList)
         elif move == 'started':
             pass
         elif move == 'forward':
-            script.experiment.userInterfaceController.moveForward()
+            script.experiment.user_interface_controller.move_forward()
         elif move == 'backward':
-            script.experiment.userInterfaceController.moveBackward()
+            script.experiment.user_interface_controller.move_backward()
         elif move == 'jump' and par and re.match(r'^\d+(\.\d+)*$', par):
             posList = list(map(int, par.split('.')))
-            script.experiment.userInterfaceController.moveToPosition(posList)
+            script.experiment.user_interface_controller.move_to_position(posList)
         else:
             abort(400)
         return redirect(url_for('alfredo.experiment'))
 
     elif request.method == "GET":
-        resp = make_response(script.experiment.userInterfaceController.render())
+        page_token = str(uuid4())
+        session['page_tokens'].append(page_token)
+        resp = make_response(script.experiment.user_interface_controller.render(page_token))
         resp.cache_control.no_cache = True
         return resp
 
@@ -177,11 +182,8 @@ def staticfile(identifier):
     try:
         sid = session['sid']
         script = experiment_manager.get(sid)
-        path, content_type = script.experiment.userInterfaceController.getStaticFile(identifier)
+        path, content_type = script.experiment.user_interface_controller.get_static_file(identifier)
 
-        print("\nSTATICFILE STUFF--------------")
-        print(path)
-        print(content_type)
     except KeyError:
         abort(404)
     resp = make_response(send_file(path, mimetype=content_type))
