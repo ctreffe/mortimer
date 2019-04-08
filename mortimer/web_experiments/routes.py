@@ -107,6 +107,8 @@ def experiment(username, experiment_title):
     if experiment.author != current_user.username:
         abort(403)
 
+    # Set some status indicators
+
     if experiment.active:
         status = "active"
         toggle_button = "Deactivate"
@@ -134,6 +136,8 @@ def experiment(username, experiment_title):
     else:
         author_mail = "(no script.py)"
 
+    # Query Database: Number of datasets
+
     datasets = {}
 
     datasets["all_datasets"] = alfred_web_db\
@@ -160,6 +164,7 @@ def experiment(username, experiment_title):
 
     datasets["unfinished_datasets_current_version"] = datasets["datasets_current_version"] - datasets["finished_datasets_current_version"]
 
+    # Number of finished datasets per version
     versions = {}
     finished = []
     cur = alfred_web_db.find({"expAuthorMail": current_user.email, "expName": experiment_title})
@@ -174,6 +179,7 @@ def experiment(username, experiment_title):
             versions[exp["expVersion"]]["unfinished"] += 1
         finished.append(exp["start_time"])
 
+    # Time of first and last activity
     if finished:
         first_activity = datetime.fromtimestamp(min(finished))\
             .strftime('%Y-%m-%d, %H:%M')
@@ -182,6 +188,8 @@ def experiment(username, experiment_title):
     else:
         first_activity = "none"
         last_activity = "none"
+
+    # Form for script.py upload
 
     form = NewScriptForm()
 
@@ -233,7 +241,7 @@ def experiment(username, experiment_title):
 
             return redirect(url_for('web_experiments.experiment', username=experiment.author, experiment_title=experiment.title))
         except Exception as e:
-            flash(f"Error: {e}", "danger")
+            flash(f"Error: {e}. This error most likely means that your script.py is not compatible with Alfred 3.", "danger")
             return redirect(url_for('web_experiments.experiment', username=experiment.author, experiment_title=experiment.title))
 
     return render_template("experiment.html",
