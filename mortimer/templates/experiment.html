@@ -147,7 +147,7 @@
       <input type="text" class="form-control" aria-describedby="basic-addon2" id="link-to-exp" placeholder="(inactive)">
       <div class="input-group-append">
         <button class="btn btn-outline-secondary" type="button" data-clipboard-target="#link-to-exp">
-          <img src="../static/clippy.svg" alt="Copy to clipboard" width="20"> Copy Link
+          <img src="{{ url_for('static', filename='clippy.svg')}}" alt="Copy to clipboard" width="20"> Copy Link
         </button>
         <a class="btn btn-success" href="#">Start</a>
       </div>
