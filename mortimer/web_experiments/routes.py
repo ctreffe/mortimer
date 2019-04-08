@@ -136,11 +136,28 @@ def experiment(username, experiment_title):
 
     datasets = {}
 
-    datasets["all_datasets"] = alfred_web_db.count_documents({"exp_author_mail": current_user.email, "exp_name": experiment_title})
-    datasets["all_finished_datasets"] = alfred_web_db.count_documents({"exp_author_mail": current_user.email, "exp_name": experiment_title, "expFinished": True})
+    datasets["all_datasets"] = alfred_web_db\
+        .count_documents({"exp_author_mail": current_user.email,
+                          "exp_name": experiment_title})
+
+    datasets["all_finished_datasets"] = alfred_web_db\
+        .count_documents({"exp_author_mail": current_user.email,
+                          "exp_name": experiment_title,
+                          "expFinished": True})
+
     datasets["all_unfinished_datasets"] = datasets["all_datasets"] - datasets["all_finished_datasets"]
-    datasets["datasets_current_version"] = alfred_web_db.count_documents({"exp_author_mail": current_user.email, "exp_name": experiment_title, "exp_version": experiment.version})
-    datasets["finished_datasets_current_version"] = alfred_web_db.count_documents({"exp_author_mail": current_user.email, "exp_name": experiment_title, "expVersion": experiment.version, "expFinished": True})
+
+    datasets["datasets_current_version"] = alfred_web_db\
+        .count_documents({"exp_author_mail": current_user.email,
+                          "exp_name": experiment_title,
+                          "exp_version": experiment.version})
+
+    datasets["finished_datasets_current_version"] = alfred_web_db\
+        .count_documents({"exp_author_mail": current_user.email,
+                          "exp_name": experiment_title,
+                          "expVersion": experiment.version,
+                          "expFinished": True})
+
     datasets["unfinished_datasets_current_version"] = datasets["datasets_current_version"] - datasets["finished_datasets_current_version"]
 
     versions = {}
@@ -158,8 +175,10 @@ def experiment(username, experiment_title):
         finished.append(exp["start_time"])
 
     if finished:
-        first_activity = datetime.fromtimestamp(min(finished)).strftime('%Y-%m-%d, %H:%M')
-        last_activity = datetime.fromtimestamp(max(finished)).strftime('%Y-%m-%d, %H:%M')
+        first_activity = datetime.fromtimestamp(min(finished))\
+            .strftime('%Y-%m-%d, %H:%M')
+        last_activity = datetime.fromtimestamp(max(finished))\
+            .strftime('%Y-%m-%d, %H:%M')
     else:
         first_activity = "none"
         last_activity = "none"
@@ -369,7 +388,7 @@ def user_experiments(username):
         abort(403)
 
     experiments = WebExperiment.objects(author=user.username)\
-        .order_by("-date_created")\
+        .order_by("-last_update")\
         .paginate(page=page, per_page=Config.EXP_PER_PAGE)
 
     return render_template("user_experiments.html", experiments=experiments, user=user)
