@@ -1,10 +1,12 @@
 import os
+import subprocess
+import json
+import re
 from flask import current_app
 from werkzeug.utils import secure_filename
 from mortimer import mail
 from flask_mail import Message
 from flask import url_for
-import re
 
 
 def save_file(file, path):
@@ -271,7 +273,7 @@ def filter_directories(experiment):
 
 
 def extract_version(filename):
-    p = re.compile(r"(exp_version|expVersion) *= *[\"\'](?P<version>.*)[\"\']")
+    p = re.compile(r"(exp_version|expVersion|EXP_VERSION) *= *[\"\'](?P<version>.*)[\"\']")
 
     version = []
 
@@ -285,7 +287,7 @@ def extract_version(filename):
 
 
 def extract_title(filename):
-    p = re.compile(r"(exp_name|expName) *= *[\"\'](?P<name>.*)[\"\']")
+    p = re.compile(r"(exp_name|expName|EXP_NAME) *= *[\"\'](?P<name>.*)[\"\']")
 
     name = []
 
@@ -299,7 +301,7 @@ def extract_title(filename):
 
 
 def extract_author_mail(filename):
-    p = re.compile(r"(exp_author_mail|expAuthorMail) *= *[\"\'](?P<author_mail>.*)[\"\']")
+    p = re.compile(r"(exp_author_mail|expAuthorMail|EXP_AUTHOR_MAIL) *= *[\"\'](?P<author_mail>.*)[\"\']")
 
     name = []
 
@@ -310,3 +312,58 @@ def extract_author_mail(filename):
                 name.append(m.group("author_mail"))
 
     return name[0]
+
+
+def futurize_script(file):
+    futurize = subprocess.run(['futurize', '-w', file], check=True, text=True)
+
+    return futurize
+
+
+def replace_all_patterns(file):
+
+    def load_json(file):
+        with open(file, "r") as json_file:
+            text = json_file.read().replace("\n", "")
+            json_data = json.loads(text)
+
+        return json_data
+
+    def replace_patterns(file, change_dict, write=False, max_iter=10):
+        with open(file, "r") as f:
+            code = []
+            iter = 0
+            for line in f.readlines():  # go through code line by line
+                for old_name, new_name in change_dict.items():  # for each line, go through all changes
+                    pattern = re.compile(r"\W?(?P<name>{pattern})\W?".format(pattern=old_name))
+                    m = pattern.search(line)
+
+                    # this while-loop handles multiple occurences of old_name per line
+                    # with max number of iterations for safety
+                    while m and iter <= max_iter:
+                        line = line[:m.start("name")] + new_name + line[m.end("name"):]
+                        m = pattern.search(line)
+                        iter += 1
+                        print(f"Old: {old_name}, New: {new_name}")
+                    if iter == max_iter:
+                        raise AssertionError(f"One line had at least {max_iter} replacements. Something seems to be wrong")
+                    iter = 0
+
+                code.append(line)
+        code = "".join(code)
+
+        if write:  # if parameter is true, we save the changes to the file
+            with open(file, "w") as f:
+                f.write(code)
+
+        return code
+
+    json_data = []
+    path = os.path.join(current_app.root_path, "static", "futurizing_alfred_scripts")
+    for pattern_file in os.listdir(path):
+        json_data.append(load_json(os.path.join(path, pattern_file)))
+
+    json_data.append(load_json(os.path.join(path, "custom_modifications.json")))
+
+    for dct in json_data:
+        replace_patterns(file, dct, write=True)

@@ -1,0 +1,60 @@
+{% extends "layout.html" %}
+
+{% block content %}
+    <div class="article content-section">
+    <form method="POST" action="" enctype="multipart/form-data" class="needs-validation" novalidate>
+        {{ form.hidden_tag() }}
+        <legend class="border-bottom"><b>Futurize script.py</b></legend>
+
+        Here, we allow you to upload and futurize old Alfred scripts. When you click "Futurize", your code will first be made compatible with Python 3. Afterwards, old function, class and parameter names will be updated (e.g. changing "QuestionGroup" to "Section").
+
+            <div class="form-group mt-3">
+                    {{ form.script(class="form-control-file") }}
+                    {% if form.script.errors %}
+                        {% for error in form.script.errors %}
+                            <span class="text-danger">{{ error }}</span><br>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+
+        <div class="form-group">
+              {{ form.submit(class="btn btn-primary", value="Futurize")}}
+          </div>  
+          
+      </form>
+
+</div>
+
+{% if script_name %}
+    <div class="article content-section">
+        <legend class="border-bottom"><b>Download updated script.py</b></legend>
+        Congratulations! You just futurized your script.py. To download, click here.
+
+        <form method="GET" action="{{ url_for('main.download_futurized_script', name=script_name) }}">
+          <input class="btn btn-primary mt-2 mb-2" type="submit" value="Download">
+        </form>
+    </div>
+{% endif %}
+
+{% endblock content %}
+
+<script>
+// Example starter JavaScript for disabling form submissions if there are invalid fields
+(function() {
+  'use strict';
+  window.addEventListener('load', function() {
+    // Fetch all the forms we want to apply custom Bootstrap validation styles to
+    var forms = document.getElementsByClassName('needs-validation');
+    // Loop over them and prevent submission
+    var validation = Array.prototype.filter.call(forms, function(form) {
+      form.addEventListener('submit', function(event) {
+        if (form.checkValidity() === false) {
+          event.preventDefault();
+          event.stopPropagation();
+        }
+        form.classList.add('was-validated');
+      }, false);
+    });
+  }, false);
+})();
+</script>
