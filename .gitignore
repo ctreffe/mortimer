@@ -11,3 +11,4 @@ experiments/
 alfred/
 archive/
 mortimer/web_experiments/change_names.py
+mortimer/static/CA_server_public.pem
