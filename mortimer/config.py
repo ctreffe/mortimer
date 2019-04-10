@@ -15,8 +15,8 @@ class Config:
 
     # Flask-Dropzone config:
     # DROPZONE_ALLOWED_FILE_TYPE = 'image',
-    DROPZONE_MAX_FILE_SIZE = 30
-    DROPZONE_MAX_FILES = 30
+    DROPZONE_MAX_FILE_SIZE = 300
+    DROPZONE_MAX_FILES = 100
     DROPZONE_UPLOAD_ON_CLICK = True
     DROPZONE_UPLOAD_BTN_ID = 'upload'
 
