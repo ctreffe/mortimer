@@ -12,3 +12,5 @@ alfred/
 archive/
 mortimer/web_experiments/change_names.py
 mortimer/static/CA_server_public.pem
+mortimer/static/mongodb_client_keypair.pem
+mortimer/static/mongodb_client_public.crt
