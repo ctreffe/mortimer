@@ -22,6 +22,11 @@ def about():
     return render_template("about.html")
 
 
+@main.route("/impressum")
+def impressum():
+    return render_template("impressum.html")
+
+
 @main.route("/futurize_script_online", methods=["POST", "GET"])
 @login_required
 def futurize_script_online(script_name=None):
