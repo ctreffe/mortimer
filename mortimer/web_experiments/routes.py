@@ -290,6 +290,7 @@ def update_experiment(username, experiment_title):
 
         # experiment.versions.append(ExperimentVersion(version=form.version.data))
         # experiment.script = form.script.data
+        experiment.last_update = datetime.utcnow
         experiment.save()
         flash("Your experiment has been updated", "success")
 
