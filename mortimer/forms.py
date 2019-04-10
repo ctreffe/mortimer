@@ -5,7 +5,6 @@ from wtforms import StringField, SubmitField, BooleanField, PasswordField, TextA
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from mortimer.models import User, WebExperiment, LocalExperiment
 from mortimer.config import Config
-from werkzeug.utils import secure_filename
 import re
 
 
