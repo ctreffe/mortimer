@@ -7,7 +7,7 @@ import csv
 import re
 import io
 
-
+# this is necessary, because send_file requires bytes-like objects
 def make_str_bytes(f):
     # Creating the byteIO object from the StringIO Object
     bytes_f = io.BytesIO()

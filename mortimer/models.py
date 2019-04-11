@@ -51,10 +51,10 @@ class WebExperiment(db.Document):
     script = db.StringField()
     script_name = db.StringField()
     script_fullpath = db.StringField()
-    path = db.StringField()
-    directory_name = db.StringField()
-    user_directories = db.ListField(db.StringField())
-    config = db.StringField()
+    path = db.StringField()     # full path to exp directory
+    directory_name = db.StringField()   # name of exp directory
+    user_directories = db.ListField(db.StringField())   # user-created directories
+    config = db.StringField()   # possibility to include config.conf
 
     public = db.BooleanField(default=True)
     password = db.StringField()

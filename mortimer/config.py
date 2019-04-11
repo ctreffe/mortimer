@@ -2,8 +2,11 @@ import os
 
 
 class Config:
+    # secret key of flask app (e.g. for encrypted session data)
     SECRET_KEY = os.environ.get("SECRET_KEY")
-    # MONGODB_HOST = os.environ.get("MONGODB_HOST")
+
+    # Mortimer database login settings
+    # MONGODB_HOST = os.environ.get("MONGODB_HOST")     # Could also just use URI string
     MONGODB_SETTINGS = {
         "host": "134.76.19.150",
         "port": 49130,
@@ -14,6 +17,8 @@ class Config:
         "ssl": True,
         "ssl_ca_certs": "/Users/jobrachem/Documents/_Diverses/tech_tests/pymongo_test/CA_server_public.pem"
     }
+
+    # Alfred database login settings
     MONGODB_ALFRED_HOST = "134.76.19.150"
     MONGODB_ALFRED_PORT = 49130
     MONGODB_ALFRED_USER = "jobrachem"
@@ -21,8 +26,8 @@ class Config:
     MONGODB_ALFRED_AUTHSOURCE = "admin"
     MONGODB_ALFRED_USE_SSL = True
     MONGODB_ALFRED_CA_CERTS = "/Users/jobrachem/Documents/_Diverses/tech_tests/pymongo_test/CA_server_public.pem"
-    # abt5.psych.bio.uni-goettinggen.de:49130
-    # MONGODB_DB = 'mortimer'
+
+    # Mail settings
     MAIL_SERVER = os.environ.get("MAIL_SERVER")
     MAIL_PORT = 587
     MAIL_USE_TLS = True
@@ -36,5 +41,6 @@ class Config:
     DROPZONE_UPLOAD_ON_CLICK = True
     DROPZONE_UPLOAD_BTN_ID = 'upload'
 
-    PAROLE = os.environ.get("PAROLE")
-    EXP_PER_PAGE = 10
+    # Mortimer settings
+    PAROLE = os.environ.get("PAROLE")       # Parole for registration
+    EXP_PER_PAGE = 10                       # number of experiments displayed per page
