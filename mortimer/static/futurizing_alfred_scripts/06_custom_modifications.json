@@ -3,8 +3,8 @@
     "disable_minimumDisplayTime": "disable_minimum_display_time",
     "get_formnatter": "getFormatter",
     "get_logger": "getLogger",
-    "question": "page",
     "question_controller": "page_controller",
+    "question": "page",
     "set_level": "setLevel",
     "pageGroup": "section"
 }
