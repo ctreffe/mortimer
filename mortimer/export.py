@@ -6,12 +6,11 @@ import json
 import csv
 import re
 import io
-from tempfile import TemporaryFile
 
 
 def make_str_bytes(f):
     # Creating the byteIO object from the StringIO Object
-    bytes_f = io.StringIO()
+    bytes_f = io.BytesIO()
     bytes_f.write(f.getvalue().encode('utf-8'))
     # seeking was necessary. Python 3.5.2, Flask 0.12.2
     bytes_f.seek(0)
@@ -106,7 +105,7 @@ class Header(object):
         for k, v in natural_sort(list(doc.items())):
             if k in ['_id', 'tag', 'uid']:
                 pass
-            elif k == 'subtreeData':
+            elif k == 'subtree_data':
                 for subDoc in v:
                     if subDoc == {}:
                         continue
@@ -118,8 +117,8 @@ class Header(object):
                             break
                     if not found:
                         self.children.append(Header(subDoc).setParent(self))
-            elif k == 'additionalData':
-                v['tag'] = 'additionalData'
+            elif k == 'additional_data':
+                v['tag'] = 'additional_data'
                 if self.additional_data is None:
                     self.additional_data = Header(v)
                 else:
@@ -149,7 +148,7 @@ class Header(object):
             rv.append(doc.get(header, None))
         for child in self.children:
             found = False
-            for subDoc in doc.get('subtreeData', []):
+            for subDoc in doc.get('subtree_data', []):
                 try:
                     if subDoc['tag'] == child.tag:
                         found = True
@@ -159,7 +158,7 @@ class Header(object):
                     raise Exception("break")
             rv = rv + child.getDataFromDoc(subDoc if found else {})
         if self.additional_data:
-            rv = rv + self.additional_data.getDataFromDoc(doc.get('additionalData', {}))
+            rv = rv + self.additional_data.getDataFromDoc(doc.get('additional_data', {}))
         return rv
 
     def getDataFromDocs(self, docs):

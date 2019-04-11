@@ -152,7 +152,7 @@ class ResetPasswordForm(FlaskForm):
 class ExperimentExportForm(FlaskForm):
 
     file_type = SelectField('File Type', choices=[(x, x) for x in ['csv', 'excel_csv', 'json', 'excel']])
-    version = SelectMultipleField('Version')
+    version = SelectMultipleField('Version', validators=[DataRequired()])
     # replace_none = BooleanField('Replace none values\nnot for json')
     replace_none_with_empty_string = BooleanField('Replace "None" values with empty string (recommended for R users).')
     none_value = StringField('Replace "None" values with custom string:')
