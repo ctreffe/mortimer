@@ -3,26 +3,13 @@ import subprocess
 import json
 import re
 from flask import current_app
-from werkzeug.utils import secure_filename
 from mortimer import mail
 from flask_mail import Message
 from flask import url_for
+from uuid import uuid4
 
 
-def save_file(file, path):
-    os.makedirs(os.path.dirname(path), exist_ok=True)
-    file.save(path)
-
-
-def create_filepath(file, experiment_title: str, subdirectory: str=""):
-    experiment_directory = experiment_title.replace(" ", "_")
-    file_fn = secure_filename(file.filename)
-    file_path = os.path.join(current_app.root_path, "experiments", experiment_directory, subdirectory, file_fn)
-
-    return {"filename": file_fn, "full_path": file_path}
-
-
-def send_reset_email(user):
+def send_reset_email(user: str):
     token = user.get_reset_token()
     msg = Message("Password Reset Request",
                   sender="mortimer.test1@gmail.com",
@@ -34,7 +21,7 @@ a request to reset your password was made for your email adress.
 To reset your password, visit the following link:
 {url_for('users.reset_password', token=token, _external=True)}
 
-If you did not make this request, then you can simply ignore this email and no changes will be made.
+If you did not make this request, you can simply ignore this email and no changes will be made.
 
 Kind regards,
 The Mortimer Team
@@ -42,10 +29,11 @@ The Mortimer Team
     mail.send(msg)
 
 
-def display_directory(directories: list, parent_directory: str, experiment, call_id: int=0) ->str:
+def display_directory(directories: list, parent_directory: str,
+                      experiment) ->str:
     """
-    This is a recursive function. The endpoint is reached if it is called on a list
-    that contains a single directory without subdirectories.
+    This is a recursive function. The endpoint is reached if it is called on
+    a list that contains a single directory without subdirectories.
 
     :param list directories: List of directories that shall be displayed.
 
@@ -58,7 +46,7 @@ def display_directory(directories: list, parent_directory: str, experiment, call
     case if two subdirectories in different top foldern have the same name.
     """
 
-    call_id += 1
+    call_id = str(uuid4())
 
     experiment_title = experiment.title
     experiment_author = experiment.author
@@ -73,7 +61,8 @@ def display_directory(directories: list, parent_directory: str, experiment, call
 
     # --- HELPER FUNCTIONS --- #
 
-    def display_files(file_list: list, path: str, experiment_title: str, experiment_author: str) ->str:
+    def display_files(file_list: list, path: str,
+                      experiment_title: str, experiment_author: str) ->str:
         """
         This function generates html code to display the files in a directory.
         :param list file_list: List of files in a directory.
@@ -83,7 +72,10 @@ def display_directory(directories: list, parent_directory: str, experiment, call
             if f == ".DS_Store":
                 continue
             filepath = os.path.join(path, f)
-            url = url_for('web_experiments.delete_file', experiment_title=experiment_title, username=experiment_author, relative_path=filepath)
+            url = url_for('web_experiments.delete_file',
+                          experiment_title=experiment_title,
+                          username=experiment_author,
+                          relative_path=filepath)
             display_one = f"""<div class=\"row m-1\">
             <div class="col-md-10 float-left">
              <span class=\"ml-2\">- {f}</span>
@@ -119,10 +111,28 @@ def display_directory(directories: list, parent_directory: str, experiment, call
             out.append(display_one)
         return "".join(out)
 
-    def display_directory_controls(directory: str, path: str, experiment_title: str, experiment_author: str, file_display: str, subdirectory_display: str, call_id: int=0) ->str:
-        upload_url = url_for('web_experiments.upload_resources', experiment_title=experiment_title, username=experiment_author, relative_path=path)
-        new_subdirectory_url = url_for('web_experiments.new_directory', experiment_title=experiment_title, username=experiment_author, relative_path=path)
-        delete_directory_url = url_for('web_experiments.delete_directory', experiment_title=experiment_title, username=experiment_author, relative_path=path)
+    def display_directory_controls(directory: str,
+                                   path: str,
+                                   experiment_title: str,
+                                   experiment_author: str,
+                                   file_display: str,
+                                   subdirectory_display: str) ->str:
+
+        call_id = str(uuid4())
+
+        upload_url = url_for('web_experiments.upload_resources',
+                             experiment_title=experiment_title,
+                             username=experiment_author,
+                             relative_path=path)
+        new_subdirectory_url = url_for(
+            'web_experiments.new_directory',
+            experiment_title=experiment_title,
+            username=experiment_author,
+            relative_path=path)
+        delete_directory_url = url_for('web_experiments.delete_directory',
+                                       experiment_title=experiment_title,
+                                       username=experiment_author,
+                                       relative_path=path)
 
         out = f"""<div>
                     <p>
@@ -135,7 +145,7 @@ def display_directory(directories: list, parent_directory: str, experiment, call
                         New Subdirectory
                         </button>
                         <a class=\"btn btn-outline-success btn-sm\" href=\"{upload_url}\">Upload Files</a>
-                        <button type="button" class="btn btn-outline-danger btn-sm mt-1 mb-1" data-toggle="modal" data-target="#deleteModal_{directory}">Delete Directory</button>
+                        <button type="button" class="btn btn-outline-danger btn-sm mt-1 mb-1" data-toggle="modal" data-target="#deleteModal_{directory}_{call_id}">Delete Directory</button>
                         </span>
                     </p>
 
@@ -157,11 +167,11 @@ def display_directory(directories: list, parent_directory: str, experiment, call
 
                 </div>
 
-                <div class="modal fade" id="deleteModal_{directory}" tabindex="-1" role="dialog" aria-labelledby="deleteModal_{directory}Label" aria-hidden="true">
+                <div class="modal fade" id="deleteModal_{directory}_{call_id}" tabindex="-1" role="dialog" aria-labelledby="deleteModal_{directory}Label_{call_id}" aria-hidden="true">
                   <div class="modal-dialog" role="document">
                     <div class="modal-content">
                       <div class="modal-header">
-                        <h5 class="modal-title" id="deleteModal_{directory}Label">Delete All Files</h5>
+                        <h5 class="modal-title" id="deleteModal_{directory}Label_{call_id}">Delete All Files</h5>
                         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                           <span aria-hidden="true">&times;</span>
                         </button>
@@ -186,13 +196,16 @@ def display_directory(directories: list, parent_directory: str, experiment, call
         return ""
 
     # --- LEN == 1 FUNCTION CALL --- #
-    # If the Input to the function is a single directory, the code below will be executed
+    # If the Input to the function is a single directory,
+    # the code below will be executed
     if len(directories) == 1:
 
-        path = os.path.join(relative_path, directories[0])  # Get directory path
+        # Get directory path
+        path = os.path.join(relative_path, directories[0])
         full_path = os.path.join(experiment.path, path)
 
-        # find out, which elements of directory are files and which are subdirectories
+        # find out, which elements of directory are files and
+        # which are subdirectories
         subdirectory_list = []
         file_list = []
 
@@ -204,16 +217,21 @@ def display_directory(directories: list, parent_directory: str, experiment, call
 
         # Create html code for file display
         if file_list:
-            single_files = display_files(file_list=file_list, path=path, experiment_title=experiment_title, experiment_author=experiment_author)
+            single_files = display_files(
+                file_list=file_list,
+                path=path,
+                experiment_title=experiment_title,
+                experiment_author=experiment_author)
         else:
             single_files = ""
 
-        # Create html code for display of subdirectories. The function is called again.
+        # Create html code for display of subdirectories.
+        # The function is called again.
         if subdirectory_list != []:
-            subdirectory_display = display_directory(directories=subdirectory_list,
-                                                     experiment=experiment,
-                                                     parent_directory=path,
-                                                     call_id=call_id)
+            subdirectory_display = display_directory(
+                directories=subdirectory_list,
+                experiment=experiment,
+                parent_directory=path)
         else:
             subdirectory_display = ""
 
@@ -225,20 +243,22 @@ def display_directory(directories: list, parent_directory: str, experiment, call
             div_open = ""
             div_close = ""
 
-        return div_open + display_directory_controls(directory=directories[0],
-                                                     path=path,
-                                                     experiment_title=experiment_title,
-                                                     experiment_author=experiment_author,
-                                                     file_display=single_files,
-                                                     subdirectory_display=subdirectory_display,
-                                                     call_id=call_id) + div_close
+        return div_open + display_directory_controls(
+            directory=directories[0],
+            path=path,
+            experiment_title=experiment_title,
+            experiment_author=experiment_author,
+            file_display=single_files,
+            subdirectory_display=subdirectory_display) + div_close
 
     # --- USUAL FUNCTION CALL --- #
-    # The code below will be executed, if the function was called on a list of multiple
-    # directories. First, the list is split into one list containing the first directory
+    # The code below will be executed, if the function was called
+    # on a list of multiple directories. First, the list is split
+    # into one list containing the first directory
     # and another list containing the remaining directories.
-    # The function is then called on both lists, resulting in a len(directories) == 1
-    # function-call for the first directory and another usual all for the remaining ones.
+    # The function is then called on both lists, resulting in a
+    # len(directories) == 1 function-call for the first directory
+    # and another usual all for the remaining ones.
 
     # Make sure that input is of correct type (list)
     input1 = [directories[0]]
@@ -248,32 +268,35 @@ def display_directory(directories: list, parent_directory: str, experiment, call
         input2 = [directories[1:]]
 
     # Function calls
-    display_first_directory = display_directory(directories=input1,
-                                                experiment=experiment,
-                                                parent_directory=parent_directory,
-                                                call_id=call_id)
-    display_other_directories = display_directory(directories=input2,
-                                                  experiment=experiment,
-                                                  parent_directory=parent_directory,
-                                                  call_id=call_id)
+    display_first_directory = display_directory(
+        directories=input1,
+        experiment=experiment,
+        parent_directory=parent_directory)
+    display_other_directories = display_directory(
+        directories=input2,
+        experiment=experiment,
+        parent_directory=parent_directory)
 
     # Return the full html code for display
     return "<br>".join([display_first_directory, display_other_directories])
 
 
 def filter_directories(experiment):
+    # return a list of
     dir_list = os.listdir(experiment.path)
     subdirectory_list = []
 
     for filename in sorted(dir_list):
-        if (os.path.isdir(os.path.join(experiment.path, filename)) and filename in experiment.user_directories):
+        if (os.path.isdir(os.path.join(experiment.path, filename)) and
+                filename in experiment.user_directories):
             subdirectory_list.append(filename)
 
     return subdirectory_list
 
 
 def extract_version(filename):
-    p = re.compile(r"(exp_version|expVersion|EXP_VERSION) *= *[\"\'](?P<version>.*)[\"\']")
+    p = re.compile(
+        r"(exp_version|expVersion|EXP_VERSION) *= *[\"\'](?P<version>.*)[\"\']")
 
     version = []
 
@@ -301,7 +324,8 @@ def extract_title(filename):
 
 
 def extract_author_mail(filename):
-    p = re.compile(r"(exp_author_mail|expAuthorMail|EXP_AUTHOR_MAIL) *= *[\"\'](?P<author_mail>.*)[\"\']")
+    p = re.compile(
+        r"(exp_author_mail|expAuthorMail|EXP_AUTHOR_MAIL) *= *[\"\'](?P<author_mail>.*)[\"\']")
 
     name = []
 
@@ -334,20 +358,24 @@ def replace_all_patterns(file):
             code = []
             iter = 0
             for line in f.readlines():  # go through code line by line
-                for old_name, new_name in change_dict.items():  # for each line, go through all changes
-                    pattern = re.compile(r"\W?(?P<name>{pattern})\W?".format(pattern=old_name))
+                # for each line, go through all changes
+                for old_name, new_name in change_dict.items():
+                    pattern = re.compile(
+                        r"\W?(?P<name>{pattern})\W?".format(pattern=old_name))
                     m = pattern.search(line)
 
-                    # this while-loop handles multiple occurences of old_name per line
+                    # while-loop for multiple occurences of old_name per line
                     # with max number of iterations for safety
                     while m and iter <= max_iter:
-                        line = line[:m.start("name")] + new_name + line[m.end("name"):]
+                        line = line[:m.start("name")] + \
+                            new_name + line[m.end("name"):]
                         m = pattern.search(line)
                         iter += 1
                         # print each old and new name
                         # print(f"Old: {old_name}, New: {new_name}")
                     if iter == max_iter:
-                        raise AssertionError(f"One line had at least {max_iter} replacements. Something seems to be wrong")
+                        raise AssertionError(
+                            f"One line had at least {max_iter} replacements. Something seems to be wrong")
                     iter = 0
 
                 code.append(line)
@@ -360,7 +388,8 @@ def replace_all_patterns(file):
         return code
 
     json_data = []
-    path = os.path.join(current_app.root_path, "static", "futurizing_alfred_scripts")
+    path = os.path.join(current_app.root_path, "static",
+                        "futurizing_alfred_scripts")
     for pattern_file in os.listdir(path):
         json_data.append(load_json(os.path.join(path, pattern_file)))
 
