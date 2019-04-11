@@ -33,6 +33,8 @@ def futurize_script_online(script_name=None):
 
     # clean up operation: delete file from the temp directory, if they are older than 15 minutes
     temp_path = os.path.join(current_app.root_path, "temp")
+    if not os.path.isdir(temp_path):
+        os.makedirs(temp_path)
     s_since_epoch = time.time()
 
     for file in os.listdir(temp_path):
