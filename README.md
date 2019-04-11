@@ -7,7 +7,7 @@ Mortimer is a free, open source app. It's purpose is to host and manage [Alfred]
 ### Prerequisites
 
 - Python 3.7 installed
-- Git installed (ideally)
+- Git installed
 - A [MongoDB](https://www.mongodb.com/de) instance with [authentication](https://docs.mongodb.com/manual/tutorial/enable-authentication/) and [SSL](https://docs.mongodb.com/manual/tutorial/configure-ssl/) enabled.
 
 ### Install
@@ -27,4 +27,7 @@ python3 -m venv /path/to/new/virtual/environment
 #### Download and install Alfred
 
 
+```
+python3 setup.py install --without-pyside
+```
 
