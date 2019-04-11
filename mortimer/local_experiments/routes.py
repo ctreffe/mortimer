@@ -39,22 +39,22 @@ def local_experiment(username, experiment_title):
 
     datasets = {}
 
-    datasets["all_datasets"] = alfred_local_db.count_documents({"expAuthorMail": current_user.email, "expName": experiment_title})
-    datasets["all_finished_datasets"] = alfred_local_db.count_documents({"expAuthorMail": current_user.email, "expName": experiment_title, "expFinished": True})
+    datasets["all_datasets"] = alfred_local_db.count_documents({"exp_author_mail": current_user.email, "exp_name": experiment_title})
+    datasets["all_finished_datasets"] = alfred_local_db.count_documents({"exp_author_mail": current_user.email, "exp_name": experiment_title, "exp_finished": True})
     datasets["all_unfinished_datasets"] = datasets["all_datasets"] - datasets["all_finished_datasets"]
 
     versions = {}
     created = []
-    cur = alfred_local_db.find({"expAuthorMail": current_user.email, "expName": experiment_title})
+    cur = alfred_local_db.find({"exp_author_mail": current_user.email, "exp_name": experiment_title})
     for exp in cur:
-        if exp["expVersion"] not in versions.keys():
-            versions[exp["expVersion"]] = {"total": 1, "finished": 0, "unfinished": 0}
+        if exp["exp_version"] not in versions.keys():
+            versions[exp["exp_version"]] = {"total": 1, "finished": 0, "unfinished": 0}
         else:
-            versions[exp["expVersion"]]["total"] += 1
-        if exp["expFinished"]:
-            versions[exp["expVersion"]]["finished"] += 1
+            versions[exp["exp_version"]]["total"] += 1
+        if exp["exp_finished"]:
+            versions[exp["exp_version"]]["finished"] += 1
         else:
-            versions[exp["expVersion"]]["unfinished"] += 1
+            versions[exp["exp_version"]]["unfinished"] += 1
         created.append(exp["start_time"])
 
     if created:
@@ -106,32 +106,32 @@ def local_export(username, experiment_title):
         abort(403)
 
     form = ExperimentExportForm()
-    cur = alfred_local_db.find({"expAuthorMail": current_user.email, "expName": experiment.title})
+    cur = alfred_local_db.find({"exp_author_mail": current_user.email, "exp_name": experiment.title})
 
     available_versions = ["all versions"]
     for exp in cur:
-        available_versions.append(exp["expVersion"])
+        available_versions.append(exp["exp_version"])
     form.version.choices = [(version, version) for version in available_versions]
     form.file_type.choices = [("csv", "csv")]
     # form.version.choices = [(version, version) for version in experiment.available_versions]
 
     if form.validate_on_submit():
         if "all versions" in form.version.data:
-            results = alfred_local_db.count_documents({"expAuthorMail": current_user.email, "expName": experiment_title})
+            results = alfred_local_db.count_documents({"exp_author_mail": current_user.email, "exp_name": experiment_title})
             if results == 0:
                 flash("No data found for this experiment.", "warning")
                 return redirect(url_for('web_experiments.web_export', username=experiment.author, experiment_title=experiment.title))
 
-            cur = alfred_local_db.find({"expAuthorMail": current_user.email, "expName": experiment_title})
+            cur = alfred_local_db.find({"exp_author_mail": current_user.email, "exp_name": experiment_title})
         else:
             for version in form.version.data:
                 results = []
-            results.append(alfred_local_db.count_documents({"expAuthorMail": current_user.email, "expName": experiment_title, "expVersion": form.version.data}))
+            results.append(alfred_local_db.count_documents({"exp_author_mail": current_user.email, "exp_name": experiment_title, "exp_version": form.version.data}))
             if max(results) == 0:
                 flash("No data found for this experiment.", "warning")
                 return redirect(url_for('web_experiments.web_export', username=experiment.author, experiment_title=experiment.title))
 
-            cur = alfred_local_db.find({"expAuthorMail": current_user.email, "expName": experiment_title, "expVersion": {"$in": form.version.data}})
+            cur = alfred_local_db.find({"exp_author_mail": current_user.email, "exp_name": experiment_title, "exp_version": {"$in": form.version.data}})
 
         none_value = None
         # if form.replace_none.data:
@@ -150,7 +150,7 @@ def local_export(username, experiment_title):
             bytes_f = export.make_str_bytes(f)
 
             return send_file(bytes_f, mimetype='text/csv',
-                             as_attachment=True, attachment_filename='export.csv', cache_timeout=1)
+                             as_attachment=True, attachment_filename=f'export_{experiment.title}_local.csv', cache_timeout=1)
         elif form.file_type.data == 'excel_csv':
             f = export.to_excel_csv(cur, none_value=none_value)
             bytes_f = export.make_str_bytes(f)
@@ -163,7 +163,7 @@ def local_export(username, experiment_title):
                              cache_timeout=1, as_attachment=True,
                              attachment_filename='export.xlsx')
 
-    return render_template("web_export.html", form=form, experiment=experiment, legend="Download data")
+    return render_template("web_export.html", form=form, experiment=experiment, legend="Export data")
 
 
 @local_experiments.route("/local/<username>/<path:experiment_title>/delete", methods=["POST"])  # only allow POST requests
