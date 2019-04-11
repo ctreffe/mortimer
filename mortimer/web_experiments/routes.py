@@ -178,7 +178,6 @@ def experiment(username, experiment_title):
 
     # Time of first and last activity
     if finished:
-        print(min(finished))
         first_activity = datetime.fromtimestamp(min(finished))\
             .strftime('%Y-%m-%d, %H:%M')
         last_activity = datetime.fromtimestamp(max(finished))\
