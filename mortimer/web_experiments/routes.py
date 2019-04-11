@@ -4,7 +4,7 @@ from mortimer import export
 from flask import Blueprint, render_template, url_for, flash, redirect, request, abort, current_app, send_file
 from mortimer.forms import WebExperimentForm, UpdateExperimentForm, NewScriptForm, ExperimentExportForm
 from mortimer.models import User, WebExperiment
-from mortimer.utils import display_directory, filter_directories, extract_version, extract_title, extract_author_mail
+from mortimer.utils import display_directory, extract_version, extract_title, extract_author_mail
 from mortimer import alfred_web_db
 from mortimer.config import Config
 from flask_login import current_user, login_required
