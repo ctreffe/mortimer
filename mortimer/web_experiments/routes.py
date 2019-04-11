@@ -54,28 +54,25 @@ def new_experiment():
             script_file.save(path)
             experiment.script_name = script_name
             experiment.script_fullpath = path
-            experiment.title_from_script = extract_title(experiment.script_fullpath)
-            experiment.author_mail_from_script = extract_author_mail(experiment.script_fullpath)
+            try:
+                experiment.title_from_script = extract_title(experiment.script_fullpath)
+                experiment.author_mail_from_script = extract_author_mail(experiment.script_fullpath)
+                experiment.version = extract_version(experiment.script_fullpath)
+            except IndexError:
+                flash("Could not extract EXP_NAME, EXP_AUTHOR_MAIL, or EXP_VERSION from your script.py. Please make sure, that these fields are set correctly.", "danger")
+                return redirect(url_for('web_experiments.new_experiment'))
+            experiment.available_versions.append(experiment.version)
+
+            # flash warnings if fields don't match
+            if experiment.title_from_script != experiment.title:
+                flash(f"The experiment name in the script ({experiment.title_from_script}) and in mortimer ({experiment.title}) should be the same. Otherwise you will not be able to download your data. You can change the experiment title in mortimer and the script when you click on Edit.", "warning")
+            if not experiment.author_mail_from_script:
+                flash("You need to add a field 'exp_author_mail' to your script.py next to exp_name and exp_version. Make sure to also reference this variable in the generate_experiment() method of your Script class.", "warning")
+            if experiment.author_mail_from_script != current_user.email:
+                flash("The exp_author_mail in your script.py needs to be the same email adress that you used to register in mortimer. Otherwise you will not be able to export your data", "danger")
 
             with open(experiment.script_fullpath, "r") as f:
                 experiment.script = f.read()
-
-            try:
-                experiment.version = extract_version(experiment.script_fullpath)
-                experiment.available_versions.append(experiment.version)
-                title = extract_title(experiment.script_fullpath)
-                if title != experiment.title:
-                    flash(f"The experiment name in the script ({title}) and in mortimer ({experiment.title}) should be the same. Otherwise you will not be able to download your data. You can change the experiment title in mortimer and the script when you click on Edit.", "warning")
-                author_mail = extract_author_mail(experiment.script_fullpath)
-                if not author_mail:
-                    flash("You need to add a field 'exp_author_mail' to your script.py next to exp_name and exp_version. Make sure to also reference this variable in the generate_experiment() method of your Script class.", "warning")
-                if author_mail != current_user.email:
-                    flash("The exp_author_mail in your script.py needs to be the same email adress that you used to register in mortimer. Otherwise you will not be able to export your data", "danger")
-                experiment.save()
-                return redirect(url_for('web_experiments.experiment', experiment_title=experiment.title, username=current_user.username))
-            except Exception as e:
-                flash(f"Error: {e}", "danger")
-                return redirect(url_for('web_experiments.new_experiment'))
 
         if form.password.data:
             experiment.public = False
@@ -147,7 +144,7 @@ def experiment(username, experiment_title):
     datasets["all_finished_datasets"] = alfred_web_db\
         .count_documents({"exp_author_mail": current_user.email,
                           "exp_name": experiment_title,
-                          "expFinished": True})
+                          "exp_finished": True})
 
     datasets["all_unfinished_datasets"] = datasets["all_datasets"] - datasets["all_finished_datasets"]
 
@@ -159,28 +156,29 @@ def experiment(username, experiment_title):
     datasets["finished_datasets_current_version"] = alfred_web_db\
         .count_documents({"exp_author_mail": current_user.email,
                           "exp_name": experiment_title,
-                          "expVersion": experiment.version,
-                          "expFinished": True})
+                          "exp_version": experiment.version,
+                          "exp_finished": True})
 
     datasets["unfinished_datasets_current_version"] = datasets["datasets_current_version"] - datasets["finished_datasets_current_version"]
 
     # Number of finished datasets per version
     versions = {}
     finished = []
-    cur = alfred_web_db.find({"expAuthorMail": current_user.email, "expName": experiment_title})
+    cur = alfred_web_db.find({"exp_author_mail": current_user.email, "exp_name": experiment_title})
     for exp in cur:
-        if exp["expVersion"] not in versions.keys():
-            versions[exp["expVersion"]] = {"total": 1, "finished": 0, "unfinished": 0}
+        if exp["exp_version"] not in versions.keys():
+            versions[exp["exp_version"]] = {"total": 1, "finished": 0, "unfinished": 0}
         else:
-            versions[exp["expVersion"]]["total"] += 1
-        if exp["expFinished"]:
-            versions[exp["expVersion"]]["finished"] += 1
+            versions[exp["exp_version"]]["total"] += 1
+        if exp["exp_finished"]:
+            versions[exp["exp_version"]]["finished"] += 1
         else:
-            versions[exp["expVersion"]]["unfinished"] += 1
+            versions[exp["exp_version"]]["unfinished"] += 1
         finished.append(exp["start_time"])
 
     # Time of first and last activity
     if finished:
+        print(min(finished))
         first_activity = datetime.fromtimestamp(min(finished))\
             .strftime('%Y-%m-%d, %H:%M')
         last_activity = datetime.fromtimestamp(max(finished))\
@@ -235,7 +233,7 @@ def experiment(username, experiment_title):
                 flash(f"The experiment name in the script ({experiment.title_from_script}) and in mortimer ({experiment.title}) should be the same. Otherwise you will not be able to download your data. You can change the experiment title in mortimer at any time.", "warning")
 
             if not experiment.author_mail_from_script:
-                flash("You need to add a field 'exp_author_mail' to your script.py next to expName and expVersion. Make sure to also reference this variable in the generate_experiment() method of your Script class.", "warning")
+                flash("You need to add a field 'EXP_AUTHOR_MAIL' to your script.py next to EXP_NAME and EXP_VERSION. Make sure to also reference this variable in the generate_experiment() method of your Script class.", "warning")
             if experiment.author_mail_from_script != current_user.email:
                 flash("The exp_author_mail in your script.py needs to be the same email adress that you used to register in mortimer. Otherwise you will not be able to export your data", "danger")
 
@@ -513,21 +511,21 @@ def web_export(username, experiment_title):
 
     if form.validate_on_submit():
         if "all versions" in form.version.data:
-            results = alfred_web_db.count_documents({"expAuthorMail": current_user.email, "expName": experiment_title})
+            results = alfred_web_db.count_documents({"exp_author_mail": current_user.email, "exp_name": experiment_title})
             if results == 0:
                 flash("No data found for this experiment.", "warning")
                 return redirect(url_for('web_experiments.web_export', username=experiment.author, experiment_title=experiment.title))
 
-            cur = alfred_web_db.find({"expAuthorMail": current_user.email, "expName": experiment_title})
+            cur = alfred_web_db.find({"exp_author_mail": current_user.email, "exp_name": experiment_title})
         else:
             for version in form.version.data:
                 results = []
-                results.append(alfred_web_db.count_documents({"expAuthorMail": current_user.email, "expName": experiment_title, "expVersion": version}))
+                results.append(alfred_web_db.count_documents({"exp_author_mail": current_user.email, "exp_name": experiment_title, "exp_version": version}))
             if max(results) == 0:
                 flash("No data found for this experiment.", "warning")
                 return redirect(url_for('web_experiments.web_export', username=experiment.author, experiment_title=experiment.title))
 
-            cur = alfred_web_db.find({"expAuthorMail": current_user.email, "expName": experiment_title, "expVersion": {"$in": form.version.data}})
+            cur = alfred_web_db.find({"exp_author_mail": current_user.email, "exp_name": experiment_title, "exp_version": {"$in": form.version.data}})
 
         none_value = None
 
