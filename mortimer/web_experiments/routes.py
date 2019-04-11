@@ -545,7 +545,7 @@ def web_export(username, experiment_title):
             bytes_f = export.make_str_bytes(f)
 
             return send_file(bytes_f, mimetype='text/csv',
-                             as_attachment=True, attachment_filename='export.csv', cache_timeout=1)
+                             as_attachment=True, attachment_filename=f'export_{experiment.title}_web.csv', cache_timeout=1)
         elif form.file_type.data == 'excel_csv':
             f = export.to_excel_csv(cur, none_value=none_value)
             bytes_f = export.make_str_bytes(f)
@@ -558,7 +558,7 @@ def web_export(username, experiment_title):
                              cache_timeout=1, as_attachment=True,
                              attachment_filename='export.xlsx')
 
-    return render_template("web_export.html", form=form, experiment=experiment, legend="Download data", type="web")
+    return render_template("web_export.html", form=form, experiment=experiment, legend="Export data", type="web")
 
 
 @web_experiments.route("/de_activate/<username>/<path:experiment_title>", methods=["POST"])
