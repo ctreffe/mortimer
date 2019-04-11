@@ -365,8 +365,7 @@ def manage_resources(username, experiment_title):
         flash("Experiment path doesn't exist. You probably created the experiment while running mortimer on a different server.", "warning")
         return redirect(url_for("web_experiments.experiment", experiment_title=experiment.title, username=experiment.author))
 
-    files = filter_directories(experiment=experiment)
-    display = display_directory(files, parent_directory=experiment.path, experiment=experiment)
+    display = display_directory(sorted(experiment.user_directories), parent_directory=experiment.path, experiment=experiment)
 
     return render_template("manage_resources.html",
                            legend="Manage Resources", experiment=experiment,

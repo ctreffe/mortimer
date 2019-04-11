@@ -281,19 +281,6 @@ def display_directory(directories: list, parent_directory: str,
     return "<br>".join([display_first_directory, display_other_directories])
 
 
-def filter_directories(experiment):
-    # return a list of
-    dir_list = os.listdir(experiment.path)
-    subdirectory_list = []
-
-    for filename in sorted(dir_list):
-        if (os.path.isdir(os.path.join(experiment.path, filename)) and
-                filename in experiment.user_directories):
-            subdirectory_list.append(filename)
-
-    return subdirectory_list
-
-
 def extract_version(filename):
     p = re.compile(
         r"(exp_version|expVersion|EXP_VERSION) *= *[\"\'](?P<version>.*)[\"\']")
