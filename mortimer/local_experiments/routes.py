@@ -7,7 +7,6 @@ from mortimer.config import Config
 from flask_login import current_user, login_required
 from datetime import datetime
 
-
 local_experiments = Blueprint("local_experiments", __name__)
 
 
@@ -32,23 +31,29 @@ def new_local_experiment():
 @login_required
 def local_experiment(username, experiment_title):
 
-    experiment = LocalExperiment.objects.get_or_404(title=experiment_title, author=username)
+    experiment = LocalExperiment.objects.get_or_404(
+        title=experiment_title, author=username)
 
     if experiment.author != current_user.username:
         abort(403)
 
     datasets = {}
 
-    datasets["all_datasets"] = alfred_local_db.count_documents({"exp_author_mail": current_user.email, "exp_name": experiment_title})
-    datasets["all_finished_datasets"] = alfred_local_db.count_documents({"exp_author_mail": current_user.email, "exp_name": experiment_title, "exp_finished": True})
-    datasets["all_unfinished_datasets"] = datasets["all_datasets"] - datasets["all_finished_datasets"]
+    datasets["all_datasets"] = alfred_local_db.count_documents(
+        {"exp_author_mail": current_user.email, "exp_name": experiment_title})
+    datasets["all_finished_datasets"] = alfred_local_db.count_documents(
+        {"exp_author_mail": current_user.email, "exp_name": experiment_title, "exp_finished": True})
+    datasets["all_unfinished_datasets"] = datasets["all_datasets"] - \
+        datasets["all_finished_datasets"]
 
     versions = {}
     created = []
-    cur = alfred_local_db.find({"exp_author_mail": current_user.email, "exp_name": experiment_title})
+    cur = alfred_local_db.find(
+        {"exp_author_mail": current_user.email, "exp_name": experiment_title})
     for exp in cur:
         if exp["exp_version"] not in versions.keys():
-            versions[exp["exp_version"]] = {"total": 1, "finished": 0, "unfinished": 0}
+            versions[exp["exp_version"]] = {
+                "total": 1, "finished": 0, "unfinished": 0}
         else:
             versions[exp["exp_version"]]["total"] += 1
         if exp["exp_finished"]:
@@ -58,8 +63,10 @@ def local_experiment(username, experiment_title):
         created.append(exp["start_time"])
 
     if created:
-        first_activity = datetime.fromtimestamp(min(created)).strftime('%Y-%m-%d, %H:%M')
-        last_activity = datetime.fromtimestamp(max(created)).strftime('%Y-%m-%d, %H:%M')
+        first_activity = datetime.fromtimestamp(
+            min(created)).strftime('%Y-%m-%d, %H:%M')
+        last_activity = datetime.fromtimestamp(
+            max(created)).strftime('%Y-%m-%d, %H:%M')
     else:
         first_activity = "none"
         last_activity = "none"
@@ -100,38 +107,45 @@ def user_experiments(username):
 @local_experiments.route("/<username>/<path:experiment_title>/local_export", methods=["POST", "GET"])
 @login_required
 def local_export(username, experiment_title):
-    experiment = LocalExperiment.objects.get_or_404(title=experiment_title, author=username)
+    experiment = LocalExperiment.objects.get_or_404(
+        title=experiment_title, author=username)
 
     if experiment.author != current_user.username:
         abort(403)
 
     form = ExperimentExportForm()
-    cur = alfred_local_db.find({"exp_author_mail": current_user.email, "exp_name": experiment.title})
+    cur = alfred_local_db.find(
+        {"exp_author_mail": current_user.email, "exp_name": experiment.title})
 
     available_versions = ["all versions"]
     for exp in cur:
         available_versions.append(exp["exp_version"])
-    form.version.choices = [(version, version) for version in available_versions]
+    form.version.choices = [(version, version)
+                            for version in available_versions]
     form.file_type.choices = [("csv", "csv")]
     # form.version.choices = [(version, version) for version in experiment.available_versions]
 
     if form.validate_on_submit():
         if "all versions" in form.version.data:
-            results = alfred_local_db.count_documents({"exp_author_mail": current_user.email, "exp_name": experiment_title})
+            results = alfred_local_db.count_documents(
+                {"exp_author_mail": current_user.email, "exp_name": experiment_title})
             if results == 0:
                 flash("No data found for this experiment.", "warning")
                 return redirect(url_for('web_experiments.web_export', username=experiment.author, experiment_title=experiment.title))
 
-            cur = alfred_local_db.find({"exp_author_mail": current_user.email, "exp_name": experiment_title})
+            cur = alfred_local_db.find(
+                {"exp_author_mail": current_user.email, "exp_name": experiment_title})
         else:
             for version in form.version.data:
                 results = []
-            results.append(alfred_local_db.count_documents({"exp_author_mail": current_user.email, "exp_name": experiment_title, "exp_version": form.version.data}))
+            results.append(alfred_local_db.count_documents(
+                {"exp_author_mail": current_user.email, "exp_name": experiment_title, "exp_version": form.version.data}))
             if max(results) == 0:
                 flash("No data found for this experiment.", "warning")
                 return redirect(url_for('web_experiments.web_export', username=experiment.author, experiment_title=experiment.title))
 
-            cur = alfred_local_db.find({"exp_author_mail": current_user.email, "exp_name": experiment_title, "exp_version": {"$in": form.version.data}})
+            cur = alfred_local_db.find({"exp_author_mail": current_user.email,
+                                        "exp_name": experiment_title, "exp_version": {"$in": form.version.data}})
 
         none_value = None
         # if form.replace_none.data:
@@ -166,11 +180,13 @@ def local_export(username, experiment_title):
     return render_template("web_export.html", form=form, experiment=experiment, legend="Export data")
 
 
-@local_experiments.route("/local/<username>/<path:experiment_title>/delete", methods=["POST"])  # only allow POST requests
+# only allow POST requests
+@local_experiments.route("/local/<username>/<path:experiment_title>/delete", methods=["POST"])
 @login_required
 def delete_experiment(username, experiment_title):
 
-    experiment = LocalExperiment.objects.get_or_404(title=experiment_title, author=username)
+    experiment = LocalExperiment.objects.get_or_404(
+        title=experiment_title, author=username)
 
     if experiment.author != current_user.username:
         abort(403)
