@@ -3,8 +3,24 @@ import os
 
 class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY")
-    MONGODB_HOST = os.environ.get("MONGODB_HOST")
-    MONGODB_ALFRED = os.environ.get("MONGODB_ALFRED")
+    # MONGODB_HOST = os.environ.get("MONGODB_HOST")
+    MONGODB_SETTINGS = {
+        "host": "134.76.19.150",
+        "port": 49130,
+        "db": "mortimer",
+        "username": "jobrachem",
+        "password": "brachpass",
+        "authentication_source": "admin",
+        "ssl": True,
+        "ssl_ca_certs": "/Users/jobrachem/Documents/_Diverses/tech_tests/pymongo_test/CA_server_public.pem"
+    }
+    MONGODB_ALFRED_HOST = "134.76.19.150"
+    MONGODB_ALFRED_PORT = 49130
+    MONGODB_ALFRED_USER = "jobrachem"
+    MONGODB_ALFRED_PW = "brachpass"
+    MONGODB_ALFRED_AUTHSOURCE = "admin"
+    MONGODB_ALFRED_USE_SSL = True
+    MONGODB_ALFRED_CA_CERTS = "/Users/jobrachem/Documents/_Diverses/tech_tests/pymongo_test/CA_server_public.pem"
     # abt5.psych.bio.uni-goettinggen.de:49130
     # MONGODB_DB = 'mortimer'
     MAIL_SERVER = os.environ.get("MAIL_SERVER")

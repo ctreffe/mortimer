@@ -14,7 +14,13 @@ login_manager = LoginManager()
 login_manager.login_view = "users.login"  # function name of login route
 login_manager.login_message_category = "info"  # bootstrap class of "login necessary" message
 
-client = pymongo.MongoClient(Config.MONGODB_ALFRED)
+client = pymongo.MongoClient(host=Config.MONGODB_ALFRED_HOST,
+                             port=Config.MONGODB_ALFRED_PORT,
+                             username=Config.MONGODB_ALFRED_USER,
+                             password=Config.MONGODB_ALFRED_PW,
+                             authSource=Config.MONGODB_ALFRED_AUTHSOURCE,
+                             ssl=Config.MONGODB_ALFRED_USE_SSL,
+                             ssl_ca_certs=Config.MONGODB_ALFRED_CA_CERTS)
 alfred_db = client.alfred
 alfred_web_db = alfred_db.web
 alfred_local_db = alfred_db.local
