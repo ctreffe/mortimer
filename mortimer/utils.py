@@ -344,7 +344,8 @@ def replace_all_patterns(file):
                         line = line[:m.start("name")] + new_name + line[m.end("name"):]
                         m = pattern.search(line)
                         iter += 1
-                        print(f"Old: {old_name}, New: {new_name}")
+                        # print each old and new name
+                        # print(f"Old: {old_name}, New: {new_name}")
                     if iter == max_iter:
                         raise AssertionError(f"One line had at least {max_iter} replacements. Something seems to be wrong")
                     iter = 0
@@ -362,8 +363,6 @@ def replace_all_patterns(file):
     path = os.path.join(current_app.root_path, "static", "futurizing_alfred_scripts")
     for pattern_file in os.listdir(path):
         json_data.append(load_json(os.path.join(path, pattern_file)))
-
-    json_data.append(load_json(os.path.join(path, "custom_modifications.json")))
 
     for dct in json_data:
         replace_patterns(file, dct, write=True)
