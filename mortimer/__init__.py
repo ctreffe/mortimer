@@ -39,12 +39,14 @@ def create_app(config_class=Config):
     from mortimer.web_experiments.alfredo import alfredo
     from mortimer.main.routes import main
     from mortimer.local_experiments.routes import local_experiments
+    from mortimer.errors.handlers import errors
 
     app.register_blueprint(users)
     app.register_blueprint(web_experiments)
     app.register_blueprint(main)
     app.register_blueprint(alfredo)
     app.register_blueprint(local_experiments)
+    app.register_blueprint(errors)
 
     db.init_app(app)
     bcrypt.init_app(app)
