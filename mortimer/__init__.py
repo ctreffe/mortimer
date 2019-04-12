@@ -19,13 +19,22 @@ dropzone = Dropzone()                           # for multiple file upload
 db = MongoEngine()   # mortimer database
 
 # database for querying alfred collections
-client = pymongo.MongoClient(host=Config.MONGODB_ALFRED_HOST,
-                             port=Config.MONGODB_ALFRED_PORT,
-                             username=Config.MONGODB_ALFRED_USER,
-                             password=Config.MONGODB_ALFRED_PW,
-                             authSource=Config.MONGODB_ALFRED_AUTHSOURCE,
-                             ssl=Config.MONGODB_ALFRED_USE_SSL,
-                             ssl_ca_certs=Config.MONGODB_ALFRED_CA_CERTS)
+if Config.MONGODB_ALFRED_CA_CERTS:
+    client = pymongo.MongoClient(host=Config.MONGODB_ALFRED_HOST,
+                                 port=Config.MONGODB_ALFRED_PORT,
+                                 username=Config.MONGODB_ALFRED_USER,
+                                 password=Config.MONGODB_ALFRED_PW,
+                                 authSource=Config.MONGODB_ALFRED_AUTHSOURCE,
+                                 ssl=Config.MONGODB_ALFRED_USE_SSL,
+                                 ssl_ca_certs=Config.MONGODB_ALFRED_CA_CERTS)
+else:
+    client = pymongo.MongoClient(host=Config.MONGODB_ALFRED_HOST,
+                                 port=Config.MONGODB_ALFRED_PORT,
+                                 username=Config.MONGODB_ALFRED_USER,
+                                 password=Config.MONGODB_ALFRED_PW,
+                                 authSource=Config.MONGODB_ALFRED_AUTHSOURCE,
+                                 ssl=Config.MONGODB_ALFRED_USE_SSL)
+
 alfred_db = client.alfred           # checkin database
 alfred_web_db = alfred_db.web       # web collection
 alfred_local_db = alfred_db.local   # local collection
