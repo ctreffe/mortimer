@@ -9,6 +9,7 @@ Mortimer is a free, open source app. It's purpose is to host and manage [Alfred]
 - Python 3.7 installed
 - Git installed
 - A [MongoDB](https://www.mongodb.com/de) instance with [authentication](https://docs.mongodb.com/manual/tutorial/enable-authentication/) and [SSL](https://docs.mongodb.com/manual/tutorial/configure-ssl/) enabled.
+    - For installation on Debian servers, you can refer to the [official installation guide](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-debian/).
 
 ### Install
 

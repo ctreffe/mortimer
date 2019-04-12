@@ -216,7 +216,10 @@ def experiment(username, experiment_title):
             if experiment.version not in experiment.available_versions:
                 experiment.available_versions.append(experiment.version)
 
+            old_title = experiment.title_from_script
             experiment.title_from_script = extract_title(experiment.script_fullpath)
+            if old_title != experiment.title_from_script:
+                flash("You changed the experiment title in the script.py. The experimental data will be stored under a different title in the Alfred database. You will not be able to access data that was saved under the old title.", "danger")
             experiment.author_mail_from_script = extract_author_mail(experiment.script_fullpath)
 
             experiment.save()
@@ -226,7 +229,7 @@ def experiment(username, experiment_title):
             if old_version != experiment.version:
                 flash(f"Version number changed from {old_version} to {experiment.version}.", "info")
             else:
-                flash("Version number did not change. If that was intended, no need to worry. If you made changes that affect the data structure (e.g. adding a new page), you might want to change the version number.", "danger")
+                flash("Version number did not change. If that was intended, no need to worry. If you made changes that affect the data structure (e.g. adding a new page), you might want to change the version number.", "warning")
 
             if experiment.title_from_script != experiment_title:
                 flash(f"The experiment name in the script ({experiment.title_from_script}) and in mortimer ({experiment.title}) should be the same. Otherwise you will not be able to download your data. You can change the experiment title in mortimer at any time.", "warning")
@@ -280,10 +283,18 @@ def update_experiment(username, experiment_title):
             experiment.script = form.script.data
             with open(experiment.script_fullpath, "w") as f:
                 f.write(form.script.data)
+            old_title = experiment.title_from_script
             experiment.title_from_script = extract_title(experiment.script_fullpath)
+            if old_title != experiment.title_from_script:
+                flash("You changed the experiment title in the script.py. The experimental data will be stored under a different title in the Alfred database. You will not be able to access data that was saved under the old title.", "danger")
             experiment.author_mail_from_script = extract_author_mail(experiment.script_fullpath)
-            if experiment.version == extract_version(experiment.script_fullpath):
-                flash("You changed the script.py, but did not change the version number. If that was intended, no need to worry. If you made changes that affect the data structure (e.g. adding a new page), you might want to change the version number.", "danger")
+
+            old_version = experiment.version
+            experiment.version = extract_version(experiment.script_fullpath)
+            if experiment.version not in experiment.available_versions:
+                experiment.available_versions.append(experiment.version)
+            if old_version == experiment.version:
+                flash("You changed the script.py, but did not change the version number. If that was intended, no need to worry. If you made changes that affect the data structure (e.g. adding a new page), you might want to change the version number.", "warning")
 
         # experiment.versions.append(ExperimentVersion(version=form.version.data))
         # experiment.script = form.script.data
