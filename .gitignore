@@ -15,3 +15,4 @@ mortimer/static/CA_server_public.pem
 mortimer/static/mongodb_client_keypair.pem
 mortimer/static/mongodb_client_public.crt
 temp/
+*.pem
