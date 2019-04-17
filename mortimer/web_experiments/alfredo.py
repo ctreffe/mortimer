@@ -98,8 +98,8 @@ def start(expid):
 
     if not experiment.public and experiment.password != request.form.get('password', None):
         exp_url = url_for('alfredo.start', expid=str(experiment.id))
-        return f'''<div align="center"><h1>Please enter the password</h1><form method="post" action="{exp_url}">
-            <input type="password" name="password" /><button type="submit">Submit</button></form></div>'''
+        return '<div align="center"><h1>Please enter the password</h1><form method="post" action="%s">\
+            <input type="password" name="password" /><button type="submit">Submit</button></form></div>' % exp_url
 
     sid = str(uuid4())
     session['sid'] = sid

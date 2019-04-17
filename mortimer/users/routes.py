@@ -22,7 +22,7 @@ def register():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode("utf-8")
         user = User(username=form.username.data, email=form.email.data, password=hashed_password)
         user.save()
-        flash(f"Account created for {form.username.data}.", "success")
+        flash("Account created for %s." % form.username.data, "success")
         return redirect(url_for('users.login'))
 
     password_hint = "This is a password hint"
@@ -120,7 +120,7 @@ def reset_password(token):
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode("utf-8")
         user.password = hashed_password
         user.save()
-        flash(f"Your password has been updated.", "success")
+        flash("Your password has been updated.", "success")
         return redirect(url_for('users.login'))
 
     return render_template("reset_password.html", title="Reset Password", form=form)

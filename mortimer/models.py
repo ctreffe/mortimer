@@ -34,7 +34,7 @@ class User(db.Document, UserMixin):
         return User.objects.get(id=user_id)
 
     def __repr__(self):
-        return f"User({self.username}, {self.email})"
+        return "User(%s, %s)" % (self.username, self.email)
 
 
 class WebExperiment(db.Document):
@@ -62,7 +62,7 @@ class WebExperiment(db.Document):
     active = db.BooleanField(default=False)
 
     def __repr__(self):
-        return f"Experiment(Title: {self.title}, Version: {self.version}, Created: {self.date_created}, Author: {self.author})"
+        return "Experiment(Title: %s, Version: %s, Created: %s, Author: %s)" % (self.title, self.version, self.date_created, self.author)
 
 
 class LocalExperiment(db.Document):
@@ -75,4 +75,4 @@ class LocalExperiment(db.Document):
     description = db.StringField()
 
     def __repr__(self):
-        return f"Local WebExperiment(Title: {self.title}, Version: {self.version}, Created: {self.date_created}, Author: {self.author})"
+        return "Local WebExperiment(Title: %s, Version: %s, Created: %s, Author: %s)" % (self.title, self.version, self.date_created, self.author)

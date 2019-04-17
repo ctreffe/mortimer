@@ -8,7 +8,7 @@ from mortimer.utils import futurize_script, replace_all_patterns
 
 main = Blueprint("main", __name__)
 
-# this route has two adresses
+# this route has two addresses
 
 
 @main.route("/")

@@ -164,7 +164,7 @@ def local_export(username, experiment_title):
             bytes_f = export.make_str_bytes(f)
 
             return send_file(bytes_f, mimetype='text/csv',
-                             as_attachment=True, attachment_filename=f'export_{experiment.title}_local.csv', cache_timeout=1)
+                             as_attachment=True, attachment_filename='export_%s_local.csv' % experiment.title, cache_timeout=1)
         elif form.file_type.data == 'excel_csv':
             f = export.to_excel_csv(cur, none_value=none_value)
             bytes_f = export.make_str_bytes(f)

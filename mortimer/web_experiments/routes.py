@@ -37,7 +37,8 @@ def new_experiment():
                 user_experiments_titles.append(WebExperiment.objects.get(id=id).title)
 
         if experiment.title in user_experiments_titles:
-            flash("Action aborted: An experiment with this title is already associated with your account. The data was not saved.", "danger")
+            flash("Action aborted: An experiment with this title is already associated with your account. The data was \
+            not saved.", "danger")
             redirect(url_for('web_experiments.new_experiment'))
 
         # create experiment directory
@@ -59,17 +60,23 @@ def new_experiment():
                 experiment.author_mail_from_script = extract_author_mail(experiment.script_fullpath)
                 experiment.version = extract_version(experiment.script_fullpath)
             except IndexError:
-                flash("Could not extract EXP_NAME, EXP_AUTHOR_MAIL, or EXP_VERSION from your script.py. Please make sure, that these fields are set correctly.", "danger")
+                flash("Could not extract EXP_NAME, EXP_AUTHOR_MAIL, or EXP_VERSION from your script.py. Please make \
+                sure, that these fields are set correctly.", "danger")
                 return redirect(url_for('web_experiments.new_experiment'))
             experiment.available_versions.append(experiment.version)
 
             # flash warnings if fields don't match
             if experiment.title_from_script != experiment.title:
-                flash(f"The experiment name in the script ({experiment.title_from_script}) and in mortimer ({experiment.title}) should be the same. Otherwise you will not be able to download your data. You can change the experiment title in mortimer and the script when you click on Edit.", "warning")
+                flash("The experiment name in the script (%s) and in mortimer (%s) should be the same. Otherwise you \
+                will not be able to download your data. You can change the experiment title in mortimer and the script \
+                when you click on Edit." % (experiment.title_from_script, experiment.title), "warning")
             if not experiment.author_mail_from_script:
-                flash("You need to add a field 'exp_author_mail' to your script.py next to exp_name and exp_version. Make sure to also reference this variable in the generate_experiment() method of your Script class.", "warning")
+                flash("You need to add a field 'exp_author_mail' to your script.py next to exp_name and exp_version. \
+                Make sure to also reference this variable in the generate_experiment() method of your Script class.",
+                      "warning")
             if experiment.author_mail_from_script != current_user.email:
-                flash("The exp_author_mail in your script.py needs to be the same email adress that you used to register in mortimer. Otherwise you will not be able to export your data", "danger")
+                flash("The exp_author_mail in your script.py needs to be the same email address that you used to \
+                register in mortimer. Otherwise you will not be able to export your data", "danger")
 
             with open(experiment.script_fullpath, "r") as f:
                 experiment.script = f.read()
@@ -219,7 +226,9 @@ def experiment(username, experiment_title):
             old_title = experiment.title_from_script
             experiment.title_from_script = extract_title(experiment.script_fullpath)
             if old_title != experiment.title_from_script:
-                flash("You changed the experiment title in the script.py. The experimental data will be stored under a different title in the Alfred database. You will not be able to access data that was saved under the old title.", "danger")
+                flash("You changed the experiment title in the script.py. The experimental data will be stored under a \
+                different title in the Alfred database. You will not be able to access data that was saved under the \
+                old title.", "danger")
             experiment.author_mail_from_script = extract_author_mail(experiment.script_fullpath)
 
             experiment.save()
@@ -227,28 +236,38 @@ def experiment(username, experiment_title):
             flash("New script.py was uploaded successfully", "success")
 
             if old_version != experiment.version:
-                flash(f"Version number changed from {old_version} to {experiment.version}.", "info")
+                flash("Version number changed from {old_version} to {experiment.version}.", "info")
             else:
-                flash("Version number did not change. If that was intended, no need to worry. If you made changes that affect the data structure (e.g. adding a new page), you might want to change the version number.", "warning")
+                flash("Version number did not change. If that was intended, no need to worry. If you made changes that \
+                affect the data structure (e.g. adding a new page), you might want to change the version number.",
+                      "warning")
 
             if experiment.title_from_script != experiment_title:
-                flash(f"The experiment name in the script ({experiment.title_from_script}) and in mortimer ({experiment.title}) should be the same. Otherwise you will not be able to download your data. You can change the experiment title in mortimer at any time.", "warning")
+                flash("The experiment name in the script (%s) and in mortimer (%s) should be the same. Otherwise you \
+                will not be able to download your data. You can change the experiment title in mortimer at any time."
+                      % (experiment.title_from_script, experiment.title), "warning")
 
             if not experiment.author_mail_from_script:
-                flash("You need to add a field 'EXP_AUTHOR_MAIL' to your script.py next to EXP_NAME and EXP_VERSION. Make sure to also reference this variable in the generate_experiment() method of your Script class.", "warning")
+                flash("You need to add a field 'EXP_AUTHOR_MAIL' to your script.py next to EXP_NAME and EXP_VERSION. \
+                Make sure to also reference this variable in the generate_experiment() method of your Script class.",
+                      "warning")
             if experiment.author_mail_from_script != current_user.email:
-                flash("The exp_author_mail in your script.py needs to be the same email adress that you used to register in mortimer. Otherwise you will not be able to export your data", "danger")
+                flash("The exp_author_mail in your script.py needs to be the same email address that you used to \
+                register in mortimer. Otherwise you will not be able to export your data", "danger")
 
-            return redirect(url_for('web_experiments.experiment', username=experiment.author, experiment_title=experiment.title))
+            return redirect(url_for('web_experiments.experiment', username=experiment.author,
+                                    experiment_title=experiment.title))
         except Exception as e:
-            flash(f"Error: {e}. This error most likely means that your script.py is not compatible with Alfred 3.", "danger")
-            return redirect(url_for('web_experiments.experiment', username=experiment.author, experiment_title=experiment.title))
+            flash("Error: %s. This error most likely means that your script.py is not compatible with Alfred 3." % e,
+                  "danger")
+            return redirect(url_for('web_experiments.experiment', username=experiment.author,
+                                    experiment_title=experiment.title))
 
     return render_template("experiment.html",
-                           experiment=experiment, expid=str(experiment.id), form=form, status=status, toggle_button=toggle_button,
-                           datasets=datasets, title_unequal=title_unequal, script_title=script_title,
-                           first_activity=first_activity, last_activity=last_activity, versions=versions,
-                           password_protection=password_protection, author_mail=author_mail)
+                           experiment=experiment, expid=str(experiment.id), form=form, status=status,
+                           toggle_button=toggle_button, datasets=datasets, title_unequal=title_unequal,
+                           script_title=script_title, first_activity=first_activity, last_activity=last_activity,
+                           versions=versions, password_protection=password_protection, author_mail=author_mail)
 
 
 @web_experiments.route("/<username>/<path:experiment_title>/update", methods=["GET", "POST"])
@@ -268,8 +287,10 @@ def update_experiment(username, experiment_title):
 
             if form.title.data != experiment.title:
                 if WebExperiment.objects(title=form.title.data, author=username):
-                    flash("You already have a web experiment with this title. Please choose a unique title. The changes were not saved.", "danger")
-                    return redirect(url_for('web_experiments.experiment', experiment_title=experiment.title, username=experiment.author))
+                    flash("You already have a web experiment with this title. Please choose a unique title. The \
+                    changes were not saved.", "danger")
+                    return redirect(url_for('web_experiments.experiment', experiment_title=experiment.title,
+                                            username=experiment.author))
                 else:
                     experiment.title = form.title.data
         experiment.description = form.description.data
@@ -286,7 +307,9 @@ def update_experiment(username, experiment_title):
             old_title = experiment.title_from_script
             experiment.title_from_script = extract_title(experiment.script_fullpath)
             if old_title != experiment.title_from_script:
-                flash("You changed the experiment title in the script.py. The experimental data will be stored under a different title in the Alfred database. You will not be able to access data that was saved under the old title.", "danger")
+                flash("You changed the experiment title in the script.py. The experimental data will be stored under a \
+                different title in the Alfred database. You will not be able to access data that was saved under the \
+                old title.", "danger")
             experiment.author_mail_from_script = extract_author_mail(experiment.script_fullpath)
 
             old_version = experiment.version
@@ -294,7 +317,9 @@ def update_experiment(username, experiment_title):
             if experiment.version not in experiment.available_versions:
                 experiment.available_versions.append(experiment.version)
             if old_version == experiment.version:
-                flash("You changed the script.py, but did not change the version number. If that was intended, no need to worry. If you made changes that affect the data structure (e.g. adding a new page), you might want to change the version number.", "warning")
+                flash("You changed the script.py, but did not change the version number. If that was intended, no need \
+                to worry. If you made changes that affect the data structure (e.g. adding a new page), you might want \
+                to change the version number.", "warning")
 
         # experiment.versions.append(ExperimentVersion(version=form.version.data))
         # experiment.script = form.script.data
@@ -302,7 +327,8 @@ def update_experiment(username, experiment_title):
         experiment.save()
         flash("Your experiment has been updated", "success")
 
-        return redirect(url_for('web_experiments.experiment', experiment_title=experiment.title, username=experiment.author))
+        return redirect(url_for('web_experiments.experiment', experiment_title=experiment.title,
+                                username=experiment.author))
 
     form.title.data = experiment.title
     form.description.data = experiment.description
@@ -313,7 +339,7 @@ def update_experiment(username, experiment_title):
                            experiment=experiment, form=form, legend="Update Experiment")
 
 
-@web_experiments.route("/<username>/<path:experiment_title>/delete", methods=["POST", "GET"])  # only allow POST requests
+@web_experiments.route("/<username>/<path:experiment_title>/delete", methods=["POST", "GET"])  # only allow POST request
 @login_required
 def delete_experiment(username, experiment_title):
 
@@ -332,7 +358,8 @@ def delete_experiment(username, experiment_title):
     return redirect(url_for('web_experiments.user_experiments', username=current_user.username))
 
 
-@web_experiments.route("/<username>/<path:experiment_title>/upload_resources/<path:relative_path>", methods=["POST", "GET"])
+@web_experiments.route("/<username>/<path:experiment_title>/upload_resources/<path:relative_path>",
+                       methods=["POST", "GET"])
 @login_required
 def upload_resources(username, experiment_title, relative_path):
     experiment = WebExperiment.objects.get_or_404(title=experiment_title, author=username)
@@ -358,9 +385,11 @@ def upload_resources(username, experiment_title, relative_path):
         # TODO: Display old and new filenames
         if old_filenames != new_filenames:
             for i in range(len(old_filenames)):
-                flash(f"Filename changed from <code>{old_filenames[i]}</code> to <code>{new_filenames[i]}</code>.", "danger")
+                flash("Filename changed from <code>%s</code> to <code>%s</code>." % (old_filenames[i],
+                                                                                     new_filenames[i]), "danger")
 
-    return render_template("upload_resources.html", experiment=experiment, legend="Upload Resources", relative_path=relative_path)
+    return render_template("upload_resources.html", experiment=experiment, legend="Upload Resources",
+                           relative_path=relative_path)
 
 
 @web_experiments.route("/<username>/<path:experiment_title>/manage_resources", methods=["POST", "GET"])
@@ -373,10 +402,13 @@ def manage_resources(username, experiment_title):
     # if the experiment path does not exist on the file system, we get a warning
     # this is valuable feedback during development
     if not os.path.exists(experiment.path):
-        flash("Experiment path doesn't exist. You probably created the experiment while running mortimer on a different server.", "warning")
-        return redirect(url_for("web_experiments.experiment", experiment_title=experiment.title, username=experiment.author))
+        flash("Experiment path doesn't exist. You probably created the experiment while running mortimer on a \
+        different server.", "warning")
+        return redirect(url_for("web_experiments.experiment", experiment_title=experiment.title,
+                                username=experiment.author))
 
-    display = display_directory(sorted(experiment.user_directories), parent_directory=experiment.path, experiment=experiment)
+    display = display_directory(sorted(experiment.user_directories), parent_directory=experiment.path,
+                                experiment=experiment)
 
     return render_template("manage_resources.html",
                            legend="Manage Resources", experiment=experiment,
@@ -410,7 +442,8 @@ def user_experiments(username):
     return render_template("user_experiments.html", experiments=experiments, user=user)
 
 
-@web_experiments.route("/<username>/<path:experiment_title>/delete_all_files", methods=["POST"])  # only allow POST requests
+@web_experiments.route("/<username>/<path:experiment_title>/delete_all_files",
+                       methods=["POST"])  # only allow POST requests
 @login_required
 def delete_all_files(username, experiment_title):
 
@@ -427,7 +460,8 @@ def delete_all_files(username, experiment_title):
 
     flash("All files and directories deleted.", "info")
 
-    return redirect(url_for('web_experiments.manage_resources', experiment_title=experiment.title, username=experiment.author))
+    return redirect(url_for('web_experiments.manage_resources', experiment_title=experiment.title,
+                            username=experiment.author))
 
 
 @web_experiments.route("/<username>/<path:experiment_title>/new_directory", methods=["POST"], defaults={"relative_path": None})
@@ -455,17 +489,20 @@ def new_directory(username: str, experiment_title: str, relative_path: str=None)
             experiment.save()
         except FileExistsError:
             flash("A directory with this name already exsists.", "warning")
-            return redirect(url_for('web_experiments.manage_resources', experiment_title=experiment.title, username=experiment.author))
+            return redirect(url_for('web_experiments.manage_resources', experiment_title=experiment.title,
+                                    username=experiment.author))
     else:
         try:
             os.mkdir(os.path.join(experiment.path, relative_path, name))
         except FileExistsError:
             flash("A directory with this name already exsists.", "warning")
-            return redirect(url_for('web_experiments.manage_resources', experiment_title=experiment.title, username=experiment.author))
+            return redirect(url_for('web_experiments.manage_resources', experiment_title=experiment.title,
+                                    username=experiment.author))
 
     flash("New directory created.", "success")
 
-    return redirect(url_for('web_experiments.manage_resources', experiment_title=experiment.title, username=experiment.author))
+    return redirect(url_for('web_experiments.manage_resources', experiment_title=experiment.title,
+                            username=experiment.author))
 
 
 @web_experiments.route("/<username>/<path:experiment_title>/<path:relative_path>/delete_directory", methods=["POST"])
@@ -484,7 +521,8 @@ def delete_directory(username, experiment_title, relative_path):
         experiment.save()
 
     flash("Directory deleted", "info")
-    return redirect(url_for('web_experiments.manage_resources', experiment_title=experiment.title, username=experiment.author))
+    return redirect(url_for('web_experiments.manage_resources', experiment_title=experiment.title,
+                            username=experiment.author))
 
 
 @web_experiments.route("/<username>/<path:experiment_title>/<path:relative_path>/delete_file", methods=["POST"])
@@ -498,7 +536,8 @@ def delete_file(username, experiment_title, relative_path):
     os.remove(os.path.join(experiment.path, relative_path))
 
     flash("File deleted.", "info")
-    return redirect(url_for('web_experiments.manage_resources', experiment_title=experiment.title, username=experiment.author))
+    return redirect(url_for('web_experiments.manage_resources', experiment_title=experiment.title,
+                            username=experiment.author))
 
 
 @web_experiments.route("/<username>/<path:experiment_title>/web_export", methods=["POST", "GET"])
@@ -511,8 +550,11 @@ def web_export(username, experiment_title):
 
     title = extract_title(experiment.script_fullpath)
     if experiment.title != title:
-        flash(f"Your experiment has different names in mortimer ({experiment.title}) and in your script.py ({title}). These need to be equal to access the data. You can change the experiment title in mortimer at any time.", "danger")
-        return redirect(url_for('web_experiments.experiment', username=current_user.username, experiment_title=experiment.title))
+        flash("Your experiment has different names in mortimer (%s) and in your script.py (%s). These need to be \
+        equal to access the data. You can change the experiment title in mortimer at any time."
+              % (experiment.title, title), "danger")
+        return redirect(url_for('web_experiments.experiment', username=current_user.username,
+                                experiment_title=experiment.title))
 
     form = ExperimentExportForm()
     form.version.choices = [(version, version) for version in ["all versions"] + experiment.available_versions]
@@ -520,21 +562,28 @@ def web_export(username, experiment_title):
 
     if form.validate_on_submit():
         if "all versions" in form.version.data:
-            results = alfred_web_db.count_documents({"exp_author_mail": current_user.email, "exp_name": experiment_title})
+            results = alfred_web_db.count_documents({"exp_author_mail": current_user.email,
+                                                     "exp_name": experiment_title})
             if results == 0:
                 flash("No data found for this experiment.", "warning")
-                return redirect(url_for('web_experiments.web_export', username=experiment.author, experiment_title=experiment.title))
+                return redirect(url_for('web_experiments.web_export', username=experiment.author,
+                                        experiment_title=experiment.title))
 
             cur = alfred_web_db.find({"exp_author_mail": current_user.email, "exp_name": experiment_title})
         else:
             for version in form.version.data:
                 results = []
-                results.append(alfred_web_db.count_documents({"exp_author_mail": current_user.email, "exp_name": experiment_title, "exp_version": version}))
+                results.append(alfred_web_db.count_documents({"exp_author_mail": current_user.email,
+                                                              "exp_name": experiment_title,
+                                                              "exp_version": version}))
             if max(results) == 0:
                 flash("No data found for this experiment.", "warning")
-                return redirect(url_for('web_experiments.web_export', username=experiment.author, experiment_title=experiment.title))
+                return redirect(url_for('web_experiments.web_export', username=experiment.author,
+                                        experiment_title=experiment.title))
 
-            cur = alfred_web_db.find({"exp_author_mail": current_user.email, "exp_name": experiment_title, "exp_version": {"$in": form.version.data}})
+            cur = alfred_web_db.find({"exp_author_mail": current_user.email,
+                                      "exp_name": experiment_title,
+                                      "exp_version": {"$in": form.version.data}})
 
         none_value = None
 
@@ -554,7 +603,8 @@ def web_export(username, experiment_title):
             bytes_f = export.make_str_bytes(f)
 
             return send_file(bytes_f, mimetype='text/csv',
-                             as_attachment=True, attachment_filename=f'export_{experiment.title}_web.csv', cache_timeout=1)
+                             as_attachment=True, attachment_filename='export_%s_web.csv' % experiment.title,
+                             cache_timeout=1)
         elif form.file_type.data == 'excel_csv':
             f = export.to_excel_csv(cur, none_value=none_value)
             bytes_f = export.make_str_bytes(f)
@@ -581,10 +631,13 @@ def de_activate_experiment(username, experiment_title):
     if not experiment.active:
         if not experiment.script_fullpath:
             flash("You need to upload a script.py before you can activate your experiment.", "warning")
-            return redirect(url_for('web_experiments.experiment', username=current_user.username, experiment_title=experiment.title))
+            return redirect(url_for('web_experiments.experiment', username=current_user.username,
+                                    experiment_title=experiment.title))
         if experiment.title != experiment.title_from_script or current_user.email != experiment.author_mail_from_script:
-            flash("Your experiment title and the author mail need to be the same in Mortimer and in your script.py", "danger")
-            return redirect(url_for('web_experiments.experiment', username=current_user.username, experiment_title=experiment.title))
+            flash("Your experiment title and the author mail need to be the same in Mortimer and in your script.py",
+                  "danger")
+            return redirect(url_for('web_experiments.experiment', username=current_user.username,
+                                    experiment_title=experiment.title))
         experiment.active = True
         experiment.save()
         flash("Experiment activated.", "success")
@@ -593,4 +646,5 @@ def de_activate_experiment(username, experiment_title):
         experiment.save()
         flash("Experiment deactivated.", "info")
 
-    return redirect(url_for('web_experiments.experiment', username=current_user.username, experiment_title=experiment.title))
+    return redirect(url_for('web_experiments.experiment', username=current_user.username,
+                            experiment_title=experiment.title))
