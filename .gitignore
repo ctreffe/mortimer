@@ -16,4 +16,4 @@ mortimer/static/mongodb_client_keypair.pem
 mortimer/static/mongodb_client_public.crt
 temp/
 *.pem
-set_environ_vars_private.py
+set_environ_vars.py

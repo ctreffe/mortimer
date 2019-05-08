@@ -4,8 +4,21 @@ from flask_bcrypt import Bcrypt
 from flask_login import LoginManager
 from flask_mail import Mail
 from flask_dropzone import Dropzone
-from mortimer.config import Config
 import pymongo
+
+try:
+    from mortimer.set_environ_vars import EnvironSetter
+
+    # set environment variables
+    setter = EnvironSetter()
+    setter.set_environment_variables()
+
+except ModuleNotFoundError as e:
+    print("Environment variables are not set automatically. This is no problem, if you specified them manually.")
+
+
+from mortimer.config import Config
+
 
 # register extensions
 bcrypt = Bcrypt()                               # for hashing passwords
@@ -19,10 +32,10 @@ dropzone = Dropzone()                           # for multiple file upload
 db = MongoEngine()   # mortimer database
 
 # database for querying alfred collections
-if Config.MONGODB_ALFRED_CA_CERTS:
+if Config.MONGODB_ALFRED_SETTINGS["ssl_ca_certs"]:
     client = pymongo.MongoClient(host=Config.MONGODB_ALFRED_SETTINGS["host"],
                                  port=Config.MONGODB_ALFRED_SETTINGS["port"],
-                                 username=Config.MONGODB_ALFRED_SETTINGS["user"],
+                                 username=Config.MONGODB_ALFRED_SETTINGS["username"],
                                  password=Config.MONGODB_ALFRED_SETTINGS["password"],
                                  authSource=Config.MONGODB_ALFRED_SETTINGS["authentication_source"],
                                  ssl=Config.MONGODB_ALFRED_SETTINGS["ssl"],
@@ -30,7 +43,7 @@ if Config.MONGODB_ALFRED_CA_CERTS:
 else:
     client = pymongo.MongoClient(host=Config.MONGODB_ALFRED_SETTINGS["host"],
                                  port=Config.MONGODB_ALFRED_SETTINGS["port"],
-                                 username=Config.MONGODB_ALFRED_SETTINGS["user"],
+                                 username=Config.MONGODB_ALFRED_SETTINGS["username"],
                                  password=Config.MONGODB_ALFRED_SETTINGS["password"],
                                  authSource=Config.MONGODB_ALFRED_SETTINGS["authentication_source"],
                                  ssl=Config.MONGODB_ALFRED_SETTINGS["ssl"])
