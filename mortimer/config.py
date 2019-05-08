@@ -3,8 +3,9 @@ from flask import current_app
 
 
 class Config:
-    # secret key of flask app (e.g. for encrypted session data)
-    SECRET_KEY = os.environ.get("SECRET_KEY")
+    SECRET_KEY = os.environ.get("SECRET_KEY")  # secret key of flask app (e.g. for encrypted session data)
+    PAROLE = os.environ.get("PAROLE")       # Parole/Passphrase for registration
+    EXP_PER_PAGE = 10                       # number of experiments displayed per page
 
     # Mortimer database login settings
     MONGODB_SETTINGS = {
@@ -50,5 +51,3 @@ class Config:
     DROPZONE_UPLOAD_BTN_ID = 'upload'
 
     # Mortimer settings
-    PAROLE = os.environ.get("PAROLE")       # Parole for registration
-    EXP_PER_PAGE = 10                       # number of experiments displayed per page
