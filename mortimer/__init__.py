@@ -20,20 +20,20 @@ db = MongoEngine()   # mortimer database
 
 # database for querying alfred collections
 if Config.MONGODB_ALFRED_CA_CERTS:
-    client = pymongo.MongoClient(host=Config.MONGODB_ALFRED_HOST,
-                                 port=Config.MONGODB_ALFRED_PORT,
-                                 username=Config.MONGODB_ALFRED_USER,
-                                 password=Config.MONGODB_ALFRED_PW,
-                                 authSource=Config.MONGODB_ALFRED_AUTHSOURCE,
-                                 ssl=Config.MONGODB_ALFRED_USE_SSL,
-                                 ssl_ca_certs=Config.MONGODB_ALFRED_CA_CERTS)
+    client = pymongo.MongoClient(host=Config.MONGODB_ALFRED_SETTINGS["host"],
+                                 port=Config.MONGODB_ALFRED_SETTINGS["port"],
+                                 username=Config.MONGODB_ALFRED_SETTINGS["user"],
+                                 password=Config.MONGODB_ALFRED_SETTINGS["password"],
+                                 authSource=Config.MONGODB_ALFRED_SETTINGS["authentication_source"],
+                                 ssl=Config.MONGODB_ALFRED_SETTINGS["ssl"],
+                                 ssl_ca_certs=Config.MONGODB_ALFRED_SETTINGS["ssl_ca_certs"])
 else:
-    client = pymongo.MongoClient(host=Config.MONGODB_ALFRED_HOST,
-                                 port=Config.MONGODB_ALFRED_PORT,
-                                 username=Config.MONGODB_ALFRED_USER,
-                                 password=Config.MONGODB_ALFRED_PW,
-                                 authSource=Config.MONGODB_ALFRED_AUTHSOURCE,
-                                 ssl=Config.MONGODB_ALFRED_USE_SSL)
+    client = pymongo.MongoClient(host=Config.MONGODB_ALFRED_SETTINGS["host"],
+                                 port=Config.MONGODB_ALFRED_SETTINGS["port"],
+                                 username=Config.MONGODB_ALFRED_SETTINGS["user"],
+                                 password=Config.MONGODB_ALFRED_SETTINGS["password"],
+                                 authSource=Config.MONGODB_ALFRED_SETTINGS["authentication_source"],
+                                 ssl=Config.MONGODB_ALFRED_SETTINGS["ssl"])
 
 alfred_db = client.alfred           # checkin database
 alfred_web_db = alfred_db.web       # web collection

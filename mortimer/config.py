@@ -1,4 +1,5 @@
 import os
+from flask import current_app
 
 
 class Config:
@@ -6,30 +7,37 @@ class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY")
 
     # Mortimer database login settings
-    # MONGODB_HOST = os.environ.get("MONGODB_HOST")     # Could also just use URI string
     MONGODB_SETTINGS = {
-        "host": "134.76.19.150",
-        "port": 49130,
-        "db": "mortimer",
-        "username": "jobrachem",
-        "password": "brachpass",
-        "authentication_source": "admin",
-        "ssl": True,
-        "ssl_ca_certs": "/Users/jobrachem/Documents/_Diverses/tech_tests/pymongo_test/CA_server_public.pem"
+        "host": os.environ.get("MONGODB_HOST"),
+        "port": os.environ.get("MONGODB_PORT"),
+
+        "db": os.environ.get("MONGODB_MORTIMER_DB"),
+        "username": os.environ.get("MONGODB_MORTIMER_USER"),
+        "password": os.environ.get("MONGODB_MORTIMER_PW"),
+        "authentication_source": os.environ.get("MONGODB_MORTIMER_AUTHDB"),
+
+        "ssl": False,
+        "ssl_ca_certs": os.path.join(current_app.root_path, "mongodb_ca_file.pem")
     }
 
     # Alfred database login settings
-    MONGODB_ALFRED_HOST = "134.76.19.150"
-    MONGODB_ALFRED_PORT = 49130
-    MONGODB_ALFRED_USER = "jobrachem"
-    MONGODB_ALFRED_PW = "brachpass"
-    MONGODB_ALFRED_AUTHSOURCE = "admin"
-    MONGODB_ALFRED_USE_SSL = True
-    MONGODB_ALFRED_CA_CERTS = "/Users/jobrachem/Documents/_Diverses/tech_tests/pymongo_test/CA_server_public.pem"
+    MONGODB_ALFRED_SETTINGS = {
+        "host": os.environ.get("MONGODB_HOST"),
+        "port": os.environ.get("MONGODB_PORT"),
+
+        "db": os.environ.get("MONGODB_ALFRED_DB"),
+        "username": os.environ.get("MONGODB_ALFRED_USER"),
+        "password": os.environ.get("MONGODB_ALFRED_PW"),
+        "authentication_source": os.environ.get("MONGODB_ALFRED_AUTHDB"),
+
+        "ssl": False,
+        "ssl_ca_certs": os.path.join(current_app.root_path, "mongodb_ca_file.pem")
+    }
 
     # Mail settings
+    MAIL_USE = True     # enable or disable password reset emails
     MAIL_SERVER = os.environ.get("MAIL_SERVER")
-    MAIL_PORT = 587
+    MAIL_PORT = os.environ.get("MAIL_PORT")
     MAIL_USE_TLS = True
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
