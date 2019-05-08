@@ -5,6 +5,7 @@ from flask_login import LoginManager
 from flask_mail import Mail
 from flask_dropzone import Dropzone
 import pymongo
+import os
 
 try:
     from mortimer.set_environ_vars import EnvironSetter
@@ -14,7 +15,8 @@ try:
     setter.set_environment_variables()
 
 except ModuleNotFoundError as e:
-    print("Environment variables are not set automatically. This is no problem, if you specified them manually.")
+    print("Environment variables are not set automatically.\
+     This is no problem, if you specified them manually or set the relevant data directly in your config.py.")
 
 
 from mortimer.config import Config
@@ -32,21 +34,20 @@ dropzone = Dropzone()                           # for multiple file upload
 db = MongoEngine()   # mortimer database
 
 # database for querying alfred collections
-if Config.MONGODB_ALFRED_SETTINGS["ssl_ca_certs"]:
+if Config.MONGODB_ALFRED_SETTINGS["ssl"]:
     client = pymongo.MongoClient(host=Config.MONGODB_ALFRED_SETTINGS["host"],
                                  port=Config.MONGODB_ALFRED_SETTINGS["port"],
                                  username=Config.MONGODB_ALFRED_SETTINGS["username"],
                                  password=Config.MONGODB_ALFRED_SETTINGS["password"],
                                  authSource=Config.MONGODB_ALFRED_SETTINGS["authentication_source"],
-                                 ssl=Config.MONGODB_ALFRED_SETTINGS["ssl"],
-                                 ssl_ca_certs=Config.MONGODB_ALFRED_SETTINGS["ssl_ca_certs"])
+                                 ssl=True,
+                                 ssl_ca_certs=os.path.join(os.path.dirname(os.path.realpath(__file__)), Config.MONGODB_ALFRED_SETTINGS["ssl_ca_certs"]))
 else:
     client = pymongo.MongoClient(host=Config.MONGODB_ALFRED_SETTINGS["host"],
                                  port=Config.MONGODB_ALFRED_SETTINGS["port"],
                                  username=Config.MONGODB_ALFRED_SETTINGS["username"],
                                  password=Config.MONGODB_ALFRED_SETTINGS["password"],
-                                 authSource=Config.MONGODB_ALFRED_SETTINGS["authentication_source"],
-                                 ssl=Config.MONGODB_ALFRED_SETTINGS["ssl"])
+                                 authSource=Config.MONGODB_ALFRED_SETTINGS["authentication_source"])
 
 alfred_db = client.alfred           # checkin database
 alfred_web_db = alfred_db.web       # web collection

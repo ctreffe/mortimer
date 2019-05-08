@@ -21,7 +21,7 @@ class Config:
         "authentication_source": os.environ.get("MONGODB_MORTIMER_AUTHDB"),
 
         "ssl": False,
-        "ssl_ca_certs": None  # os.path.join(os.path.dirname(os.path.realpath(__file__)), "mongodb_ca_file.pem")
+        "ssl_ca_certs": "mongodb_ca_file.pem"  # filepath must be relative to the directory that contains config.py and __init__.py
     }
 
     # Alfred database login settings
@@ -35,7 +35,7 @@ class Config:
         "authentication_source": os.environ.get("MONGODB_ALFRED_AUTHDB"),
 
         "ssl": False,
-        "ssl_ca_certs": None  # os.path.join(os.path.dirname(os.path.realpath(__file__)), "mongodb_ca_file.pem")
+        "ssl_ca_certs": "mongodb_ca_file.pem"  # filepath must be relative to the directory that contains config.py and __init__.py
     }
 
     # Mail settings
@@ -46,11 +46,9 @@ class Config:
     MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
     MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
 
-    # Flask-Dropzone config:
+    # Flask-Dropzone settings:
     # DROPZONE_ALLOWED_FILE_TYPE = 'image',
     DROPZONE_MAX_FILE_SIZE = 300
     DROPZONE_MAX_FILES = 100
     DROPZONE_UPLOAD_ON_CLICK = True
     DROPZONE_UPLOAD_BTN_ID = 'upload'
-
-    # Mortimer settings
