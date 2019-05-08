@@ -1,16 +1,19 @@
 import os
-from flask import current_app
+
+# For security reasons (this code is public), we use a lot of environmentt variables here.
+# You don't have to do the same for your installation of mortimer.
+# On your secured server, you can simply input the needed information right here.
 
 
 class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY")  # secret key of flask app (e.g. for encrypted session data)
-    PAROLE = os.environ.get("PAROLE")       # Parole/Passphrase for registration
-    EXP_PER_PAGE = 10                       # number of experiments displayed per page
+    PAROLE = os.environ.get("PAROLE")          # Parole/Passphrase for registration
+    EXP_PER_PAGE = 10                          # number of experiments displayed per page
 
     # Mortimer database login settings
     MONGODB_SETTINGS = {
         "host": os.environ.get("MONGODB_HOST"),
-        "port": os.environ.get("MONGODB_PORT"),
+        "port": int(os.environ.get("MONGODB_PORT")),
 
         "db": os.environ.get("MONGODB_MORTIMER_DB"),
         "username": os.environ.get("MONGODB_MORTIMER_USER"),
@@ -18,13 +21,13 @@ class Config:
         "authentication_source": os.environ.get("MONGODB_MORTIMER_AUTHDB"),
 
         "ssl": False,
-        "ssl_ca_certs": os.path.join(current_app.root_path, "mongodb_ca_file.pem")
+        "ssl_ca_certs": None  # os.path.join(os.path.dirname(os.path.realpath(__file__)), "mongodb_ca_file.pem")
     }
 
     # Alfred database login settings
     MONGODB_ALFRED_SETTINGS = {
         "host": os.environ.get("MONGODB_HOST"),
-        "port": os.environ.get("MONGODB_PORT"),
+        "port": int(os.environ.get("MONGODB_PORT")),
 
         "db": os.environ.get("MONGODB_ALFRED_DB"),
         "username": os.environ.get("MONGODB_ALFRED_USER"),
@@ -32,7 +35,7 @@ class Config:
         "authentication_source": os.environ.get("MONGODB_ALFRED_AUTHDB"),
 
         "ssl": False,
-        "ssl_ca_certs": os.path.join(current_app.root_path, "mongodb_ca_file.pem")
+        "ssl_ca_certs": None  # os.path.join(os.path.dirname(os.path.realpath(__file__)), "mongodb_ca_file.pem")
     }
 
     # Mail settings
