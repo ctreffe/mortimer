@@ -21,7 +21,7 @@ class Config:
         "authentication_source": os.environ.get("MONGODB_MORTIMER_AUTHDB"),
 
         "ssl": False,
-        "ssl_ca_certs": "mongodb_ca_file.pem"  # filepath must be relative to the directory that contains config.py and __init__.py
+        # "ssl_ca_certs": "mongodb_ca_file.pem"  # filepath must be relative to the directory that contains config.py and __init__.py
     }
 
     # Alfred database login settings
@@ -35,7 +35,7 @@ class Config:
         "authentication_source": os.environ.get("MONGODB_ALFRED_AUTHDB"),
 
         "ssl": False,
-        "ssl_ca_certs": "mongodb_ca_file.pem"  # filepath must be relative to the directory that contains config.py and __init__.py
+        # "ssl_ca_certs": "mongodb_ca_file.pem"  # filepath must be relative to the directory that contains config.py and __init__.py
     }
 
     # Mail settings
