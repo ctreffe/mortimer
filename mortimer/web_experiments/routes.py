@@ -548,6 +548,11 @@ def web_export(username, experiment_title):
     if experiment.author != current_user.username:
         abort(403)
 
+    if not experiment.script:
+        flash("You have nott uploaded a script.py yet. Please upload a script.py and try again.", "warning")
+        return redirect(url_for('web_experiments.experiment', username=current_user.username,
+                                experiment_title=experiment.title))
+
     title = extract_title(experiment.script_fullpath)
     if experiment.title != title:
         flash("Your experiment has different names in mortimer (%s) and in your script.py (%s). These need to be \
