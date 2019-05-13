@@ -321,6 +321,20 @@ def update_experiment(username, experiment_title):
                 to worry. If you made changes that affect the data structure (e.g. adding a new page), you might want \
                 to change the version number.", "warning")
 
+        # allow users to paste script.py directly into textarea
+        # script.py will then be created and placed in tthe experiment directory
+        elif (form.script.data != experiment.script) and not experiment.script_name:
+            experiment.script = form.script.data
+            experiment.script_name = str(uuid4()) + ".py"
+            experiment.script_fullpath = os.path.join(experiment.path, experiment.script_name)
+
+            script_file = form.script.data
+            script_file.save(experiment.script_fullpath)
+
+            experiment.title_from_script = extract_title(experiment.script_fullpath)
+            experiment.author_mail_from_script = extract_author_mail(experiment.script_fullpath)
+            experiment.version = extract_version(experiment.script_fullpath)
+
         # experiment.versions.append(ExperimentVersion(version=form.version.data))
         # experiment.script = form.script.data
         experiment.last_update = datetime.utcnow
