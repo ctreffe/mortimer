@@ -225,7 +225,7 @@ def experiment(username, experiment_title):
 
             old_title = experiment.title_from_script
             experiment.title_from_script = extract_title(experiment.script_fullpath)
-            if old_title != experiment.title_from_script:
+            if old_title and (old_title != experiment.title_from_script):
                 flash("You changed the experiment title in the script.py. The experimental data will be stored under a \
                 different title in the Alfred database. You will not be able to access data that was saved under the \
                 old title.", "danger")
@@ -236,7 +236,7 @@ def experiment(username, experiment_title):
             flash("New script.py was uploaded successfully", "success")
 
             if old_version != experiment.version:
-                flash("Version number changed from {old_version} to {experiment.version}.", "info")
+                flash("Version number changed from %s to %s." % (old_version, experiment.version), "info")
             else:
                 flash("Version number did not change. If that was intended, no need to worry. If you made changes that \
                 affect the data structure (e.g. adding a new page), you might want to change the version number.",
@@ -328,8 +328,9 @@ def update_experiment(username, experiment_title):
             experiment.script_name = str(uuid4()) + ".py"
             experiment.script_fullpath = os.path.join(experiment.path, experiment.script_name)
 
-            script_file = form.script.data
-            script_file.save(experiment.script_fullpath)
+            with open(experiment.script_fullpath, "w") as f:
+                f.write(form.script.data)
+            # script_file.save(experiment.script_fullpath)
 
             experiment.title_from_script = extract_title(experiment.script_fullpath)
             experiment.author_mail_from_script = extract_author_mail(experiment.script_fullpath)
@@ -563,7 +564,7 @@ def web_export(username, experiment_title):
         abort(403)
 
     if not experiment.script:
-        flash("You have nott uploaded a script.py yet. Please upload a script.py and try again.", "warning")
+        flash("You have not uploaded a script.py yet. Please upload a script.py and try again.", "warning")
         return redirect(url_for('web_experiments.experiment', username=current_user.username,
                                 experiment_title=experiment.title))
 
