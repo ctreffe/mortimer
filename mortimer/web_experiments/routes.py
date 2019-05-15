@@ -262,7 +262,7 @@ def experiment(username, experiment_title):
                   "danger")
             return redirect(url_for('web_experiments.experiment', username=experiment.author,
                                     experiment_title=experiment.title))
-    else:
+    elif form.validate_on_submit():
         flash("No script.py was provided, so nothing happened.", "info")
         return redirect(url_for('web_experiments.experiment', username=experiment.author,
                                 experiment_title=experiment.title))
