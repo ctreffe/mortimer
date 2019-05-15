@@ -78,7 +78,7 @@ def new_experiment():
                 flash("The exp_author_mail in your script.py needs to be the same email address that you used to \
                 register in mortimer. Otherwise you will not be able to export your data", "danger")
 
-            with open(experiment.script_fullpath, "r") as f:
+            with open(experiment.script_fullpath, "r", encoding="utf-8") as f:
                 experiment.script = f.read()
 
         if form.password.data:
@@ -208,7 +208,7 @@ def experiment(username, experiment_title):
         script_file.save(experiment.script_fullpath)
         experiment.last_update = datetime.utcnow
 
-        with open(experiment.script_fullpath, "r") as f:
+        with open(experiment.script_fullpath, "r", encoding="utf-8") as f:
             experiment.script = f.read()
 
         try:
@@ -306,7 +306,7 @@ def update_experiment(username, experiment_title):
 
         if experiment.script_name and (form.script.data != experiment.script):
             experiment.script = form.script.data
-            with open(experiment.script_fullpath, "w") as f:
+            with open(experiment.script_fullpath, "w", encoding="utf-8") as f:
                 f.write(form.script.data)
             old_title = experiment.title_from_script
             experiment.title_from_script = extract_title(experiment.script_fullpath)
@@ -332,7 +332,7 @@ def update_experiment(username, experiment_title):
             experiment.script_name = str(uuid4()) + ".py"
             experiment.script_fullpath = os.path.join(experiment.path, experiment.script_name)
 
-            with open(experiment.script_fullpath, "w") as f:
+            with open(experiment.script_fullpath, "w", encoding="utf-8") as f:
                 f.write(form.script.data)
             # script_file.save(experiment.script_fullpath)
 
