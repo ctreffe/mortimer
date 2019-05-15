@@ -6,6 +6,7 @@ from flask_mail import Mail
 from flask_dropzone import Dropzone
 import pymongo
 import os
+import urllib.parse
 
 try:
     from mortimer.set_environ_vars import EnvironSetter
@@ -37,16 +38,17 @@ db = MongoEngine()   # mortimer database
 if Config.MONGODB_ALFRED_SETTINGS["ssl"]:
     client = pymongo.MongoClient(host=Config.MONGODB_ALFRED_SETTINGS["host"],
                                  port=Config.MONGODB_ALFRED_SETTINGS["port"],
-                                 username=Config.MONGODB_ALFRED_SETTINGS["username"],
-                                 password=Config.MONGODB_ALFRED_SETTINGS["password"],
+                                 username=urllib.parse.quote_plus(Config.MONGODB_ALFRED_SETTINGS["username"]),
+                                 password=urllib.parse.quote_plus(Config.MONGODB_ALFRED_SETTINGS["password"]),
                                  authSource=Config.MONGODB_ALFRED_SETTINGS["authentication_source"],
                                  ssl=True,
-                                 ssl_ca_certs=os.path.join(os.path.dirname(os.path.realpath(__file__)), Config.MONGODB_ALFRED_SETTINGS["ssl_ca_certs"]))
+                                 ssl_ca_certs=os.path.join(os.path.dirname(os.path.realpath(__file__)), Config.MONGODB_ALFRED_SETTINGS["ssl_ca_certs"])
+                                 )
 else:
     client = pymongo.MongoClient(host=Config.MONGODB_ALFRED_SETTINGS["host"],
                                  port=Config.MONGODB_ALFRED_SETTINGS["port"],
-                                 username=Config.MONGODB_ALFRED_SETTINGS["username"],
-                                 password=Config.MONGODB_ALFRED_SETTINGS["password"],
+                                 username=urllib.parse.quote_plus(Config.MONGODB_ALFRED_SETTINGS["username"]),
+                                 password=urllib.parse.quote_plus(Config.MONGODB_ALFRED_SETTINGS["password"]),
                                  authSource=Config.MONGODB_ALFRED_SETTINGS["authentication_source"])
 
 alfred_db = client.alfred           # checkin database
