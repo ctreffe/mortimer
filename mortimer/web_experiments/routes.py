@@ -262,6 +262,10 @@ def experiment(username, experiment_title):
                   "danger")
             return redirect(url_for('web_experiments.experiment', username=experiment.author,
                                     experiment_title=experiment.title))
+    else:
+        flash("No script.py was provided, so nothing happened.", "info")
+        return redirect(url_for('web_experiments.experiment', username=experiment.author,
+                                experiment_title=experiment.title))
 
     return render_template("experiment.html",
                            experiment=experiment, expid=str(experiment.id), form=form, status=status,
