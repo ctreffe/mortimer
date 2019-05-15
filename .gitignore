@@ -17,3 +17,4 @@ mortimer/static/mongodb_client_public.crt
 temp/
 *.pem
 set_environ_vars.py
+log_mortimer.md
