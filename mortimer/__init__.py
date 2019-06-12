@@ -5,9 +5,14 @@ from flask_login import LoginManager
 from flask_mail import Mail
 from flask_dropzone import Dropzone
 import pymongo
-import os
-import urllib.parse
 
+# the EnvironSetter sets enviroment variables for the current session
+# It is not included in the GitHub repository, because it contains sensitive
+# information. We use it for easy testing. You can either write your own
+# EnvironSetter, or do one of the following:
+# 1) Set your environment variables directly
+# 2) Set your environment variables in another file, e.g. wsgi.py (we do this on our production sever)
+# 3) Set your login data directly in the config.py
 try:
     from mortimer.set_environ_vars import EnvironSetter
 
@@ -15,7 +20,7 @@ try:
     setter = EnvironSetter()
     setter.set_environment_variables()
 
-except ModuleNotFoundError as e:
+except (ModuleNotFoundError, ImportError):
     print("Environment variables are not set automatically.\
      This is no problem, if you specified them manually or set the relevant data directly in your config.py.")
 
@@ -38,17 +43,17 @@ db = MongoEngine()   # mortimer database
 if Config.MONGODB_ALFRED_SETTINGS["ssl"]:
     client = pymongo.MongoClient(host=Config.MONGODB_ALFRED_SETTINGS["host"],
                                  port=Config.MONGODB_ALFRED_SETTINGS["port"],
-                                 username=urllib.parse.quote_plus(Config.MONGODB_ALFRED_SETTINGS["username"]),
-                                 password=urllib.parse.quote_plus(Config.MONGODB_ALFRED_SETTINGS["password"]),
+                                 username=Config.MONGODB_ALFRED_SETTINGS["username"],
+                                 password=Config.MONGODB_ALFRED_SETTINGS["password"],
                                  authSource=Config.MONGODB_ALFRED_SETTINGS["authentication_source"],
                                  ssl=True,
-                                 ssl_ca_certs=os.path.join(os.path.dirname(os.path.realpath(__file__)), Config.MONGODB_ALFRED_SETTINGS["ssl_ca_certs"])
+                                 #ssl_ca_certs=os.path.join(os.path.dirname(os.path.realpath(__file__)), Config.MONGODB_ALFRED_SETTINGS["ssl_ca_certs"])
                                  )
 else:
     client = pymongo.MongoClient(host=Config.MONGODB_ALFRED_SETTINGS["host"],
                                  port=Config.MONGODB_ALFRED_SETTINGS["port"],
-                                 username=urllib.parse.quote_plus(Config.MONGODB_ALFRED_SETTINGS["username"]),
-                                 password=urllib.parse.quote_plus(Config.MONGODB_ALFRED_SETTINGS["password"]),
+                                 username=Config.MONGODB_ALFRED_SETTINGS["username"],
+                                 password=Config.MONGODB_ALFRED_SETTINGS["password"],
                                  authSource=Config.MONGODB_ALFRED_SETTINGS["authentication_source"])
 
 alfred_db = client.alfred           # checkin database
