@@ -297,7 +297,7 @@ def extract_version(filename):
 
     version = []
 
-    with open(filename, "r") as f:
+    with open(filename, "r", encoding="utf-8") as f:
         for line in f.readlines():
             m = p.search(line)
             if m is not None:
@@ -311,7 +311,7 @@ def extract_title(filename):
 
     name = []
 
-    with open(filename, "r") as f:
+    with open(filename, "r", encoding="utf-8") as f:
         for line in f.readlines():
             m = p.search(line)
             if m is not None:
@@ -326,7 +326,7 @@ def extract_author_mail(filename):
 
     name = []
 
-    with open(filename, "r") as f:
+    with open(filename, "r", encoding="utf-8") as f:
         for line in f.readlines():
             m = p.search(line)
             if m is not None:
@@ -344,14 +344,14 @@ def futurize_script(file):
 def replace_all_patterns(file):
 
     def load_json(file):
-        with open(file, "r") as json_file:
+        with open(file, "r", encoding="utf-8") as json_file:
             text = json_file.read().replace("\n", "")
             json_data = json.loads(text)
 
         return json_data
 
     def replace_patterns(file, change_dict, write=False, max_iter=10):
-        with open(file, "r") as f:
+        with open(file, "r", encoding="utf-8") as f:
             code = []
             iter = 0
             for line in f.readlines():  # go through code line by line
@@ -379,7 +379,7 @@ def replace_all_patterns(file):
         code = "".join(code)
 
         if write:  # if parameter is true, we save the changes to the file
-            with open(file, "w") as f:
+            with open(file, "w", encoding="utf-8") as f:
                 f.write(code)
 
         return code
