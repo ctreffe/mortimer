@@ -5,6 +5,7 @@ from flask_login import LoginManager
 from flask_mail import Mail
 from flask_dropzone import Dropzone
 import pymongo
+import os
 
 # the EnvironSetter sets enviroment variables for the current session
 # It is not included in the GitHub repository, because it contains sensitive
@@ -20,7 +21,7 @@ try:
     setter = EnvironSetter()
     setter.set_environment_variables()
 
-except (ModuleNotFoundError, ImportError):
+except ImportError:
     print("Environment variables are not set automatically.\
      This is no problem, if you specified them manually or set the relevant data directly in your config.py.")
 
@@ -47,7 +48,7 @@ if Config.MONGODB_ALFRED_SETTINGS["ssl"]:
                                  password=Config.MONGODB_ALFRED_SETTINGS["password"],
                                  authSource=Config.MONGODB_ALFRED_SETTINGS["authentication_source"],
                                  ssl=True,
-                                 #ssl_ca_certs=os.path.join(os.path.dirname(os.path.realpath(__file__)), Config.MONGODB_ALFRED_SETTINGS["ssl_ca_certs"])
+                                 ssl_ca_certs=os.path.join(os.path.dirname(os.path.realpath(__file__)), Config.MONGODB_ALFRED_SETTINGS["ssl_ca_certs"])
                                  )
 else:
     client = pymongo.MongoClient(host=Config.MONGODB_ALFRED_SETTINGS["host"],
