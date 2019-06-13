@@ -198,3 +198,37 @@ def staticfile(identifier):
 
     # resp.cache_control.no_cache = True
     return resp
+
+
+@alfredo.route('/dynamicfile/<identifier>')
+def dynamicfile(identifier):
+    try:
+        sid = session['sid']
+        script = experiment_manager.get(sid)
+        strIO, content_type = script.experiment.user_interface_controller.get_dynamic_file(identifier)
+    except KeyError:
+        abort(404)
+    resp = make_response(send_file(strIO, mimetype=content_type))
+    resp.cache_control.no_cache = True
+    return resp
+
+
+@alfredo.route('/callable/<identifier>', methods=['GET', 'POST'])
+def callable(identifier):
+    try:
+        sid = session['sid']
+        script = experiment_manager.get(sid)
+        f = script.experiment.user_interface_controller.get_callable(identifier)
+    except KeyError:
+        abort(404)
+    if request.content_type == "application/json":
+        values = request.get_json()
+    else:
+        values = request.values.to_dict()
+    rv = f(**values)
+    if rv is not None:
+        resp = make_response(rv)
+    else:
+        resp = make_response(redirect(url_for('alfredo.experiment')))
+    resp.cache_control.no_cache = True
+    return resp
