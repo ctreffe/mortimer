@@ -23,6 +23,7 @@ def import_script(experiment_id):
 
     spec = importlib.util.spec_from_file_location(experiment.script_name, path)
     module = importlib.util.module_from_spec(spec)
+    module.filepath = experiment.path  # Creates new variable filepath in globals() of imported module before loading
     spec.loader.exec_module(module)
 
     return module
