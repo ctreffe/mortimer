@@ -1,0 +1,10 @@
+{
+    "add_handler": "addHandler",
+    "disable_minimumDisplayTime": "disable_minimum_display_time",
+    "get_formatter": "getFormatter",
+    "get_logger": "getLogger",
+    "question_controller": "page_controller",
+    "question": "page",
+    "set_level": "setLevel",
+    "pageGroup": "section"
+}

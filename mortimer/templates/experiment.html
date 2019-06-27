@@ -1,28 +1,258 @@
-{% extends "base.html" %}
+{% extends "layout.html" %}
 
 {% block content %}
 
+<div class="media content-section">
+  <div class="media-body">
+    <div>
+      <a class="mr-2" href="#">{{ experiment.author }}</a>
+      <small class="text-muted">{{ experiment.date_created.strftime('%Y-%m-%d') }}</small>
+    </div>
+    <legend class="border-bottom"><b>{{ experiment.title }}</b></legend>
 
-
-    <h1>{{ experiment.name }}</h1>
-    {% if experiment.external %}<h2>External</h2>{% endif %}
-
-    <ul>
-        {% if not experiment.external %}
-        <li><a href="{{ url_for('alfredo.start', expid=experiment._id) }}">start link</a></li>
+  
+    <div class="row">
+      <div class="col-md-3"><small><b>Created in Mortimer</b></small>:</div><div class="col-md-3"><span class="badge badge-light">{{ experiment.date_created.strftime('%Y-%m-%d, %H:%M') }}</span></div>
+    </div>
+    <div class="row">
+      <div class="col-md-3"><small><b>Last Finished Dataset</b></small>:</div><div class="col-md-3"><span class="badge badge-light">{{ last_activity }}</span></div>
+    </div>
+    <div class="row">
+      <div class="col-md-3"><small><b>First Finished Dataset</b></small>:</div><div class="col-md-3"><span class="badge badge-light">{{ first_activity }}</span></div>
+    </div>
+    <div class="row pt-3">
+    <div class="col-md-3"><small><b>Status</b></small>:</div>
+  {% if status == "active" %}
+      <div class="col-md-3"><span class="badge badge-success">{{ status }}</span></div>
+  {% else %}
+    <div class="col-md-3"><span class="badge badge-warning">{{ status }}</span></div>
+  {% endif %}
+    </div>
+    <div class="row">
+      <div class="col-md-3"><small><b>script.py</b></small>:</div><div class="col-md-5">
+        {% if not experiment.script_fullpath %}
+        <span class="badge badge-warning">unavailable</span>
+        {% else %}
+        <span class="badge badge-success">available</span>
         {% endif %}
-        <li><a href="{{ url_for('experiment_edit', id=experiment._id) }}">edit experiment</a></li>
-        <li><a href="{{ url_for('experiment_export', id=experiment._id) }}">export</a></li>
-        <li>
-            Daten:
-            <ul>
-                <li>Datensätze {{ total_count }}</li>
-                <li>Davon beendete: {{ finished_count }}</li>
-                <li></li>
-            </ul>
-        </li>
-    </ul>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-3"><small><b>Title Conflict</b></small>:</div><div class="col-md-5">
+        {% if title_unequal %}
+        <span class="badge badge-warning">Different titles in mortimer and script.py. Please change!</span>
+        {% else %}
+        <span class="badge badge-success">All good!</span>
+        {% endif %}
+      </div>
+    </div>
+    {% if title_unequal %}
+    <div class="row">
+      <div class="col-md-3"><small><b>script.py Title</b></small>:</div><div class="col-md-3"><span class="badge badge-light">{{ script_title }}</span></div>
+    </div>
+    {% endif %}
+    {% if experiment.script_name %}
+    <div class="row">
+      <div class="col-md-3"><small><b>Author Conflict</b></small>:</div><div class="col-md-5">
+        {% if author_mail != current_user.email %}
+        <span class="badge badge-warning">Different authors in mortimer and script.py. Please change!</span>
+        {% else %}
+        <span class="badge badge-success">All good!</span>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+    {% if experiment.script_name and author_mail != current_user.email %}
+    <div class="row">
+      <div class="col-md-3"><small><b>Authors</b></small>:</div><div class="col-md-7"><small>Script: </small><span class="badge badge-light">{{ author_mail }}</span><small>, Mortimer: </small><span class="badge badge-light">{{ current_user.email }}</span></div>
+    </div>
+    {% endif %}
+    <div class="row">
+      <div class="col-md-3"><small><b>Passsword Protection</b></small>:</div><div class="col-md-5">
+        <span class="badge badge-primary">{{ password_protection }}</span>
+      </div>
+    </div>
+    {% if not experiment.public %}
+    <div class="row">
+      <div class="col-md-3"><small><b>Passsword</b></small>:</div><div class="col-md-5">
+        <span class="badge badge-light">{{ experiment.password }}</span>
+      </div>
+    </div>
+    {% endif %}
+    <div class="row pt-3">
+      <div class="col-md-3"><small><b>Latest Version</b></small>:</div><div class="col-md-3"><span class="badge badge-dark">{{ experiment.version }}</span></div>
+    </div>
+    <div class="row">
+      <div class="col-md-3"><small><b>Version History</b></small>:</div><div class="col-md-3">
+        {% for version in experiment.available_versions %}
+        <span class="badge badge-dark"> {{ version }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    
+    
+    
 
-    <a href="{{ url_for('experiment_delete', id=experiment._id) }}">delete experiment</a>
+    <h6 class="border-bottom pt-4"><b>Description</b></h6>
 
+      <p class="article-content">{{ experiment.description }}</p>  
+
+    <!--  <p class="article-content">{{ experiment.script }}</p> -->
+  </div>
+</div>
+
+  <div class="article content-section">
+    <legend class="border-bottom"><b>Options</b></legend>
+      <div class="row">
+
+        <form method="POST" action="{{ url_for('web_experiments.de_activate_experiment', experiment_title=experiment.title, username=experiment.author) }}">
+          <input class="btn btn-primary ml-3 mt-2 mb-2" type="submit" value="{{ toggle_button }}">
+        </form>
+
+        <a class="btn btn-primary ml-1 mt-2 mb-2" href="{{ url_for('web_experiments.web_export', experiment_title=experiment.title, username=experiment.author) }}">Export Data</a>
+      
+        <a class="btn btn-primary ml-1 mt-2 mb-2" href="{{ url_for('web_experiments.manage_resources', experiment_title=experiment.title, username=experiment.author) }}">Manage Resources</a>
+        
+        
+        <a class="btn btn-secondary ml-1 mt-2 mb-2" href="{{ url_for('web_experiments.update_experiment', experiment_title=experiment.title, username=experiment.author) }}">Edit</a>
+      
+        <button type="button" class="btn btn-danger ml-1 mt-2 mb-2" data-toggle="modal" data-target="#deleteModal">Delete from Mortimer</button>
+      
+      </div>
+
+      
+      
+
+    </div>
+
+
+    <div class="article content-section">
+      <legend class="border-bottom"><b>Access Experiment</b></legend>
+
+      {% if experiment.active == True %}
+
+      <div class="input-group mb-3">
+      <input type="text" class="form-control" aria-describedby="basic-addon2" id="link-to-exp" value="{{ url_for('alfredo.start', expid=expid, _external=True) }}">
+      <div class="input-group-append">
+        <button class="btn btn-outline-secondary" type="button" data-clipboard-target="#link-to-exp">
+          <img src="../static/clippy.svg" alt="Copy to clipboard" width="20"> Copy Link
+        </button>
+        <a class="btn btn-success" target="_blank" rel="noopener noreferrer" href="{{ url_for('alfredo.start', expid=expid) }}">Start</a>
+      </div>
+    </div>
+
+    {% else %}
+
+    <div class="input-group mb-3">
+      <input type="text" class="form-control" aria-describedby="basic-addon2" id="link-to-exp" placeholder="(inactive)">
+      <div class="input-group-append">
+        <button class="btn btn-outline-secondary" type="button" data-clipboard-target="#link-to-exp">
+          <img src="{{ url_for('static', filename='clippy.svg')}}" alt="Copy to clipboard" width="20"> Copy Link
+        </button>
+        <a class="btn btn-success" href="#">Start</a>
+      </div>
+    </div>
+
+    {% endif %}
+
+    </div>
+
+<div class="article content-section">
+  <legend><b>Datasets</b></legend>
+
+      <table class="table table-striped">
+  <thead>
+    <tr>
+      <th scope="col">N</th>
+      <th scope="col" class="text-center"><span class="badge badge-success">Finished</span></th>
+      <th scope="col" class="text-center"><span class="badge badge-warning">Unfinished</span></th>
+      <th scope="col" class="text-center"><span class="badge badge-dark">Total</span></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th scope="row">All Versions</th>
+      <td class="text-center">{{ datasets["all_finished_datasets"] }}</td>
+      <td class="text-center">{{ datasets["all_unfinished_datasets"] }}</td>
+      <td class="text-center">{{ datasets["all_datasets"] }}</td>
+    </tr>
+    {% for version, info in versions.items() %}
+
+    <tr>
+      <th scope="row">Version {{ version }} </th>
+      <td class="text-center">{{ info["finished"] }}</td>
+      <td class="text-center">{{  info["unfinished"] }}</td>
+      <td class="text-center">{{ info["total"] }}</td>
+    </tr>
+
+    {% endfor %}
+  </tbody>
+</table>
+
+    </div>
+
+
+<div class="article content-section">
+    <form method="POST" action="" enctype="multipart/form-data" class="needs-validation" novalidate>
+        {{ form.hidden_tag() }}
+        <legend class="border-bottom"><b>{{ form.script.label() }}</b></legend>
+        <div class="row">
+          <div class="col-xs ml-3">
+          </div>
+          <div class="col-xs ml-2">
+            <div class="form-group">
+                    {{ form.script(class="form-control-file") }}
+                    {% if form.script.errors %}
+                        {% for error in form.script.errors %}
+                            <span class="text-danger">{{ error }}</span><br>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+          </div>
+          
+
+        </div>
+        <div class="form-group ml-2">
+              {{ form.submit(class="btn btn-primary btn-sm")}}
+          </div>
+
+        
+          
+      </form>
+
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">Delete Experiment</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        Are you sure that you want to delete this experiment? The data stored in Mortimer will be lost! <br><br>The experimental data in the Alfred database will <b>not</b> be deleted by this.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <form method="POST" action="{{ url_for('web_experiments.delete_experiment', experiment_title=experiment.title, username=experiment.author) }}">
+          <input class="btn btn-danger" type="submit" value="Delete">
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+{% endblock content %}
+
+{% block custom_js %}
+  <!-- Copy to Clipboard Javascript -->
+  <script src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js"></script>
+  <script type="text/javascript">
+    new ClipboardJS('.btn');
+  </script>
 {% endblock %}

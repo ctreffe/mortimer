@@ -1,0 +1,21 @@
+{
+    "AutoHideQuestion": "AutoHidePage",
+    "CompositeQuestion": "CompositePage",
+    "CoreCompositeQuestion": "CoreCompositePage",
+    "DemographicQuestion": "DemographicPage",
+    "DynamicQuestion": "DynamicPage",
+    "ExperimentFinishQuestion": "ExperimentFinishPage",
+    "HeadOpenQG": "HeadOpenSection",
+    "HeadOpenQGCantClose": "HeadOpenSectionCantClose",
+    "MongoSaveCompositeQuestion": "MongoSaveCompositePage",
+    "Question": "Page",
+    "QuestionController": "PageController",
+    "QuestionCore": "PageCore",
+    "QuestionGroup": "PageGroup",
+    "QuestionPlaceholder": "PagePlaceholder",
+    "SegmentedQG": "SegmentedSection",
+    "WebCompositeQuestion": "WebCompositePage",
+    "WebQuestionInterface": "WebPageInterface",
+    "WebTimeoutCloseQuestion": "WebTimeoutClosePage",
+    "WebTimeoutForwardQuestion": "WebTimeoutForwardPage"
+}

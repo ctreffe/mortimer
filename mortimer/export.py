@@ -1,33 +1,49 @@
+from __future__ import print_function
+from builtins import str
+from builtins import range
+from builtins import object
 import json
 import csv
 import re
 import io
-from tempfile import TemporaryFile
+
+# this is necessary, because send_file requires bytes-like objects
+def make_str_bytes(f):
+    # Creating the byteIO object from the StringIO Object
+    bytes_f = io.BytesIO()
+    bytes_f.write(f.getvalue().encode('utf-8'))
+    # seeking was necessary. Python 3.5.2, Flask 0.12.2
+    bytes_f.seek(0)
+    f.close()
+    return bytes_f
+
 
 def to_json(cursor):
-    sIO = io.BytesIO()
-    l = list(cursor)
-    json.dump(l, sIO)
+    sIO = io.StringIO()
+    L = list(cursor)
+    json.dump(L, sIO)
     sIO.seek(0)
     return sIO
+
 
 def to_csv(cursor, none_value=None, remove_linebreaks=False, dialect='excel', **writerparams):
     rows = cursor_to_rows(cursor, none_value)
     if remove_linebreaks:
-        for i in range(1,len(rows)):
+        for i in range(1, len(rows)):
             for j in range(len(rows[i])):
-                if isinstance(rows[i][j], str) or isinstance(rows[i][j], unicode):
+                if isinstance(rows[i][j], str) or isinstance(rows[i][j], str):
                     rows[i][j].replace('\n', '')
-    csvfile = io.BytesIO()
+    csvfile = io.StringIO()
     writer = csv.writer(csvfile, dialect=dialect, **writerparams)
     for row in rows:
-        writer.writerow([unicode(cell).encode('utf-8') for cell in row])
-    csvfile.seek(0)
+        writer.writerow([cell for cell in row])
     return csvfile
+
 
 def to_excel_csv(cursor, none_value=None, **writerparams):
     return to_csv(cursor, none_value=none_value, remove_linebreaks=True,
-            delimiter=';', dialect='excel', **writerparams)
+                  delimiter=';', dialect='excel', **writerparams)
+
 
 def to_excel(cursor, none_value=None):
     from openpyxl import Workbook
@@ -37,28 +53,32 @@ def to_excel(cursor, none_value=None):
     for i in range(len(docs)):
         for j in range(len(docs[i])):
             tmp = docs[i][j]
-            if not( isinstance(tmp, str) and isinstance(tmp, unicode) and \
+            if not(isinstance(tmp, str) and isinstance(tmp, str) and
                     isinstance(tmp, float) and isinstance(tmp, int)):
-                tmp = unicode(tmp)
+                tmp = str(tmp)
             sheet.cell(row=i, column=j).value = tmp
-    #f = TemporaryFile()
-    f = io.BytesIO()
+    # f = TemporaryFile()
+    f = io.StringIO()
     wb.save(f)
     f.seek(0)
     return f
 
 
 def natural_sort(l):
-    convert = lambda text: int(text) if text.isdigit() else text.lower()
-    alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key[0]) ]
-    return sorted(l, key = alphanum_key)
+    def convert(text):
+        return int(text) if text.isdigit() else text.lower()
+
+    def alphanum_key(key):
+        return [convert(c) for c in re.split('([0-9]+)', key[0])]
+    return sorted(l, key=alphanum_key)
+
 
 def cursor_to_rows(cursor, none_value=None):
     docs = list(cursor)
     h = Header(*docs)
     rows = [h.getFlatHeaders(False)] + h.getDataFromDocs(docs)
     if none_value is not None:
-        for i in range(1,len(rows)):
+        for i in range(1, len(rows)):
             for j in range(len(rows[i])):
                 if rows[i][j] is None:
                     rows[i][j] = none_value
@@ -80,13 +100,12 @@ class Header(object):
         self.parent = p
         return self
 
-
     def addDoc(self, doc):
         assert(self.tag == doc['tag'])
-        for k, v in natural_sort(doc.items()):
+        for k, v in natural_sort(list(doc.items())):
             if k in ['_id', 'tag', 'uid']:
                 pass
-            elif k == 'subtreeData':
+            elif k == 'subtree_data':
                 for subDoc in v:
                     if subDoc == {}:
                         continue
@@ -98,8 +117,8 @@ class Header(object):
                             break
                     if not found:
                         self.children.append(Header(subDoc).setParent(self))
-            elif k == 'additionalData':
-                v['tag'] = 'additionalData'
+            elif k == 'additional_data':
+                v['tag'] = 'additional_data'
                 if self.additional_data is None:
                     self.additional_data = Header(v)
                 else:
@@ -118,7 +137,7 @@ class Header(object):
                     rl.append(pre + h)
         if self.additional_data and additional_data:
             for h in self.additional_data.getFlatHeaders():
-                    rl.append(pre + h)
+                rl.append(pre + h)
         return rl
 
     def getDataFromDoc(self, doc):
@@ -129,7 +148,7 @@ class Header(object):
             rv.append(doc.get(header, None))
         for child in self.children:
             found = False
-            for subDoc in doc.get('subtreeData', []):
+            for subDoc in doc.get('subtree_data', []):
                 try:
                     if subDoc['tag'] == child.tag:
                         found = True
@@ -139,7 +158,7 @@ class Header(object):
                     raise Exception("break")
             rv = rv + child.getDataFromDoc(subDoc if found else {})
         if self.additional_data:
-            rv = rv + self.additional_data.getDataFromDoc(doc.get('additionalData', {}))
+            rv = rv + self.additional_data.getDataFromDoc(doc.get('additional_data', {}))
         return rv
 
     def getDataFromDocs(self, docs):
@@ -150,8 +169,8 @@ class Header(object):
 
     def __unicode__(self):
         if self.parent:
-            return unicode(self.parent) + '.' + self.tag
-        return unicode(self.tag)
+            return str(self.parent) + '.' + self.tag
+        return str(self.tag)
 
     def __str__(self):
-        return unicode(self).encode('utf-8')
+        return str(self).encode('utf-8')

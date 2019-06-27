@@ -1,112 +1,93 @@
-# -*- coding:utf-8 -*-
-
+from flask import Flask
+from flask_mongoengine import MongoEngine
+from flask_bcrypt import Bcrypt
+from flask_login import LoginManager
+from flask_mail import Mail
+from flask_dropzone import Dropzone
+import pymongo
 import os
 
-from flask import Flask, g, session, url_for, abort, request, Response,\
-    send_file, render_template, redirect
-from flask_login import LoginManager, login_required, current_user
-from flask_mongokit import MongoKit
-from flask_bcrypt import Bcrypt
+# the EnvironSetter sets enviroment variables for the current session
+# It is not included in the GitHub repository, because it contains sensitive
+# information. We use it for easy testing. You can either write your own
+# EnvironSetter, or do one of the following:
+# 1) Set your environment variables directly
+# 2) Set your environment variables in another file, e.g. wsgi.py (we do this on our production sever)
+# 3) Set your login data directly in the config.py
+try:
+    from mortimer.set_environ_vars import EnvironSetter
 
-from pymongo import MongoClient
+    # set environment variables
+    setter = EnvironSetter()
+    setter.set_environment_variables()
 
-from bson.objectid import ObjectId
-
-from .models import *
-from .views import *
-from .alfredo import alfredo
-
-# Configuration
-DEBUG = True
-SECRET_KEY = 'development key'
-SCRIPT_FOLDER = 'scripts'
-UPLOAD_FOLDER = 'uploads'
-
-ALFRED_HOST = 'localhost'
-ALFRED_DB = 'alfred'
-ALFRED_COLLECTION = 'test_col'
-ALFRED_USERNAME = None
-ALFRED_PASSWORD = None
-
-MONGODB_HOST = 'localhost'
-MONGODB_DATABASE = 'flask'
-MONGODB_USERNAME = None
-MONGODB_PASSWORD = None
-
-# Initalize Flask
-app = Flask(__name__)
-app.config.from_object(__name__)
-
-# Create instance folders
-if not os.path.exists(app.instance_path):
-    os.makedirs(app.instance_path)
-if not os.path.exists(os.path.join(app.instance_path, app.config['SCRIPT_FOLDER'])):
-    os.makedirs(os.path.join(app.instance_path, app.config['SCRIPT_FOLDER']))
-if not os.path.exists(os.path.join(app.instance_path, app.config['UPLOAD_FOLDER'])):
-    os.makedirs(os.path.join(app.instance_path, app.config['UPLOAD_FOLDER']))
-
-# Bcrypt
-app.bcrypt = Bcrypt(app)
-
-# login manager
-login_manager = LoginManager()
-login_manager.login_view = 'login'
-
-@login_manager.user_loader
-def load_user(id):
-    return db.User.get_from_id(ObjectId(id))
-
-login_manager.init_app(app)
-
-# Mongo
-db = MongoKit(app)
-app.db = db
-db.register([User, Experiment])
-
-alfred_db = MongoClient(app.config['ALFRED_HOST'])[app.config['ALFRED_DB']]
-if app.config['ALFRED_USERNAME']:
-    alfred_db.authenticate(app.config['ALFRED_USERNAME'],
-            app.config['ALFRED_PASSWORD'])
-app.alfred_col = alfred_db[app.config['ALFRED_COLLECTION']]
+except ImportError:
+    print("Environment variables are not set automatically.\
+     This is no problem, if you specified them manually or set the relevant data directly in your config.py.")
 
 
-# register blueprints
-app.register_blueprint(alfredo, url_prefix='/alfredo')
-app.register_blueprint(alfredo, url_prefix='/alfred')
-
-# Configure Routes
-app.add_url_rule('/', view_func=IndexView.as_view('index'))
-
-app.add_url_rule('/experiments/', view_func=ExperimentListView.as_view('experiments'))
-app.add_url_rule('/experiment/new/', defaults={'id': None}, view_func=ExperimentEditView.as_view('experiment_new'))
-app.add_url_rule('/experiment/<ObjectId:id>/', view_func=ExperimentView.as_view('experiment'))
-app.add_url_rule('/experiment/<ObjectId:id>/edit/', view_func=ExperimentEditView.as_view('experiment_edit'))
-app.add_url_rule('/experiment/<ObjectId:id>/delete/', view_func=ExperimentDeleteView.as_view('experiment_delete'))
-app.add_url_rule('/experiment/<ObjectId:id>/export/', view_func=ExperimentExportView.as_view('experiment_export'))
-
-app.add_url_rule('/uploads/', defaults={'path': '', 'delete': False}, view_func=UploadView.as_view('uploads'))
-app.add_url_rule('/uploads/<path:path>/', defaults={'delete': False}, view_func=UploadView.as_view('upload-path'))
-app.add_url_rule('/uploads/<path:path>/delete/', defaults={'delete': True}, view_func=UploadView.as_view('upload_delete'))
-
-app.add_url_rule('/data/', view_func=FooView.as_view('data_management'))
-app.add_url_rule('/settings/', view_func=FooView.as_view('settings'))
-app.add_url_rule('/login/', view_func=LoginView.as_view('login'))
-app.add_url_rule('/logout/', view_func=LogoutView.as_view('logout'))
-
-@app.route('/add_user/<username>/<password>')
-def add_user(username, password):
-    if current_user.username != "ctreffe":
-        abort()
-    u = db.User()
-    u.username = unicode(username)
-    u.mail = u'dummy@example.com'
-    u.active = True
-    u.set_password(password)
-    u.save()
-    flash("user %s created." % username)
-    return redirect(url_for('index'))
+from mortimer.config import Config
 
 
+# register extensions
+bcrypt = Bcrypt()                               # for hashing passwords
+login_manager = LoginManager()                  # managing login and loggout
+login_manager.login_view = "users.login"        # function name of login route
+login_manager.login_message_category = "info"   # bootstrap class of "login necessary" message
+mail = Mail()                                   # for sending password reset mails
+dropzone = Dropzone()                           # for multiple file upload
 
-if __name__ == '__main__':
-    app.run()
+# databases
+db = MongoEngine()   # mortimer database
+
+# database for querying alfred collections
+if Config.MONGODB_ALFRED_SETTINGS["ssl"]:
+    client = pymongo.MongoClient(host=Config.MONGODB_ALFRED_SETTINGS["host"],
+                                 port=Config.MONGODB_ALFRED_SETTINGS["port"],
+                                 username=Config.MONGODB_ALFRED_SETTINGS["username"],
+                                 password=Config.MONGODB_ALFRED_SETTINGS["password"],
+                                 authSource=Config.MONGODB_ALFRED_SETTINGS["authentication_source"],
+                                 ssl=True,
+                                 ssl_ca_certs=os.path.join(os.path.dirname(os.path.realpath(__file__)), Config.MONGODB_ALFRED_SETTINGS["ssl_ca_certs"])
+                                 )
+else:
+    client = pymongo.MongoClient(host=Config.MONGODB_ALFRED_SETTINGS["host"],
+                                 port=Config.MONGODB_ALFRED_SETTINGS["port"],
+                                 username=Config.MONGODB_ALFRED_SETTINGS["username"],
+                                 password=Config.MONGODB_ALFRED_SETTINGS["password"],
+                                 authSource=Config.MONGODB_ALFRED_SETTINGS["authentication_source"])
+
+alfred_db = client.alfred           # checkin database
+alfred_web_db = alfred_db.web       # web collection
+alfred_local_db = alfred_db.local   # local collection
+
+
+# application factory
+def create_app(config_class=Config):
+    app = Flask(__name__)
+    app.config.from_object(Config)
+
+    # import blueprints
+    from mortimer.users.routes import users
+    from mortimer.web_experiments.routes import web_experiments
+    from mortimer.web_experiments.alfredo import alfredo
+    from mortimer.main.routes import main
+    from mortimer.local_experiments.routes import local_experiments
+    from mortimer.errors.handlers import errors
+
+    # register blueprints
+    app.register_blueprint(users)
+    app.register_blueprint(web_experiments)
+    app.register_blueprint(main)
+    app.register_blueprint(alfredo)
+    app.register_blueprint(local_experiments)
+    app.register_blueprint(errors)
+
+    # bind extensions to app instance
+    db.init_app(app)
+    bcrypt.init_app(app)
+    login_manager.init_app(app)
+    mail.init_app(app)
+    dropzone.init_app(app)
+
+    return app

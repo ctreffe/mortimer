@@ -1,0 +1,39 @@
+{% extends "layout.html" %}
+
+{% block custom_css %}
+<!-- Dropzone CSS -->
+  {{ dropzone.load_css() }}
+  {{ dropzone.style('border: 2px dashed #0087F7; margin: 10px 0 10px;') }}
+{% endblock %}
+
+{% block content %}
+
+<div class="content-section">
+    <div class="article-metadata">
+              <a class="mr-2" href="#">{{ experiment.author }}</a>
+              <small class="text-muted">{{ experiment.date_created.strftime('%Y-%m-%d') }}</small>
+            </div>
+            <legend class="border-bottom"><b>{{ experiment.title }}</b>: {{ legend }} to <code>{{ relative_path }}</code> </legend>
+
+            <b>Note:</b> The names of uploaded files are subject to a security check. If a filename is insecure, the upload will change it to a secure form. An allowed filename must for example not contain slashes (<code>/</code>), umlauts (<code>äöü</code>) or whitespace. Please make sure that all your filenames are secure. 
+            <br> <br>
+            <b>Example</b><br>
+            Not allowed: <code>../../../../home/username/.bashrc</code><br>
+            Allowed: <code>home_username_.bashrc</code>
+
+            {{ dropzone.create(url_for('web_experiments.upload_resources', experiment_title=experiment.title, username=experiment.author, relative_path=relative_path)) }}
+        <button id="upload" class="btn btn-primary">Upload</button>
+
+        <a class="btn btn-outline-primary" href="{{ url_for('web_experiments.manage_resources', experiment_title=experiment.title, username=experiment.author) }}">Back to Resources Management</a>
+        <a class="btn btn-outline-primary" href="{{ url_for('web_experiments.experiment', experiment_title=experiment.title, username=experiment.author) }}">Back to Experiment</a>
+
+</div>
+
+{% endblock content %}
+
+{% block custom_js %}
+    <!-- Dropzone JavaScript -->
+  
+  {{ dropzone.load_js() }}
+  {{ dropzone.config(custom_options='autoProcessQueue: false, addRemoveLinks: true, parallelUploads: 20') }}
+{% endblock %}
