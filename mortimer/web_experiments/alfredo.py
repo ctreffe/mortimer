@@ -13,7 +13,7 @@ import inspect
 
 def number_of_func_params(func):
     # use in python 3 inspect.signature
-    argspec = inspect.signature(func)
+    argspec = inspect.getfullargspec(func)
     num_params = len(argspec[0])
     if argspec[1] is not None:
         num_params += 1
