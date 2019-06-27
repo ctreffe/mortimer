@@ -8,6 +8,18 @@ from mortimer.models import WebExperiment
 from bson.objectid import ObjectId
 import re
 import os
+import inspect
+
+
+def number_of_func_params(func):
+    # use in python 3 inspect.signature
+    argspec = inspect.signature(func)
+    num_params = len(argspec[0])
+    if argspec[1] is not None:
+        num_params += 1
+    if argspec[2] is not None:
+        num_params += 1
+    return num_params
 
 
 def import_script(experiment_id):
@@ -105,7 +117,11 @@ def start(expid):
     session['sid'] = sid
     session['page_tokens'] = []
 
+    # get values passed by get or post request
+    values = request.values.to_dict()
+
     os.chdir(experiment.path)
+
     # create experiment
     module = import_script(experiment.id)
     # script.generate_experiment.start()
@@ -114,7 +130,10 @@ def start(expid):
     except AttributeError:
         script = module.Script()
 
-    script.experiment = script.generate_experiment()
+    if number_of_func_params(script.generate_experiment) > 1:
+        script.experiment = script.generate_experiment(**values)
+    else:
+        script.experiment = script.generate_experiment()
 
     # start experiment
     script.experiment.start()
