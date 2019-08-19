@@ -24,6 +24,7 @@ def new_experiment():
     if form.validate_on_submit():
 
         experiment = WebExperiment(title=form.title.data, author=current_user.username,
+                                   author_mail=current_user.email,
                                    description=form.description.data)
 
         experiment.directory_name = str(uuid4())

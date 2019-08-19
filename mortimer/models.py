@@ -39,8 +39,9 @@ class User(db.Document, UserMixin):
 
 class WebExperiment(db.Document):
     author = db.StringField(required=True)
+    author_mail = db.StringField(required=True)
     author_mail_from_script = db.StringField()
-    title = db.StringField(required=True, unique_with="author")
+    title = db.StringField(required=True, unique_with="author_mail")
     title_from_script = db.StringField()
     version = db.StringField(unique_with="title")
     available_versions = db.ListField(db.StringField())
