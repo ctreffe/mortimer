@@ -136,6 +136,9 @@ def start(expid):
     else:
         script.experiment = script.generate_experiment()
 
+    script.experiment.update(exp_name=experiment.title, exp_version=experiment.version,
+                             exp_author_mail=experiment.author_mail)
+
     # start experiment
     script.experiment.start()
 
