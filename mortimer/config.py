@@ -8,8 +8,10 @@ import os
 class Config:
     if os.environ.get("MONGODB_SSL") == "True":
         mongodb_ssl = True
+        ssl_ca_certs = os.environ.get("MONGODB_SSL_CAFILE")
     else:
         mongodb_ssl = False
+        ssl_ca_certs = None
 
     SECRET_KEY = os.environ.get("SECRET_KEY")  # secret key of flask app (e.g. for encrypted session data)
     PAROLE = os.environ.get("PAROLE")          # Parole/Passphrase for registration
@@ -26,7 +28,7 @@ class Config:
         "authentication_source": os.environ.get("MONGODB_MORTIMER_AUTHDB"),
 
         "ssl": mongodb_ssl,                     # True / False
-        "ssl_ca_certs": os.environ.get("MONGODB_SSL_CAFILE")
+        "ssl_ca_certs": ssl_ca_certs
 
         # "ssl": False,
         # "ssl_ca_certs": "mongodb_ca_file.pem"  # filepath must be relative to the directory that contains config.py and __init__.py
@@ -43,7 +45,7 @@ class Config:
         "authentication_source": os.environ.get("MONGODB_ALFRED_AUTHDB"),
 
         "ssl": mongodb_ssl,
-        "ssl_ca_certs": os.environ.get("MONGODB_SSL_CAFILE")
+        "ssl_ca_certs": ssl_ca_certs
 
         # "ssl": False,
         # "ssl_ca_certs": "mongodb_ca_file.pem"  # filepath must be relative to the directory that contains config.py and __init__.py
