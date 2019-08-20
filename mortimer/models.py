@@ -43,7 +43,7 @@ class WebExperiment(db.Document):
     author_mail = db.StringField(required=True)
     title = db.StringField(required=True, unique_with="author")
     title_from_script = db.StringField()
-    version = db.StringField(unique_with="title")
+    version = db.StringField()
     available_versions = db.ListField(db.StringField())
     date_created = db.DateTimeField(default=datetime.utcnow, required=True)
     last_update = db.DateTimeField(default=datetime.utcnow, required=True)
