@@ -15,7 +15,7 @@
             <div class="article-metadata">
               <small class="text-muted">Last Update: <span class="badge badge-light">{{ experiment.last_update.strftime('%Y-%m-%d') }}</span>,  Created: <span class="badge badge-light">{{ experiment.date_created.strftime('%Y-%m-%d') }}</span></small>
             </div>
-            <h3><a class="article-title" href="{{ url_for('web_experiments.experiment', experiment_title=experiment.title, username=experiment.author) }}">{{ experiment.title }}</a><button type="button" class="btn btn-danger btn-sm ml-3 mt-1 float-right" data-toggle="modal" data-target="#deleteModal{{ experiment.title }}">Delete from Mortimer</button></h3>
+            <h3><a class="article-title" href="{{ url_for('web_experiments.experiment', exp_title=experiment.title, username=experiment.author) }}">{{ experiment.title }}</a><button type="button" class="btn btn-danger btn-sm ml-3 mt-1 float-right" data-toggle="modal" data-target="#deleteModal{{ experiment.title }}">Delete from Mortimer</button></h3>
             <!-- <p class="article-content">{{ experiment.script }}</p> -->
           </div>
         </article>

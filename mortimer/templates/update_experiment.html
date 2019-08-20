@@ -84,7 +84,7 @@
 </fieldset>
 <div class="form-group">
     {{ form.submit(class="btn btn-outline-primary")}}
-    <a class="btn btn-outline-primary" href="{{ url_for('web_experiments.experiment', experiment_title=experiment.title, username=experiment.author) }}">Back to Experiment</a>
+    <a class="btn btn-outline-primary" href="{{ url_for('web_experiments.experiment', exp_title=experiment.title, username=experiment.author) }}">Back to Experiment</a>
 </div>
 </form>
 </div>
