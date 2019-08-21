@@ -4,7 +4,7 @@ from mortimer import export
 from flask import Blueprint, render_template, url_for, flash, redirect, request, abort, current_app, send_file
 from mortimer.forms import WebExperimentForm, UpdateExperimentForm, NewScriptForm, ExperimentExportForm
 from mortimer.models import User, WebExperiment
-from mortimer.utils import display_directory, extract_version, extract_title, extract_author_mail
+from mortimer.utils import display_directory
 from mortimer import alfred_web_db
 from mortimer.config import Config
 from flask_login import current_user, login_required
@@ -24,8 +24,9 @@ def new_experiment():
     if form.validate_on_submit():
 
         exp = WebExperiment(title=form.title.data, author=current_user.username,
-                            description=form.description.data, author_mail=current_user.email)
+                            version=form.version.data, description=form.description.data)
 
+        exp.available_versions.append(form.version.data)
         exp.directory_name = str(uuid4())
         exp.path = os.path.join(current_app.root_path, "exp", exp.directory_name)
 
@@ -99,24 +100,20 @@ def experiment(username, exp_title):
     datasets = {}
 
     datasets["all_datasets"] = alfred_web_db\
-        .count_documents({"exp_author_mail": current_user.email,
-                          "exp_name": exp_title})
+        .count_documents({"exp_uuid": exp.id})
 
     datasets["all_finished_datasets"] = alfred_web_db\
-        .count_documents({"exp_author_mail": current_user.email,
-                          "exp_name": exp_title,
+        .count_documents({"exp_uuid": exp.id,
                           "exp_finished": True})
 
     datasets["all_unfinished_datasets"] = datasets["all_datasets"] - datasets["all_finished_datasets"]
 
     datasets["datasets_current_version"] = alfred_web_db\
-        .count_documents({"exp_author_mail": current_user.email,
-                          "exp_name": exp_title,
+        .count_documents({"exp_uuid": exp.id,
                           "exp_version": exp.version})
 
     datasets["finished_datasets_current_version"] = alfred_web_db\
-        .count_documents({"exp_author_mail": current_user.email,
-                          "exp_name": exp_title,
+        .count_documents({"exp_uuid": exp.id,
                           "exp_version": exp.version,
                           "exp_finished": True})
 
@@ -148,14 +145,14 @@ def experiment(username, exp_title):
         last_activity = "none"
 
     # Form for script.py upload
-
     form = NewScriptForm()
+    form.version.data = exp.version
 
     if form.validate_on_submit() and form.script.data:
         # remove old script.py
         try:
             os.remove(exp.script_fullpath)
-        except FileNotFoundError:
+        except (FileNotFoundError, TypeError):
             pass
 
         # save new script.py
@@ -166,6 +163,13 @@ def experiment(username, exp_title):
         exp.last_update = datetime.utcnow
         with open(exp.script_fullpath, "r", encoding="utf-8") as f:
             exp.script = f.read()
+
+        # update version
+        if exp.version != form.version.data:
+            exp.version = form.version.data
+            exp.available_versions.append(exp.version)
+
+        # save experiment
         exp.save()
 
         # redirect to experiment page
@@ -175,10 +179,6 @@ def experiment(username, exp_title):
     elif form.validate_on_submit():
         flash("No script.py was provided, so nothing happened.", "info")
         return redirect(url_for('web_experiments.experiment', username=exp.author, exp_title=exp.title))
-
-    print("\n\n\n")
-    print(exp)
-    print("\n\n\n")
 
     return render_template("experiment.html",
                            experiment=exp, expid=str(exp.id), form=form, status=status,
@@ -196,6 +196,8 @@ def update_experiment(username, exp_title):
         abort(403)
 
     form = UpdateExperimentForm()
+
+    form.version.data = exp.version
 
     if form.validate_on_submit():
 
@@ -228,6 +230,11 @@ def update_experiment(username, exp_title):
             exp.script_fullpath = os.path.join(exp.path, exp.script_name)
             with open(exp.script_fullpath, "w", encoding="utf-8") as f:
                 f.write(form.script.data)
+
+        # update version
+        if exp.version != form.version.data:
+            exp.version = form.version.data
+            exp.available_versions.append(exp.version)
 
         # save simple updates
         exp.description = form.description.data
@@ -464,42 +471,57 @@ def web_export(username, experiment_title):
         return redirect(url_for('web_experiments.experiment', username=current_user.username,
                                 experiment_title=experiment.title))
 
-    title = extract_title(experiment.script_fullpath)
-    if experiment.title != title:
-        flash("Your experiment has different names in mortimer (%s) and in your script.py (%s). These need to be \
-        equal to access the data. You can change the experiment title in mortimer at any time."
-              % (experiment.title, title), "danger")
-        return redirect(url_for('web_experiments.experiment', username=current_user.username,
-                                experiment_title=experiment.title))
-
     form = ExperimentExportForm()
     form.version.choices = [(version, version) for version in ["all versions"] + experiment.available_versions]
     form.file_type.choices = [("csv", "csv")]
 
     if form.validate_on_submit():
         if "all versions" in form.version.data:
-            results = alfred_web_db.count_documents({"exp_author_mail": current_user.email,
-                                                     "exp_name": experiment_title})
+            results = alfred_web_db.count_documents({"exp_uuid": experiment.id})
             if results == 0:
                 flash("No data found for this experiment.", "warning")
                 return redirect(url_for('web_experiments.web_export', username=experiment.author,
                                         experiment_title=experiment.title))
 
-            cur = alfred_web_db.find({"exp_author_mail": current_user.email, "exp_name": experiment_title})
+            cur = alfred_web_db.find({"exp_uuid": experiment.id})
         else:
             for version in form.version.data:
                 results = []
-                results.append(alfred_web_db.count_documents({"exp_author_mail": current_user.email,
-                                                              "exp_name": experiment_title,
+                results.append(alfred_web_db.count_documents({"exp_uuid": experiment.id,
                                                               "exp_version": version}))
             if max(results) == 0:
                 flash("No data found for this experiment.", "warning")
                 return redirect(url_for('web_experiments.web_export', username=experiment.author,
                                         experiment_title=experiment.title))
 
-            cur = alfred_web_db.find({"exp_author_mail": current_user.email,
-                                      "exp_name": experiment_title,
+            cur = alfred_web_db.find({"exp_uuid": experiment.id,
                                       "exp_version": {"$in": form.version.data}})
+
+
+
+        # if "all versions" in form.version.data:
+        #     results = alfred_web_db.count_documents({"exp_author_mail": current_user.email,
+        #                                              "exp_name": experiment_title})
+        #     if results == 0:
+        #         flash("No data found for this experiment.", "warning")
+        #         return redirect(url_for('web_experiments.web_export', username=experiment.author,
+        #                                 experiment_title=experiment.title))
+
+        #     cur = alfred_web_db.find({"exp_author_mail": current_user.email, "exp_name": experiment_title})
+        # else:
+        #     for version in form.version.data:
+        #         results = []
+        #         results.append(alfred_web_db.count_documents({"exp_author_mail": current_user.email,
+        #                                                       "exp_name": experiment_title,
+        #                                                       "exp_version": version}))
+        #     if max(results) == 0:
+        #         flash("No data found for this experiment.", "warning")
+        #         return redirect(url_for('web_experiments.web_export', username=experiment.author,
+        #                                 experiment_title=experiment.title))
+
+        #     cur = alfred_web_db.find({"exp_author_mail": current_user.email,
+        #                               "exp_name": experiment_title,
+        #                               "exp_version": {"$in": form.version.data}})
 
         none_value = None
 

@@ -77,12 +77,12 @@ class UpdateAccountForm(FlaskForm):
 
 class WebExperimentForm(FlaskForm):
     title = StringField("Title", validators=[DataRequired()])
+    version = StringField("Version", validators=[DataRequired()])
     description = TextAreaField("Description")
     password = StringField("Password")
     script = FileField("script.py", validators=[FileAllowed(['py'])])
 
     def validate_title(self, title):
-
         experiment = WebExperiment.objects(
             title__exact=title.data,
             author__exact=current_user.username).first()
@@ -95,6 +95,12 @@ class WebExperimentForm(FlaskForm):
                 re.match("script.py", script.data.filename)):
             raise ValidationError(
                 "Your script file needs to be called \'script.py\'.")
+
+    def validate_version(self, version):
+        try:
+            int(version.data.replace(".", ""))
+        except Exception:
+            raise ValidationError("Please use only points and digits for the version number. Example: '1.3.2'")
 
     submit = SubmitField("Create")
 
@@ -120,18 +126,32 @@ class UpdateExperimentForm(FlaskForm):
     description = TextAreaField("Description")
     password = StringField("Password")
     script = TextAreaField("Script")
+    version = StringField("Updated version", validators=[DataRequired()])
+
+    def validate_version(self, version):
+        try:
+            int(version.data.replace(".", ""))
+        except Exception:
+            raise ValidationError("Please use only points and digits for the version number. Example: '1.3.2'")
 
     submit = SubmitField("Update")
 
 
 class NewScriptForm(FlaskForm):
     script = FileField("Update script.py", validators=[FileAllowed(['py'])])
+    version = StringField("Updated version", validators=[DataRequired()])
 
     def validate_script(self, script):
         if (script.data is not None and not
                 re.match("script.py", script.data.filename)):
             raise ValidationError(
                 "Your script file needs to be called \'script.py\'.")
+
+    def validate_version(self, version):
+        try:
+            int(version.data.replace(".", ""))
+        except Exception:
+            raise ValidationError("Please use only points and digits for the version number. Example: '1.3.2'")
 
     submit = SubmitField("Update Script")
 

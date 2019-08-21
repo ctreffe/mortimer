@@ -39,12 +39,8 @@ class User(db.Document, UserMixin):
 
 class WebExperiment(db.Document):
     author = db.StringField(required=True)
-    author_mail = db.StringField(required=True)
-    author_mail_from_script = db.StringField()
-    author_mail = db.StringField(required=True)
     title = db.StringField(required=True, unique_with="author")
-    title_from_script = db.StringField()
-    version = db.StringField()
+    version = db.StringField(required=True)
     available_versions = db.ListField(db.StringField())
     date_created = db.DateTimeField(default=datetime.utcnow, required=True)
     last_update = db.DateTimeField(default=datetime.utcnow, required=True)
