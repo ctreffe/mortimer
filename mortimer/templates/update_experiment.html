@@ -80,11 +80,30 @@
                 {% endif %}
             </div>
 
+            <div class="form-group">
+                    {{ form.version.label(class="form-control-label") }}*
+                    {% if form.version.errors %}
+                        {{ form.version(class="form-control form-control-lg is-invalid") }} <!-- , placeholder=form.version.label.text -->
+
+                        <div class="invalid-feedback">
+                            {% for error in form.version.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        
+                    {% else %}
+                    {{ form.version(class="form-control form-control-lg", placeholder=experiment.version) }}
+                    {% endif %}
+                    <small id="versionHelpBlock" class="form-text text-muted">
+                      Changing the version number allows you to choose, for which versions of an experiment you want to download data. If you made substantial changes to your experiment, you should change the version.
+                    </small>
+                </div>
+
 
 </fieldset>
 <div class="form-group">
     {{ form.submit(class="btn btn-outline-primary")}}
-    <a class="btn btn-outline-primary" href="{{ url_for('web_experiments.experiment', experiment_title=experiment.title, username=experiment.author) }}">Back to Experiment</a>
+    <a class="btn btn-outline-primary" href="{{ url_for('web_experiments.experiment', exp_title=experiment.title, username=experiment.author) }}">Back to Experiment</a>
 </div>
 </form>
 </div>

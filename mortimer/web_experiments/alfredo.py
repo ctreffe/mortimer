@@ -136,6 +136,12 @@ def start(expid):
     else:
         script.experiment = script.generate_experiment()
 
+    # uses the metadata from mortimer for the experiment instance
+    script.experiment.update(title=experiment.title,
+                             version=experiment.version,
+                             author=experiment.author,
+                             uuid=experiment.id)
+
     # start experiment
     script.experiment.start()
 

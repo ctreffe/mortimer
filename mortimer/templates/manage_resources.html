@@ -15,7 +15,7 @@
         New Directory
         </button>
         <button type="button" class="btn btn-danger btn mt-1 mb-1" data-toggle="modal" data-target="#deleteModal">Delete All Files</button>
-        <a class="btn btn-outline-primary" href="{{ url_for('web_experiments.experiment', experiment_title=experiment.title, username=experiment.author) }}">Back to Experiment</a>
+        <a class="btn btn-outline-primary" href="{{ url_for('web_experiments.experiment', exp_title=experiment.title, username=experiment.author) }}">Back to Experiment</a>
         
         <div class="collapse" id="NewDirectory">
             <form action="{{ url_for('web_experiments.new_directory', experiment_title=experiment.title, username=experiment.author) }}", method="POST">
