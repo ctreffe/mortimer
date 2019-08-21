@@ -322,7 +322,7 @@ def manage_resources(username, experiment_title):
     if not os.path.exists(experiment.path):
         flash("Experiment path doesn't exist. You probably created the experiment while running mortimer on a \
         different server.", "warning")
-        return redirect(url_for("web_experiments.experiment", experiment_title=experiment.title,
+        return redirect(url_for("web_experiments.experiment", exp_title=experiment.title,
                                 username=experiment.author))
 
     display = display_directory(sorted(experiment.user_directories), parent_directory=experiment.path,
@@ -469,7 +469,7 @@ def web_export(username, experiment_title):
     if not experiment.script:
         flash("You have not uploaded a script.py yet. Please upload a script.py and try again.", "warning")
         return redirect(url_for('web_experiments.experiment', username=current_user.username,
-                                experiment_title=experiment.title))
+                                exp_title=experiment.title))
 
     form = ExperimentExportForm()
     form.version.choices = [(version, version) for version in ["all versions"] + experiment.available_versions]
