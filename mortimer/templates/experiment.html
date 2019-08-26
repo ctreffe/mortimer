@@ -29,26 +29,15 @@
       <div class="col-md-3"><small><b>First Finished Dataset</b></small>:</div><div class="col-md-3"><span class="badge badge-light">{{ first_activity }}</span></div>
     </div>
     <div class="row">
-      <div class="col-md-3"><small><b>script.py</b></small>:</div><div class="col-md-5">
-        {% if not experiment.script_fullpath %}
-        <span class="badge badge-warning">unavailable</span>
+      <div class="col-md-3"><small><b>Passsword</b></small>:</div><div class="col-md-5">
+        {% if experiment.public %}
+        <span class="badge badge-primary">{{ password_protection }}</span>
         {% else %}
-        <span class="badge badge-success">available</span>
+        <span>{{ experiment.password }}</span>
         {% endif %}
       </div>
     </div>
-    <div class="row">
-      <div class="col-md-3"><small><b>Passsword Protection</b></small>:</div><div class="col-md-5">
-        <span class="badge badge-primary">{{ password_protection }}</span>
-      </div>
-    </div>
-    {% if not experiment.public %}
-    <div class="row">
-      <div class="col-md-3"><small><b>Passsword</b></small>:</div><div class="col-md-5">
-        <span class="badge badge-light">{{ experiment.password }}</span>
-      </div>
-    </div>
-    {% endif %}
+
     <div class="row">
       <div class="col-md-3"><small><b>Version History</b></small>:</div><div class="col-md-3">
         {% for version in experiment.available_versions %}
