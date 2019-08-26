@@ -404,8 +404,8 @@ class ScriptString:
 
     def parse(self):
         # removes the run(generate_experiment) command from the end of a script.py allow mortimer to run it
-        p = re.compile(r"(?P<call>run\(generate_experiment\)[\s]*)\Z")
-        self.script = p.sub("# run(generate_experiment)", self.script)
+        p = re.compile(r"(?P<call>run\(generate_experiment\))(?P<comments>([\s]*(#.*)*)*)\Z")
+        self.script = p.sub("# Here, the call to 'run(generate_experiment)' and following comments were removed.", self.script)
 
     def save(self):
         # saves the script to the experiment and to the file system, if changes were made
