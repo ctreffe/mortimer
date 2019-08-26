@@ -483,32 +483,6 @@ def web_export(username, experiment_title):
             cur = alfred_web_db.find({"mortimer_id": experiment.id,
                                       "exp_version": {"$in": form.version.data}})
 
-
-
-        # if "all versions" in form.version.data:
-        #     results = alfred_web_db.count_documents({"exp_author_mail": current_user.email,
-        #                                              "exp_name": experiment_title})
-        #     if results == 0:
-        #         flash("No data found for this experiment.", "warning")
-        #         return redirect(url_for('web_experiments.web_export', username=experiment.author,
-        #                                 experiment_title=experiment.title))
-
-        #     cur = alfred_web_db.find({"exp_author_mail": current_user.email, "exp_name": experiment_title})
-        # else:
-        #     for version in form.version.data:
-        #         results = []
-        #         results.append(alfred_web_db.count_documents({"exp_author_mail": current_user.email,
-        #                                                       "exp_name": experiment_title,
-        #                                                       "exp_version": version}))
-        #     if max(results) == 0:
-        #         flash("No data found for this experiment.", "warning")
-        #         return redirect(url_for('web_experiments.web_export', username=experiment.author,
-        #                                 experiment_title=experiment.title))
-
-        #     cur = alfred_web_db.find({"exp_author_mail": current_user.email,
-        #                               "exp_name": experiment_title,
-        #                               "exp_version": {"$in": form.version.data}})
-
         none_value = None
 
         # if form.replace_none.data:
