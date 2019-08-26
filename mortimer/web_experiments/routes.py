@@ -556,7 +556,7 @@ def de_activate_experiment(username, experiment_title):
         if not experiment.script:
             flash("You need to upload a script.py before you can activate your experiment.", "warning")
             return redirect(url_for('web_experiments.experiment', username=current_user.username,
-                                    experiment_title=experiment.title))
+                                    exp_title=experiment.title))
         experiment.active = True
         experiment.save()
         flash("Experiment activated.", "success")
