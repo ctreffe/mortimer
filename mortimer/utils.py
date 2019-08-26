@@ -291,50 +291,6 @@ def display_directory(directories: list, parent_directory: str,
     return "<br>".join([display_first_directory, display_other_directories])
 
 
-def extract_version(filename):
-    p = re.compile(
-        r"(exp_version|expVersion|EXP_VERSION) *= *[\"\'](?P<version>.*)[\"\']")
-
-    version = []
-
-    with open(filename, "r", encoding="utf-8") as f:
-        for line in f.readlines():
-            m = p.search(line)
-            if m is not None:
-                version.append(m.group("version"))
-
-    return version[0]
-
-
-def extract_title(filename):
-    p = re.compile(r"(exp_name|expName|EXP_NAME) *= *[\"\'](?P<name>.*)[\"\']")
-
-    name = []
-
-    with open(filename, "r", encoding="utf-8") as f:
-        for line in f.readlines():
-            m = p.search(line)
-            if m is not None:
-                name.append(m.group("name"))
-
-    return name[0]
-
-
-def extract_author_mail(filename):
-    p = re.compile(
-        r"(exp_author_mail|expAuthorMail|EXP_AUTHOR_MAIL) *= *[\"\'](?P<author_mail>.*)[\"\']")
-
-    name = []
-
-    with open(filename, "r", encoding="utf-8") as f:
-        for line in f.readlines():
-            m = p.search(line)
-            if m is not None:
-                name.append(m.group("author_mail"))
-
-    return name[0]
-
-
 def futurize_script(file):
     futurize = subprocess.run(['futurize', '-w', file], check=True, text=True)
 
