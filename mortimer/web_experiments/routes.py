@@ -100,20 +100,20 @@ def experiment(username, exp_title):
     datasets = {}
 
     datasets["all_datasets"] = alfred_web_db\
-        .count_documents({"exp_uuid": exp.id})
+        .count_documents({"mortimer_id": exp.id})
 
     datasets["all_finished_datasets"] = alfred_web_db\
-        .count_documents({"exp_uuid": exp.id,
+        .count_documents({"mortimer_id": exp.id,
                           "exp_finished": True})
 
     datasets["all_unfinished_datasets"] = datasets["all_datasets"] - datasets["all_finished_datasets"]
 
     datasets["datasets_current_version"] = alfred_web_db\
-        .count_documents({"exp_uuid": exp.id,
+        .count_documents({"mortimer_id": exp.id,
                           "exp_version": exp.version})
 
     datasets["finished_datasets_current_version"] = alfred_web_db\
-        .count_documents({"exp_uuid": exp.id,
+        .count_documents({"mortimer_id": exp.id,
                           "exp_version": exp.version,
                           "exp_finished": True})
 
@@ -477,24 +477,24 @@ def web_export(username, experiment_title):
 
     if form.validate_on_submit():
         if "all versions" in form.version.data:
-            results = alfred_web_db.count_documents({"exp_uuid": experiment.id})
+            results = alfred_web_db.count_documents({"mortimer_id": experiment.id})
             if results == 0:
                 flash("No data found for this experiment.", "warning")
                 return redirect(url_for('web_experiments.web_export', username=experiment.author,
                                         experiment_title=experiment.title))
 
-            cur = alfred_web_db.find({"exp_uuid": experiment.id})
+            cur = alfred_web_db.find({"mortimer_id": experiment.id})
         else:
             for version in form.version.data:
                 results = []
-                results.append(alfred_web_db.count_documents({"exp_uuid": experiment.id,
+                results.append(alfred_web_db.count_documents({"mortimer_id": experiment.id,
                                                               "exp_version": version}))
             if max(results) == 0:
                 flash("No data found for this experiment.", "warning")
                 return redirect(url_for('web_experiments.web_export', username=experiment.author,
                                         experiment_title=experiment.title))
 
-            cur = alfred_web_db.find({"exp_uuid": experiment.id,
+            cur = alfred_web_db.find({"mortimer_id": experiment.id,
                                       "exp_version": {"$in": form.version.data}})
 
 
