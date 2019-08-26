@@ -1,10 +1,11 @@
 import os
 import shutil
+import re
 from mortimer import export
 from flask import Blueprint, render_template, url_for, flash, redirect, request, abort, current_app, send_file
 from mortimer.forms import WebExperimentForm, UpdateExperimentForm, NewScriptForm, ExperimentExportForm
 from mortimer.models import User, WebExperiment
-from mortimer.utils import display_directory
+from mortimer.utils import display_directory, ScriptFile, ScriptString
 from mortimer import alfred_web_db
 from mortimer.config import Config
 from flask_login import current_user, login_required
@@ -39,16 +40,10 @@ def new_experiment():
 
         # process script.py
         if form.script.data:
-
-            script_file = form.script.data
-            script_name = str(uuid4()) + ".py"
-            path = os.path.join(exp.path, script_name)
-            script_file.save(path)
-            exp.script_name = script_name
-            exp.script_fullpath = path
-
-            with open(exp.script_fullpath, "r", encoding="utf-8") as f:
-                exp.script = f.read()
+            script = ScriptFile(exp, form.script.data)
+            script.load()
+            script.parse()
+            script.save()
 
         # set password protection if password is given
         if form.password.data:
@@ -146,7 +141,6 @@ def experiment(username, exp_title):
 
     # Form for script.py upload
     form = NewScriptForm()
-    form.version.data = exp.version
 
     if form.validate_on_submit() and form.script.data:
         # remove old script.py
@@ -155,14 +149,12 @@ def experiment(username, exp_title):
         except (FileNotFoundError, TypeError):
             pass
 
-        # save new script.py
-        exp.script_name = str(uuid4()) + ".py"
-        exp.script_fullpath = os.path.join(exp.path, exp.script_name)
-        script_file = form.script.data
-        script_file.save(exp.script_fullpath)
-        exp.last_update = datetime.utcnow
-        with open(exp.script_fullpath, "r", encoding="utf-8") as f:
-            exp.script = f.read()
+        # process script.py
+        if form.script.data:
+            script = ScriptFile(exp, form.script.data)
+            script.load()
+            script.parse()
+            script.save()
 
         # update version
         if exp.version != form.version.data:
@@ -179,6 +171,9 @@ def experiment(username, exp_title):
     elif form.validate_on_submit():
         flash("No script.py was provided, so nothing happened.", "info")
         return redirect(url_for('web_experiments.experiment', username=exp.author, exp_title=exp.title))
+
+    # pre-populate form
+    form.version.data = exp.version
 
     return render_template("experiment.html",
                            experiment=exp, expid=str(exp.id), form=form, status=status,
@@ -197,18 +192,17 @@ def update_experiment(username, exp_title):
 
     form = UpdateExperimentForm()
 
-    form.version.data = exp.version
-
     if form.validate_on_submit():
 
         # check for uniqueness of experiment title
-        if form.title.data != exp.title and form.title.data != "":
-            if WebExperiment.objects(title=form.title.data, author=username):
+        title = form.title.data
+        if title and title != exp.title:
+            if WebExperiment.objects(title=title, author=username):
                 flash("You already have a web experiment with this title. Please choose a unique title. The \
                 changes were not saved.", "danger")
                 return redirect(url_for('web_experiments.experiment', exp_title=exp.title, username=exp.author))
             else:
-                exp.title = form.title.data
+                exp.title = title
 
         # update password settings
         if form.password.data:
@@ -217,19 +211,10 @@ def update_experiment(username, exp_title):
         else:
             exp.public = True
 
-        # update previous script.py
-        if exp.script_name and (form.script.data != exp.script):
-            exp.script = form.script.data
-            with open(exp.script_fullpath, "w", encoding="utf-8") as f:
-                f.write(form.script.data)
-
-        # save new script.py
-        elif (form.script.data != exp.script) and not exp.script_name:
-            exp.script = form.script.data
-            exp.script_name = str(uuid4()) + ".py"
-            exp.script_fullpath = os.path.join(exp.path, exp.script_name)
-            with open(exp.script_fullpath, "w", encoding="utf-8") as f:
-                f.write(form.script.data)
+        # update script
+        script = ScriptString(exp, form.script.data)
+        script.parse()
+        script.save()
 
         # update version
         if exp.version != form.version.data:
@@ -252,6 +237,7 @@ def update_experiment(username, exp_title):
     form.description.data = exp.description
     form.password.data = exp.password
     form.script.data = exp.script
+    form.version.data = exp.version
 
     return render_template("update_experiment.html", title="Update Experiment",
                            experiment=exp, form=form, legend="Update Experiment")

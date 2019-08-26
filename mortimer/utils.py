@@ -2,6 +2,7 @@ import os
 import subprocess
 import json
 import re
+from datetime import datetime
 from flask import current_app
 from mortimer import mail
 from flask_mail import Message
@@ -392,3 +393,46 @@ def replace_all_patterns(file):
 
     for dct in json_data:
         replace_patterns(file, dct, write=True)
+
+
+class ScriptString:
+
+    def __init__(self, exp, script=None):
+        self.exp = exp
+        self.name = self.exp.script_name if self.exp.script else str(uuid4()) + ".py"
+        self.script = script
+
+    def parse(self):
+        # removes the run(generate_experiment) command from the end of a script.py allow mortimer to run it
+        p = re.compile(r"(?P<call>run\(generate_experiment\)[\s]*)\Z")
+        self.script = p.sub("# run(generate_experiment)", self.script)
+
+    def save(self):
+        # saves the script to the experiment and to the file system, if changes were made
+        if self.exp.script != self.script:
+            self.exp.script = self.script
+            self.exp.script_name = self.name
+            self.exp.script_fullpath = os.path.join(self.exp.path, self.exp.script_name)
+            self.exp.last_update = datetime.utcnow
+
+            with open(self.exp.script_fullpath, "w", encoding="utf-8") as f:
+                f.write(self.exp.script)
+
+            self.exp.save()
+
+
+class ScriptFile(ScriptString):
+
+    def __init__(self, exp, file):
+        super().__init__(exp)
+        self.file = file
+        self.script = ''
+
+    def load(self):
+        path = os.path.join(current_app.root_path, 'tmp', self.name)
+        self.file.save(path)
+
+        with open(path, 'r', encoding='utf-8') as f:
+            self.script = f.read()
+
+        os.remove(path)
