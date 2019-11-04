@@ -3,10 +3,6 @@
 {% block content %}
 
 <div class="content-section">
-    <div>
-              <a class="mr-2" href="#">{{ experiment.author }}</a>
-              <small class="text-muted">{{ experiment.date_created.strftime('%Y-%m-%d') }}</small>
-            </div>
             <legend class="border-bottom"><b>{{ experiment.title }}</b>: {{ legend }} <em></em></legend>
 
         <small>Directories created here are placed in the main experiment directory that also contains your <code style="color:black">script.py</code> </small>
@@ -15,7 +11,7 @@
         New Directory
         </button>
         <button type="button" class="btn btn-danger btn mt-1 mb-1" data-toggle="modal" data-target="#deleteModal">Delete All Files</button>
-        <a class="btn btn-outline-primary" href="{{ url_for('web_experiments.experiment', experiment_title=experiment.title, username=experiment.author) }}">Back to Experiment</a>
+        <a class="btn btn-outline-primary" href="{{ url_for('web_experiments.experiment', exp_title=experiment.title, username=experiment.author) }}">Back to Experiment</a>
         
         <div class="collapse" id="NewDirectory">
             <form action="{{ url_for('web_experiments.new_directory', experiment_title=experiment.title, username=experiment.author) }}", method="POST">

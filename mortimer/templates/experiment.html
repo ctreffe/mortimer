@@ -4,84 +4,40 @@
 
 <div class="media content-section">
   <div class="media-body">
-    <div>
-      <a class="mr-2" href="#">{{ experiment.author }}</a>
-      <small class="text-muted">{{ experiment.date_created.strftime('%Y-%m-%d') }}</small>
-    </div>
-    <legend class="border-bottom"><b>{{ experiment.title }}</b></legend>
+    
+    <div class="border-bottom">
+      
+        <h2 class="d-inline-block">{{ experiment.title }}</h2>  
 
-  
-    <div class="row">
-      <div class="col-md-3"><small><b>Created in Mortimer</b></small>:</div><div class="col-md-3"><span class="badge badge-light">{{ experiment.date_created.strftime('%Y-%m-%d, %H:%M') }}</span></div>
+        <span class="pl-3 align-middle">
+          {% if status == "active" %}
+          <span class="badge badge-success">{{ status }}</span>
+          {% else %}
+            <span class="badge badge-warning">{{ status }}</span>
+          {% endif %}
+          <span class="badge badge-dark">Version {{ experiment.version }}</span>
+          <small class="text-muted pl-3">Created: {{ experiment.date_created.strftime('%Y-%m-%d') }}</small>
+          </span>
+        
+      
     </div>
-    <div class="row">
+    
+    <div class="row pt-2">
       <div class="col-md-3"><small><b>Last Finished Dataset</b></small>:</div><div class="col-md-3"><span class="badge badge-light">{{ last_activity }}</span></div>
     </div>
     <div class="row">
       <div class="col-md-3"><small><b>First Finished Dataset</b></small>:</div><div class="col-md-3"><span class="badge badge-light">{{ first_activity }}</span></div>
     </div>
-    <div class="row pt-3">
-    <div class="col-md-3"><small><b>Status</b></small>:</div>
-  {% if status == "active" %}
-      <div class="col-md-3"><span class="badge badge-success">{{ status }}</span></div>
-  {% else %}
-    <div class="col-md-3"><span class="badge badge-warning">{{ status }}</span></div>
-  {% endif %}
-    </div>
-    <div class="row">
-      <div class="col-md-3"><small><b>script.py</b></small>:</div><div class="col-md-5">
-        {% if not experiment.script_fullpath %}
-        <span class="badge badge-warning">unavailable</span>
-        {% else %}
-        <span class="badge badge-success">available</span>
-        {% endif %}
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-md-3"><small><b>Title Conflict</b></small>:</div><div class="col-md-5">
-        {% if title_unequal %}
-        <span class="badge badge-warning">Different titles in mortimer and script.py. Please change!</span>
-        {% else %}
-        <span class="badge badge-success">All good!</span>
-        {% endif %}
-      </div>
-    </div>
-    {% if title_unequal %}
-    <div class="row">
-      <div class="col-md-3"><small><b>script.py Title</b></small>:</div><div class="col-md-3"><span class="badge badge-light">{{ script_title }}</span></div>
-    </div>
-    {% endif %}
-    {% if experiment.script_name %}
-    <div class="row">
-      <div class="col-md-3"><small><b>Author Conflict</b></small>:</div><div class="col-md-5">
-        {% if author_mail != current_user.email %}
-        <span class="badge badge-warning">Different authors in mortimer and script.py. Please change!</span>
-        {% else %}
-        <span class="badge badge-success">All good!</span>
-        {% endif %}
-      </div>
-    </div>
-    {% endif %}
-    {% if experiment.script_name and author_mail != current_user.email %}
-    <div class="row">
-      <div class="col-md-3"><small><b>Authors</b></small>:</div><div class="col-md-7"><small>Script: </small><span class="badge badge-light">{{ author_mail }}</span><small>, Mortimer: </small><span class="badge badge-light">{{ current_user.email }}</span></div>
-    </div>
-    {% endif %}
-    <div class="row">
-      <div class="col-md-3"><small><b>Passsword Protection</b></small>:</div><div class="col-md-5">
-        <span class="badge badge-primary">{{ password_protection }}</span>
-      </div>
-    </div>
-    {% if not experiment.public %}
     <div class="row">
       <div class="col-md-3"><small><b>Passsword</b></small>:</div><div class="col-md-5">
-        <span class="badge badge-light">{{ experiment.password }}</span>
+        {% if experiment.public %}
+        <span class="badge badge-primary">{{ password_protection }}</span>
+        {% else %}
+        <span>{{ experiment.password }}</span>
+        {% endif %}
       </div>
     </div>
-    {% endif %}
-    <div class="row pt-3">
-      <div class="col-md-3"><small><b>Latest Version</b></small>:</div><div class="col-md-3"><span class="badge badge-dark">{{ experiment.version }}</span></div>
-    </div>
+
     <div class="row">
       <div class="col-md-3"><small><b>Version History</b></small>:</div><div class="col-md-3">
         {% for version in experiment.available_versions %}
@@ -90,44 +46,19 @@
       </div>
     </div>
     
-    
-    
-
+    {% if experiment.description %}
     <h6 class="border-bottom pt-4"><b>Description</b></h6>
 
       <p class="article-content">{{ experiment.description }}</p>  
+     {% else %}
+     {% endif %}
 
     <!--  <p class="article-content">{{ experiment.script }}</p> -->
   </div>
 </div>
 
-  <div class="article content-section">
-    <legend class="border-bottom"><b>Options</b></legend>
-      <div class="row">
-
-        <form method="POST" action="{{ url_for('web_experiments.de_activate_experiment', experiment_title=experiment.title, username=experiment.author) }}">
-          <input class="btn btn-primary ml-3 mt-2 mb-2" type="submit" value="{{ toggle_button }}">
-        </form>
-
-        <a class="btn btn-primary ml-1 mt-2 mb-2" href="{{ url_for('web_experiments.web_export', experiment_title=experiment.title, username=experiment.author) }}">Export Data</a>
-      
-        <a class="btn btn-primary ml-1 mt-2 mb-2" href="{{ url_for('web_experiments.manage_resources', experiment_title=experiment.title, username=experiment.author) }}">Manage Resources</a>
-        
-        
-        <a class="btn btn-secondary ml-1 mt-2 mb-2" href="{{ url_for('web_experiments.update_experiment', experiment_title=experiment.title, username=experiment.author) }}">Edit</a>
-      
-        <button type="button" class="btn btn-danger ml-1 mt-2 mb-2" data-toggle="modal" data-target="#deleteModal">Delete from Mortimer</button>
-      
-      </div>
-
-      
-      
-
-    </div>
-
-
-    <div class="article content-section">
-      <legend class="border-bottom"><b>Access Experiment</b></legend>
+<div class="article content-section">
+      <legend><b>Access Experiment</b></legend>
 
       {% if experiment.active == True %}
 
@@ -156,6 +87,33 @@
     {% endif %}
 
     </div>
+
+  <div class="article content-section">
+    <legend><b>Options</b></legend>
+      <div class="row">
+
+        <form method="POST" action="{{ url_for('web_experiments.de_activate_experiment', experiment_title=experiment.title, username=experiment.author) }}">
+          <input class="btn btn-primary ml-3 mt-2 mb-2" type="submit" value="{{ toggle_button }}">
+        </form>
+
+        <a class="btn btn-primary ml-1 mt-2 mb-2" href="{{ url_for('web_experiments.web_export', experiment_title=experiment.title, username=experiment.author) }}">Export Data</a>
+      
+        <a class="btn btn-primary ml-1 mt-2 mb-2" href="{{ url_for('web_experiments.manage_resources', experiment_title=experiment.title, username=experiment.author) }}">Manage Resources</a>
+        
+        
+        <a class="btn btn-secondary ml-1 mt-2 mb-2" href="{{ url_for('web_experiments.update_experiment', exp_title=experiment.title, username=experiment.author) }}">Edit</a>
+      
+        <button type="button" class="btn btn-danger ml-1 mt-2 mb-2" data-toggle="modal" data-target="#deleteModal">Delete from Mortimer</button>
+      
+      </div>
+
+      
+      
+
+    </div>
+
+
+    
 
 <div class="article content-section">
   <legend><b>Datasets</b></legend>
@@ -195,11 +153,11 @@
 <div class="article content-section">
     <form method="POST" action="" enctype="multipart/form-data" class="needs-validation" novalidate>
         {{ form.hidden_tag() }}
-        <legend class="border-bottom"><b>{{ form.script.label() }}</b></legend>
-        <div class="row">
+        <legend><b>{{ form.script.label() }}</b></legend>
+        <!-- <div class="row">
           <div class="col-xs ml-3">
           </div>
-          <div class="col-xs ml-2">
+          <div class="col-xs ml-2"> -->
             <div class="form-group">
                     {{ form.script(class="form-control-file") }}
                     {% if form.script.errors %}
@@ -208,10 +166,26 @@
                         {% endfor %}
                     {% endif %}
                 </div>
-          </div>
-          
+          <!-- </div>
+        </div> -->
+        <div class="form-group">
+                    {{ form.version.label(class="form-control-label") }}*
+                    {% if form.version.errors %}
+                        {{ form.version(class="form-control form-control-lg is-invalid") }} <!-- , placeholder=form.version.label.text -->
 
-        </div>
+                        <div class="invalid-feedback">
+                            {% for error in form.version.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        
+                    {% else %}
+                    {{ form.version(class="form-control form-control-lg", placeholder=experiment.version) }}
+                    {% endif %}
+                    <small id="versionHelpBlock" class="form-text text-muted">
+                      Changing the version number allows you to choose, for which versions of an experiment you want to download data. If you made substantial changes to your experiment, you should change the version.
+                    </small>
+                </div>
         <div class="form-group ml-2">
               {{ form.submit(class="btn btn-primary btn-sm")}}
           </div>
