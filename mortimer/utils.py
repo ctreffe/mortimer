@@ -2,6 +2,7 @@ import os
 import subprocess
 import json
 import re
+from datetime import datetime
 from flask import current_app
 from mortimer import mail
 from flask_mail import Message
@@ -291,50 +292,6 @@ def display_directory(directories: list, parent_directory: str,
     return "<br>".join([display_first_directory, display_other_directories])
 
 
-def extract_version(filename):
-    p = re.compile(
-        r"(exp_version|expVersion|EXP_VERSION) *= *[\"\'](?P<version>.*)[\"\']")
-
-    version = []
-
-    with open(filename, "r", encoding="utf-8") as f:
-        for line in f.readlines():
-            m = p.search(line)
-            if m is not None:
-                version.append(m.group("version"))
-
-    return version[0]
-
-
-def extract_title(filename):
-    p = re.compile(r"(exp_name|expName|EXP_NAME) *= *[\"\'](?P<name>.*)[\"\']")
-
-    name = []
-
-    with open(filename, "r", encoding="utf-8") as f:
-        for line in f.readlines():
-            m = p.search(line)
-            if m is not None:
-                name.append(m.group("name"))
-
-    return name[0]
-
-
-def extract_author_mail(filename):
-    p = re.compile(
-        r"(exp_author_mail|expAuthorMail|EXP_AUTHOR_MAIL) *= *[\"\'](?P<author_mail>.*)[\"\']")
-
-    name = []
-
-    with open(filename, "r", encoding="utf-8") as f:
-        for line in f.readlines():
-            m = p.search(line)
-            if m is not None:
-                name.append(m.group("author_mail"))
-
-    return name[0]
-
-
 def futurize_script(file):
     futurize = subprocess.run(['futurize', '-w', file], check=True, text=True)
 
@@ -392,3 +349,52 @@ def replace_all_patterns(file):
 
     for dct in json_data:
         replace_patterns(file, dct, write=True)
+
+
+class ScriptString:
+
+    def __init__(self, exp, script=None):
+        self.exp = exp
+        self.name = self.exp.script_name if self.exp.script else str(uuid4()) + ".py"
+        self.script = script
+
+    def parse(self):
+        # removes the run(generate_experiment) command from the end of a script.py allow mortimer to run it
+        p = re.compile(r"(?P<call>(alfred\.)?run\(generate_experiment\))(?P<comments>([\s]*(#.*)*)*)\Z")
+        self.script = p.sub("# Here, the call to 'run(generate_experiment)' and following comments were removed.", self.script)
+
+    def save(self):
+        # saves the script to the experiment and to the file system, if changes were made
+        if (self.exp.script != self.script) or not os.path.exists(self.exp.script_fullpath):
+            
+            try:
+                os.remove(self.exp.script_fullpath)
+            except (FileNotFoundError, TypeError):
+                pass
+
+            self.exp.script = self.script
+            self.exp.script_name = self.name
+            self.exp.script_fullpath = os.path.join(self.exp.path, self.exp.script_name)
+            self.exp.last_update = datetime.utcnow
+
+            with open(self.exp.script_fullpath, "w", encoding="utf-8") as f:
+                f.write(self.exp.script)
+
+            self.exp.save()
+
+
+class ScriptFile(ScriptString):
+
+    def __init__(self, exp, file):
+        super().__init__(exp)
+        self.file = file
+        self.script = ''
+
+    def load(self):
+        path = os.path.join(current_app.root_path, 'tmp', self.name)
+        self.file.save(path)
+
+        with open(path, 'r', encoding='utf-8') as f:
+            self.script = f.read()
+
+        os.remove(path)

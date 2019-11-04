@@ -11,6 +11,18 @@ import os
 import inspect
 
 
+class Script:
+
+    def __init__(self, experiment=None):
+        self.experiment = experiment
+
+    def generate_experiment(self):
+        pass
+
+    def set_generator(self, generator):
+        self.generate_experiment = generator.__get__(self, Script)
+
+
 def number_of_func_params(func):
     # use in python 3 inspect.signature
     argspec = inspect.getfullargspec(func)
@@ -123,21 +135,44 @@ def start(expid):
 
     os.chdir(experiment.path)
 
-    # create experiment
-    module = import_script(experiment.id)
-    # script.generate_experiment.start()
     try:
-        script = module.script
-    except AttributeError:
-        script = module.Script()
+        module = import_script(experiment.id)
+    except Exception as e:
+        flash("Error during script import:\n'{e}'".format(e=e), 'danger')
+        return redirect(url_for('web_experiments.experiment', username=experiment.author, exp_title=experiment.title))
 
-    if number_of_func_params(script.generate_experiment) > 1:
-        script.experiment = script.generate_experiment(**values)
-    else:
-        script.experiment = script.generate_experiment()
+    try:
+        script = Script()
+        script.set_generator(module.generate_experiment)
+        try:
+            if number_of_func_params(module.generate_experiment) > 1:
+                script.experiment = script.generate_experiment(**values)
+            else:
+                script.experiment = script.generate_experiment()
+        except SyntaxError:
+            flash("The definition of experiment title, type, or version in script.py is deprecated. Please define these parameters in config.conf, when you are working locally. Mortimer will set these parameters for you automatically. In your script.py, just use 'exp = Experiment()'.", "danger")
+            return redirect(url_for('web_experiments.experiment', username=experiment.author, exp_title=experiment.title))
 
-    # start experiment
-    script.experiment.start()
+    except Exception as e:
+        flash("Error during experiment generation:\n'{e}'".format(e=e), 'danger')
+        return redirect(url_for('web_experiments.experiment', username=experiment.author, exp_title=experiment.title))
+
+    try:
+        # uses the metadata from mortimer for the experiment instance
+        script.experiment.update(title=experiment.title,
+                                 version=experiment.version,
+                                 author=experiment.author,
+                                 uuid=experiment.id)
+    except Exception as e:
+        flash("Error during experiment update:\n'{e}'".format(e=e), 'danger')
+        return redirect(url_for('web_experiments.experiment', username=experiment.author, exp_title=experiment.title))
+
+    try:
+        # start experiment
+        script.experiment.start()
+    except Exception as e:
+        flash("Error during experiment startup:\n'{e}'".format(e=e), 'danger')
+        return redirect(url_for('web_experiments.experiment', username=experiment.author, exp_title=experiment.title))
 
     # set session variables
     experiment_manager.save(sid, script)

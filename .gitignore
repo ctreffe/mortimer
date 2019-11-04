@@ -8,6 +8,7 @@
 *.DS_Store
 __pycache__/
 experiments/
+exp/
 alfred/
 archive/
 mortimer/web_experiments/change_names.py
