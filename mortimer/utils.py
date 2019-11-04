@@ -365,7 +365,13 @@ class ScriptString:
 
     def save(self):
         # saves the script to the experiment and to the file system, if changes were made
-        if self.exp.script != self.script:
+        if (self.exp.script != self.script) or not os.path.exists(self.exp.script_fullpath):
+            
+            try:
+                os.remove(self.exp.script_fullpath)
+            except (FileNotFoundError, TypeError):
+                pass
+
             self.exp.script = self.script
             self.exp.script_name = self.name
             self.exp.script_fullpath = os.path.join(self.exp.path, self.exp.script_name)

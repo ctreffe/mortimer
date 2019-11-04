@@ -143,11 +143,6 @@ def experiment(username, exp_title):
     form = NewScriptForm()
 
     if form.validate_on_submit() and form.script.data:
-        # remove old script.py
-        try:
-            os.remove(exp.script_fullpath)
-        except (FileNotFoundError, TypeError):
-            pass
 
         # process script.py
         if form.script.data:
