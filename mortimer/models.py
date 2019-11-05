@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from flask import current_app
 from mortimer import db, login_manager
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer

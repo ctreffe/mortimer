@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from mortimer import export
 from flask import Blueprint, render_template, url_for, flash, redirect, abort, send_file, request
 from mortimer.forms import ExperimentExportForm, LocalExperimentForm
