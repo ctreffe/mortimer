@@ -165,7 +165,7 @@ def start(expid):
         script.experiment.update(title=experiment.title,
                                  version=experiment.version,
                                  author=experiment.author,
-                                 uuid=str(experiment.id))
+                                 uuid=experiment.id)
     except Exception as e:
         flash("Error during experiment update:\n'{e}'".format(e=e), 'danger')
         return redirect(url_for('web_experiments.experiment', username=experiment.author, exp_title=experiment.title))
