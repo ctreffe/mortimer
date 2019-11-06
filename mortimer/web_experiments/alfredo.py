@@ -133,7 +133,7 @@ def start(expid):
     # get values passed by get or post request
     values = request.values.to_dict()
 
-    os.chdir(experiment.path)
+    # os.chdir(experiment.path)
 
     try:
         module = import_script(experiment.id)
@@ -163,6 +163,7 @@ def start(expid):
                                  version=experiment.version,
                                  author=experiment.author,
                                  uuid=experiment.id)
+        script.experiment.settings.general.external_files_dir = experiment.path
     except Exception as e:
         flash("Error during experiment update:\n'{e}'".format(e=e), 'danger')
         return redirect(url_for('web_experiments.experiment', username=experiment.author, exp_title=experiment.title))
