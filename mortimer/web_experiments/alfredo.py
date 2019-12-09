@@ -144,28 +144,28 @@ def start(expid):
     try:
         script = Script()
         script.set_generator(module.generate_experiment)
+        
+        custom_settings = {
+        "author": experiment.author,
+        "title": experiment.title,
+        "version": experiment.version,
+        "exp_id": str(experiment.id),
+        "path": experiment.path,
+        "session_id": sid,
+        "type": "web"
+        }
+
         try:
             if number_of_func_params(module.generate_experiment) > 1:
-                script.experiment = script.generate_experiment(**values)
+                script.experiment = script.generate_experiment(custom_settings=custom_settings,**values)
             else:
-                script.experiment = script.generate_experiment()
+                script.experiment = script.generate_experiment(custom_settings=custom_settings)
         except SyntaxError:
             flash("The definition of experiment title, type, or version in script.py is deprecated. Please define these parameters in config.conf, when you are working locally. Mortimer will set these parameters for you automatically. In your script.py, just use 'exp = Experiment()'.", "danger")
             return redirect(url_for('web_experiments.experiment', username=experiment.author, exp_title=experiment.title))
 
     except Exception as e:
         flash("Error during experiment generation:\n'{e}'".format(e=e), 'danger')
-        return redirect(url_for('web_experiments.experiment', username=experiment.author, exp_title=experiment.title))
-
-    try:
-        # uses the metadata from mortimer for the experiment instance
-        script.experiment.update(title=experiment.title,
-                                 version=experiment.version,
-                                 author=experiment.author,
-                                 uuid=experiment.id)
-        script.experiment.settings.general.external_files_dir = experiment.path
-    except Exception as e:
-        flash("Error during experiment update:\n'{e}'".format(e=e), 'danger')
         return redirect(url_for('web_experiments.experiment', username=experiment.author, exp_title=experiment.title))
 
     try:
