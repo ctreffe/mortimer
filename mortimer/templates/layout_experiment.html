@@ -1,0 +1,27 @@
+{% extends "layout.html" %}
+
+{% block navigation %}
+
+<ul class="nav navbar-nav mr-auto">
+                           <li class="nav-item">
+                            <a href="{{ url_for('web_experiments.experiment', exp_title=experiment.title, username=experiment.author) }}" class="nav-link">
+                                {% if experiment.active == True %}
+          <span class="badge badge-success">active</span>
+          {% else %}
+            <span class="badge badge-warning">inactive</span>
+          {% endif %}<i class="fas fa-home mr-2 ml-2"></i>{{ experiment.title }}</a>
+                        </li>
+                           <li class="nav-item nav-link">|</li>
+                           <li class="nav-item"><a href="{{ url_for('web_experiments.experiment_script', exp_title=experiment.title, username=experiment.author) }}" class="nav-link active"><i class="fas fa-code mr-2"></i>Script</a></li>
+                           <li class="nav-item nav-link">|</li>
+                           <li class="nav-item"><a href="{{ url_for('web_experiments.manage_resources', experiment_title=experiment.title, username=experiment.author) }}" class="nav-link"><i class="fas fa-folder mr-2"></i>Resources</a></li>
+                           <li class="nav-item nav-link">|</li>
+                           <li class="nav-item"><a href="{{ url_for('web_experiments.web_export', experiment_title=experiment.title, username=experiment.author) }}" class="nav-link"><i class="fas fa-download mr-2"></i>Export</a></li>
+                           <li class="nav-item nav-link">|</li>
+                           <li class="nav-item"><a href="{{ url_for('web_experiments.experiment_config', experiment_title=experiment.title, username=experiment.author) }}" class="nav-link"><i class="fas fa-sliders-h mr-2"></i>Configuration</a></li>
+                           <li class="nav-item nav-link">|</li>
+                           <li class="nav-item"><a href="{{ url_for('web_experiments.experiment_log', experiment_title=experiment.title, username=experiment.author) }}" class="nav-link"><i class="fas fa-clipboard mr-2"></i>Log*</a></li>
+                       </ul>
+
+{% endblock %}
+

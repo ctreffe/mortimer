@@ -1,11 +1,15 @@
-{% extends "layout.html" %}
+{% extends "skeleton.html" %}
 
-{% block content %}
-    <div class="content-section">
-        <form method="POST" action="" class="needs-validation" novalidate>
+
+{% block layout %}
+<div class="container">
+    <div class="jumbotron mt-5">
+  <h1 class="display-4">mortimer</h1>
+  <p class="lead">Web Interface for deploying and managing Alfred experiments.</p>
+  <hr class="my-4">
+<form method="POST" action="" class="needs-validation" novalidate>
             {{ form.hidden_tag() }}
             <fieldset class="form-group">
-                <legend class="border-bottom mb-4">Log in</legend>
 
                 <div class="form-group">
                     {{ form.email.label(class="form-control-label") }}
@@ -49,20 +53,27 @@
 
             </fieldset>
             <div class="form-group">
-                {{ form.submit(class="btn btn-outline-primary")}}
+                {{ form.submit(class="btn btn-primary")}}
                 <small class="text-muted ml-2">
                     <a href="{{ url_for('users.request_password_reset') }}">Forgot Password?</a>
                 </small>
             </div>
         </form>
-    </div>
-    <div class="border-top pt-3">
+  <hr class="my-4">
+  <div class="">
         <small class="text-muted">
             Need An Account? <a class="ml-2" href="{{ url_for('users.register') }}">Sign Up Now</a>
         </small>
     </div>
+</div>
+<div class="text-center">
+    <a href="#" class="mr-2">Impressum</a>
+    <a href="https://github.com/ctreffe/mortimer" class="mr-2">Mortimer on Github</a>
+    <a href="https://github.com/ctreffe/alfred">Alfred on Github</a>
+</div>    
+    </div>
+{% endblock %}
 
-{% endblock content %}
 
 <script>
 // Example starter JavaScript for disabling form submissions if there are invalid fields

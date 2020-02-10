@@ -1,29 +1,69 @@
-{% extends "layout.html" %}
+{% extends "layout_experiment.html" %}
+
 
 {% block content %}
 
-<div class="media content-section">
-  <div class="media-body">
-    
-    <div class="border-bottom">
-      
-        <h2 class="d-inline-block">{{ experiment.title }}</h2>  
 
-        <span class="pl-3 align-middle">
-          {% if status == "active" %}
-          <span class="badge badge-success">{{ status }}</span>
-          {% else %}
-            <span class="badge badge-warning">{{ status }}</span>
-          {% endif %}
-          <span class="badge badge-dark">Version {{ experiment.version }}</span>
-          <small class="text-muted pl-3">Created: {{ experiment.date_created.strftime('%Y-%m-%d') }}</small>
-          </span>
-        
-      
+<div class="">
+  <h6 class="pt-2"><b>Access</b></h6>
+
+      {% if experiment.active == True %}
+
+      <div class="input-group mb-3">
+        <div class="input-group-prepend">
+          <form method="POST" action="{{ url_for('web_experiments.de_activate_experiment', experiment_title=experiment.title, username=experiment.author) }}">
+            <button class="btn btn-warning" type="submit"><i class='fas fa-stop-circle mr-2'></i>{{ toggle_button }}</button>
+          
+        </form>
+        </div>
+      <input type="text" class="form-control" aria-describedby="basic-addon2" id="link-to-exp" value="{{ url_for('alfredo.start', expid=expid, _external=True) }}">
+      <div class="input-group-append">
+        <button class="btn btn-outline-secondary" type="button" data-clipboard-target="#link-to-exp">
+          <img src="../static/clippy.svg" alt="Copy to clipboard" width="20"> Copy Link
+        </button>
+        <a class="btn btn-success" target="_blank" rel="noopener noreferrer" href="{{ url_for('alfredo.start', expid=expid) }}"><i class="fas fa-play mr-2"></i>Start</a>
+      </div>
     </div>
-    
-    <div class="row pt-2">
-      <div class="col-md-3"><small><b>Last Finished Dataset</b></small>:</div><div class="col-md-3"><span class="badge badge-light">{{ last_activity }}</span></div>
+
+    {% else %}
+
+    <div class="input-group mb-3">
+      <div class="input-group-prepend">
+          <form method="POST" action="{{ url_for('web_experiments.de_activate_experiment', experiment_title=experiment.title, username=experiment.author) }}">
+          <button class="btn btn-primary" type="submit"><i class='fas fa-play-circle mr-2'></i>{{ toggle_button }}</button>
+        </form>
+        </div>
+      <input type="text" class="form-control" aria-describedby="basic-addon2" id="link-to-exp" placeholder="(inactive)">
+      <div class="input-group-append">
+        <button class="btn btn-outline-secondary" type="button" data-clipboard-target="#link-to-exp">
+          <img src="{{ url_for('static', filename='clippy.svg')}}" alt="Copy to clipboard" width="20"> Copy Link
+        </button>
+        <a class="btn btn-success" href="#"><i class="fas fa-play mr-2"></i>Start</a>
+      </div>
+    </div>
+
+    {% endif %}
+
+    </div>
+
+<div class="row pt-2">
+      <div class="col-md-3"><small><b>Created</b></small>:</div>
+      <div class="col-md-3"><span class="badge badge-light">{{ experiment.date_created.strftime('%Y-%m-%d') }}</span></div>
+    </div>
+    <div class="row">
+      <div class="col-md-3"><small><b>Current Version</b></small>:</div>
+      <div class="col-md-3"><span class="badge badge-dark">{{ experiment.version }}</span></div>
+    </div>
+    <div class="row">
+      <div class="col-md-3"><small><b>Version History</b></small>:</div><div class="col-md-3">
+        {% for version in experiment.available_versions %}
+        <span class="badge badge-dark"> {{ version }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-3"><small><b>Last Finished Dataset</b></small>:</div>
+      <div class="col-md-3"><span class="badge badge-light">{{ last_activity }}</span></div>
     </div>
     <div class="row">
       <div class="col-md-3"><small><b>First Finished Dataset</b></small>:</div><div class="col-md-3"><span class="badge badge-light">{{ first_activity }}</span></div>
@@ -38,85 +78,19 @@
       </div>
     </div>
 
-    <div class="row">
-      <div class="col-md-3"><small><b>Version History</b></small>:</div><div class="col-md-3">
-        {% for version in experiment.available_versions %}
-        <span class="badge badge-dark"> {{ version }}</span>
-        {% endfor %}
-      </div>
-    </div>
     
+
     {% if experiment.description %}
-    <h6 class="border-bottom pt-4"><b>Description</b></h6>
+    <h6 class="border-bottom pt-2 mt-3"><b>Description</b></h6>
 
       <p class="article-content">{{ experiment.description }}</p>  
      {% else %}
      {% endif %}
 
-    <!--  <p class="article-content">{{ experiment.script }}</p> -->
-  </div>
-</div>
-
-<div class="article content-section">
-      <legend><b>Access Experiment</b></legend>
-
-      {% if experiment.active == True %}
-
-      <div class="input-group mb-3">
-      <input type="text" class="form-control" aria-describedby="basic-addon2" id="link-to-exp" value="{{ url_for('alfredo.start', expid=expid, _external=True) }}">
-      <div class="input-group-append">
-        <button class="btn btn-outline-secondary" type="button" data-clipboard-target="#link-to-exp">
-          <img src="../static/clippy.svg" alt="Copy to clipboard" width="20"> Copy Link
-        </button>
-        <a class="btn btn-success" target="_blank" rel="noopener noreferrer" href="{{ url_for('alfredo.start', expid=expid) }}">Start</a>
-      </div>
-    </div>
-
-    {% else %}
-
-    <div class="input-group mb-3">
-      <input type="text" class="form-control" aria-describedby="basic-addon2" id="link-to-exp" placeholder="(inactive)">
-      <div class="input-group-append">
-        <button class="btn btn-outline-secondary" type="button" data-clipboard-target="#link-to-exp">
-          <img src="{{ url_for('static', filename='clippy.svg')}}" alt="Copy to clipboard" width="20"> Copy Link
-        </button>
-        <a class="btn btn-success" href="#">Start</a>
-      </div>
-    </div>
-
-    {% endif %}
-
-    </div>
-
-  <div class="article content-section">
-    <legend><b>Options</b></legend>
-      <div class="row">
-
-        <form method="POST" action="{{ url_for('web_experiments.de_activate_experiment', experiment_title=experiment.title, username=experiment.author) }}">
-          <input class="btn btn-primary ml-3 mt-2 mb-2" type="submit" value="{{ toggle_button }}">
-        </form>
-
-        <a class="btn btn-primary ml-1 mt-2 mb-2" href="{{ url_for('web_experiments.web_export', experiment_title=experiment.title, username=experiment.author) }}">Export Data</a>
-      
-        <a class="btn btn-primary ml-1 mt-2 mb-2" href="{{ url_for('web_experiments.manage_resources', experiment_title=experiment.title, username=experiment.author) }}">Manage Resources</a>
-        
-        
-        <a class="btn btn-secondary ml-1 mt-2 mb-2" href="{{ url_for('web_experiments.update_experiment', exp_title=experiment.title, username=experiment.author) }}">Edit</a>
-      
-        <button type="button" class="btn btn-danger ml-1 mt-2 mb-2" data-toggle="modal" data-target="#deleteModal">Delete from Mortimer</button>
-      
-      </div>
-
-      
-      
-
-    </div>
-
-
     
 
 <div class="article content-section">
-  <legend><b>Datasets</b></legend>
+  <h6 class="pt-2"><b>Data</b></h6>
 
       <table class="table table-striped">
   <thead>
@@ -150,28 +124,18 @@
     </div>
 
 
-<div class="article content-section">
-    <form method="POST" action="" enctype="multipart/form-data" class="needs-validation" novalidate>
-        {{ form.hidden_tag() }}
-        <legend><b>{{ form.script.label() }}</b></legend>
-        <!-- <div class="row">
-          <div class="col-xs ml-3">
-          </div>
-          <div class="col-xs ml-2"> -->
-            <div class="form-group">
-                    {{ form.script(class="form-control-file") }}
-                    {% if form.script.errors %}
-                        {% for error in form.script.errors %}
-                            <span class="text-danger">{{ error }}</span><br>
-                        {% endfor %}
-                    {% endif %}
-                </div>
-          <!-- </div>
-        </div> -->
-        <div class="form-group">
-                    {{ form.version.label(class="form-control-label") }}*
-                    {% if form.version.errors %}
-                        {{ form.version(class="form-control form-control-lg is-invalid") }} <!-- , placeholder=form.version.label.text -->
+<div class="mt-5">
+<form method="POST" action="{{ url_for('web_experiments.experiment', username=experiment.author, exp_title=experiment.title) }}" enctype="multipart/form-data" class="needs-validation" novalidate>
+  {{ form.hidden_tag() }}
+  <h6 class="border-bottom pt-2"><b>{{ form.script.label() }}</b></h6>
+  <div class="form-row">
+    <div class="col col-sm-2">
+      
+        <div class="form-group row">
+          <label class="col col-form-label">Version</label>
+          <div class="col">
+            {% if form.version.errors %}
+                        {{ form.version(class="form-control form-control-sm is-invalid") }} 
 
                         <div class="invalid-feedback">
                             {% for error in form.version.errors %}
@@ -180,19 +144,38 @@
                         </div>
                         
                     {% else %}
-                    {{ form.version(class="form-control form-control-lg", placeholder=experiment.version) }}
+                    {{ form.version(class="form-control form-control-sm", placeholder=experiment.version) }}
                     {% endif %}
-                    <small id="versionHelpBlock" class="form-text text-muted">
+          </div>
+        </div>             
+                    
+    </div>
+    <div class="col">
+     
+      {{ form.script(class="form-control-file") }}
+                    {% if form.script.errors %}
+                        {% for error in form.script.errors %}
+                            <span class="text-danger">{{ error }}</span><br>
+                        {% endfor %}
+                    {% endif %}
+    </div>
+  </div>
+  <small id="versionHelpBlock" class="form-text text-muted">
                       Changing the version number allows you to choose, for which versions of an experiment you want to download data. If you made substantial changes to your experiment, you should change the version.
                     </small>
-                </div>
-        <div class="form-group ml-2">
-              {{ form.submit(class="btn btn-primary btn-sm")}}
-          </div>
+  <div class="form-row pt-3">
+    <div class="col">
+      {{ form.submit(class="btn btn-primary btn-sm", id="submit")}}
+    </div>
+  </div>
+</form>
 
-        
-          
-      </form>
+
+</div>
+
+<div class="article content-section mt-5 float-right">
+
+      <button type="button" class="btn btn-danger ml-1 mt-2 mb-2" data-toggle="modal" data-target="#deleteModal"><i class='fas fa-trash mr-2'></i>Delete from Mortimer</button>
 
 </div>
 

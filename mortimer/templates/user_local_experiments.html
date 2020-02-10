@@ -1,10 +1,19 @@
 {% extends "layout.html" %}
 
+{% block navigation %}
+
+<ul class="nav navbar-nav mr-auto">
+                           <li class="nav-item">
+                            <a href="{{ url_for('web_experiments.user_experiments', username=current_user.username) }}" class="nav-link">
+                                <i class="fas fa-globe mr-2"></i>Web Experiments</a>
+                        </li>
+                           <li class="nav-item nav-link">|</li>
+                           <li class="nav-item"><a href="{{ url_for('local_experiments.experiments') }}" class="nav-link active"><i class="fas fa-dot-circle mr-2"></i>Local Experiments (current)</a></li>
+                       </ul>
+
+{% endblock %}
+
 {% block content %}
-
-    <h1 class="mb-3">Local Experiments by {{ user.username }}</h1>
-
-    <a class="btn btn-block btn-primary mb-3" href="{{ url_for('local_experiments.new_local_experiment') }}">New Local Experiment</a>
 
     {% for experiment in experiments.items %}
         <article class="media content-section">

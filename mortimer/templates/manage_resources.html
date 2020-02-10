@@ -1,17 +1,15 @@
-{% extends "layout.html" %}
+{% extends "layout_experiment.html" %}
 
 {% block content %}
 
-<div class="content-section">
-            <legend class="border-bottom"><b>{{ experiment.title }}</b>: {{ legend }} <em></em></legend>
+<div class="content-section mb-3">
 
         <small>Directories created here are placed in the main experiment directory that also contains your <code style="color:black">script.py</code> </small> <br>
 
-        <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="#NewDirectory" aria-expanded="false" aria-controls="collapseExample">
+        <button class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#NewDirectory" aria-expanded="false" aria-controls="collapseExample">
         New Directory
         </button>
-        <button type="button" class="btn btn-danger btn mt-1 mb-1" data-toggle="modal" data-target="#deleteModal">Delete All Files</button>
-        <a class="btn btn-outline-primary" href="{{ url_for('web_experiments.experiment', exp_title=experiment.title, username=experiment.author) }}">Back to Experiment</a>
+        <button type="button" class="btn btn-danger btn-sm mt-1 mb-1" data-toggle="modal" data-target="#deleteModal">Delete All Files</button>
         
         <div class="collapse" id="NewDirectory">
             <form action="{{ url_for('web_experiments.new_directory', experiment_title=experiment.title, username=experiment.author) }}", method="POST">
