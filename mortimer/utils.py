@@ -398,3 +398,18 @@ class ScriptFile(ScriptString):
             self.script = f.read()
 
         os.remove(path)
+
+
+class _DictObj(dict):
+    """
+    This class allows dot notation to access dict elements
+
+    Example:
+    d = _DictObj()
+    d.hello = "Hello World"
+    print d.hello # Hello World
+    """
+
+    __getattr__ = dict.__getitem__
+    __setattr__ = dict.__setitem__
+    __delattr__ = dict.__delitem__

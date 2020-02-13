@@ -1,18 +1,25 @@
 {% extends "layout.html" %}
 
-{% block content %}
+{% block navigation %}
 
+<ul class="nav navbar-nav mr-auto">
+                           <li class="nav-item">
+                            <a href="{{ url_for('web_experiments.user_experiments', username=current_user.username) }}" class="nav-link">
+                                <i class="fas fa-globe mr-2"></i>Web Experiments (current)</a>
+                        </li>
+                           <li class="nav-item nav-link">|</li>
+                           <li class="nav-item"><a href="{{ url_for('local_experiments.experiments') }}" class="nav-link active"><i class="fas fa-dot-circle mr-2"></i>Local Experiments</a></li>
+                       </ul>
+
+{% endblock %}
+
+{% block content %}
 
     <!-- <div class="media content-section"> -->
       
       <!-- <div class="row">
         <div class="col-xs-12"> -->
           <div class="content-section">
-
-    <h1 class="mb-3">Your Web Experiments</h1>
-
-    
-        <a class="btn btn-block btn-primary mb-3" href="{{ url_for('web_experiments.new_experiment') }}">New Web Experiment</a>
 
             <div class="table-responsive">
           
@@ -22,7 +29,8 @@
               <tr class="table-active">
               <th scope="col" class="small">Title</th>
               <th scope="col" class="small">Last Update</th>
-              <th scope="col" class="small">Status</th>
+              <th scope="col" class="small">Created</th>
+              <th scope="col" class="small">Toggle</th>
               <th scope="col" class="small">Start</th>
               <th scope="col" class="small">Delete</th>
             </tr>
@@ -30,29 +38,43 @@
 
             <tbody>
 
-              {% for exp in experiments.items %}
+              {% for exp in experiments %}
               <tr>
-                <th><a href="{{ url_for('web_experiments.experiment', exp_title=exp.title, username=exp.author) }}">{{ exp.title }}</a></th>
-                <td class="small text-muted">{{ exp.last_update.strftime('%Y-%m-%d') }}</td>
+                
                 {% if exp.active %}
+                <th><a href="{{ url_for('web_experiments.experiment', exp_title=exp.title, username=exp.author) }}" class="nav-link"><span class="badge badge-success mr-2">active </span> {{ exp.title }}</a></th>
+                <td class="small text-muted">{{ exp.last_update.strftime('%Y-%m-%d') }}</td>
+                <td class="small text-muted">{{ exp.date_created.strftime('%Y-%m-%d') }}</td>
                 <!-- <td>
                 <form method="POST" action="{{ url_for('web_experiments.de_activate_experiment', experiment_title=exp.title, username=exp.author) }}">
                   <input class="btn btn-success btn-sm" type="submit" value="active">
                 </form>
                 </td> -->
-                <td class="small"><span class="badge badge-success">active</span></td>
-                <td class="small"><a class="btn btn-success btn-sm" target="_blank" rel="noopener noreferrer" href="{{ url_for('alfredo.start', expid=exp.id) }}">Start</a></td>
+                <td class="small">
+                  <form method="POST" action="{{ url_for('web_experiments.de_activate_experiment', experiment_title=exp.title, username=exp.author) }}">
+            <button class="btn btn-sm btn-secondary" type="submit"><i class='fas fa-stop-circle mr-2'></i>deactivate</button>
+          
+        </form>
+                </td>
+                
+                <td class="small"><a class="btn btn-success btn-sm" target="_blank" rel="noopener noreferrer" href="{{ url_for('alfredo.start', expid=exp.id) }}"><i class="fas fa-play mr-2"></i>Start</a></td>
                 {% else %}
+                <th><a href="{{ url_for('web_experiments.experiment', exp_title=exp.title, username=exp.author) }}" class="nav-link"><span class="badge badge-warning mr-2">inactive</span>{{ exp.title }}</a></th>
+                <td class="small text-muted">{{ exp.last_update.strftime('%Y-%m-%d') }}</td>
+                <td class="small text-muted">{{ exp.date_created.strftime('%Y-%m-%d') }}</td>
                 <!-- <td>
                 <form method="POST" action="{{ url_for('web_experiments.de_activate_experiment', experiment_title=exp.title, username=exp.author) }}">
                   <input class="btn btn-warning btn-sm" type="submit" value="inactive">
                 </form>
                 </td> -->
-                <td class="small"><span class="badge badge-warning">inactive</span></td>
+                <td class="small"><form method="POST" action="{{ url_for('web_experiments.de_activate_experiment', experiment_title=exp.title, username=exp.author) }}">
+            <button class="btn btn-sm btn-primary" type="submit"><i class='fas fa-play-circle mr-2'></i>activate</button>
+          
+        </form></td>
                 <td class="small">-</td>
                 {% endif %}
 
-                <td class="small"><button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal{{ exp.title }}">delete</button></td>
+                <td class="small"><button type="button" class="btn btn-danger btn-sm" data-toggle="modal" data-target="#deleteModal{{ exp.title }}"><i class='fas fa-trash mr-2'></i>delete</button></td>
               </tr>
 
               {% endfor %}
@@ -74,7 +96,7 @@
 
     
 
-    {% for experiment in experiments.items %}
+    {% for experiment in experiments %}
        <!--  <article class="media content-section">
           <div class="media-body">
             <div class="article-metadata">
@@ -109,19 +131,7 @@
 </div>
     {% endfor %}
 
-    {% for page_num in experiments.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
 
-        {% if page_num %}
-            {% if experiments.page == page_num %}
-            <a class="btn btn-secondary mb-4" href="{{ url_for('web_experiments.user_experiments', page=page_num, username=user.username)}}"> {{ page_num }}</a>
-            {% else %}
-            <a class="btn btn-outline-secondary mb-4" href="{{ url_for('web_experiments.user_experiments', page=page_num, username=user.username)}}"> {{ page_num }}</a>
-            {% endif %}
-            
-        {% else %}
-            ...
-    {% endif %}
-    {% endfor %}
 
 
 

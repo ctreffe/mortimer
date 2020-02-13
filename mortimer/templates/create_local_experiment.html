@@ -1,5 +1,18 @@
 {% extends "layout.html" %}
 
+{% block navigation %}
+
+<ul class="nav navbar-nav mr-auto">
+                           <li class="nav-item">
+                            <a href="{{ url_for('web_experiments.new_experiment') }}" class="nav-link">
+                                <i class="fas fa-globe mr-2"></i>Web Experiment</a>
+                        </li>
+                           <li class="nav-item nav-link">|</li>
+                           <li class="nav-item"><a href="{{ url_for('local_experiments.new_local_experiment') }}" class="nav-link active"><i class="fas fa-dot-circle mr-2"></i>Local Experiment (current)</a></li>
+                       </ul>
+
+{% endblock %}
+
 {% block content %}
 
 <div class="content-section">

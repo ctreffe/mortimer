@@ -53,6 +53,7 @@ class WebExperiment(db.Document):
     directory_name = db.StringField()   # name of exp directory
     user_directories = db.ListField(db.StringField())   # user-created directories
     config = db.StringField()   # possibility to include config.conf
+    settings = db.DictField()
 
     public = db.BooleanField(default=True)
     password = db.StringField()

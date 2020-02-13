@@ -1,4 +1,4 @@
-{% extends "layout.html" %}
+{% extends "layout_experiment.html" %}
 
 {% block custom_css %}
 <!-- Dropzone CSS -->
@@ -10,10 +10,6 @@
 
 <div class="content-section">
     <div class="article-metadata">
-              <a class="mr-2" href="#">{{ experiment.author }}</a>
-              <small class="text-muted">{{ experiment.date_created.strftime('%Y-%m-%d') }}</small>
-            </div>
-            <legend class="border-bottom"><b>{{ experiment.title }}</b>: {{ legend }} to <code>{{ relative_path }}</code> </legend>
 
             You can upload files with a size up to 10 MB. For larger files, please use an external hosting solution.
             <br> <br>
@@ -24,11 +20,17 @@
             Not allowed: <code>../../../../home/username/.bashrc</code><br>
             Allowed: <code>home_username_.bashrc</code>
 
+            <nav aria-label="breadcrumb" class="mt-2">
+  <ol class="breadcrumb">
+    <li class="breadcrumb-item"><a href="{{ url_for('web_experiments.manage_resources', experiment_title=experiment.title, username=experiment.author) }}">{{ experiment.title }}</a></li>
+    {% for dir in path_list %}
+    <li class="breadcrumb-item">{{ dir }}</li>
+    {% endfor %}
+  </ol>
+</nav>
+
             {{ dropzone.create(url_for('web_experiments.upload_resources', experiment_title=experiment.title, username=experiment.author, relative_path=relative_path)) }}
         <button id="upload" class="btn btn-primary">Upload</button>
-
-        <a class="btn btn-outline-primary" href="{{ url_for('web_experiments.manage_resources', experiment_title=experiment.title, username=experiment.author) }}">Back to Resources Management</a>
-        <a class="btn btn-outline-primary" href="{{ url_for('web_experiments.experiment', exp_title=experiment.title, username=experiment.author) }}">Back to Experiment</a>
 
 </div>
 

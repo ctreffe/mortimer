@@ -1,86 +1,44 @@
-{% extends "layout.html" %}
+{% extends "layout_experiment.html" %}
+
 
 {% block content %}
 
-<div class="media content-section">
-  <div class="media-body">
-    
-    <div class="border-bottom">
-      
-        <h2 class="d-inline-block">{{ experiment.title }}</h2>  
 
-        <span class="pl-3 align-middle">
-          {% if status == "active" %}
-          <span class="badge badge-success">{{ status }}</span>
-          {% else %}
-            <span class="badge badge-warning">{{ status }}</span>
-          {% endif %}
-          <span class="badge badge-dark">Version {{ experiment.version }}</span>
-          <small class="text-muted pl-3">Created: {{ experiment.date_created.strftime('%Y-%m-%d') }}</small>
-          </span>
-        
-      
-    </div>
-    
-    <div class="row pt-2">
-      <div class="col-md-3"><small><b>Last Finished Dataset</b></small>:</div><div class="col-md-3"><span class="badge badge-light">{{ last_activity }}</span></div>
-    </div>
-    <div class="row">
-      <div class="col-md-3"><small><b>First Finished Dataset</b></small>:</div><div class="col-md-3"><span class="badge badge-light">{{ first_activity }}</span></div>
-    </div>
-    <div class="row">
-      <div class="col-md-3"><small><b>Passsword</b></small>:</div><div class="col-md-5">
-        {% if experiment.public %}
-        <span class="badge badge-primary">{{ password_protection }}</span>
-        {% else %}
-        <span>{{ experiment.password }}</span>
-        {% endif %}
-      </div>
-    </div>
-
-    <div class="row">
-      <div class="col-md-3"><small><b>Version History</b></small>:</div><div class="col-md-3">
-        {% for version in experiment.available_versions %}
-        <span class="badge badge-dark"> {{ version }}</span>
-        {% endfor %}
-      </div>
-    </div>
-    
-    {% if experiment.description %}
-    <h6 class="border-bottom pt-4"><b>Description</b></h6>
-
-      <p class="article-content">{{ experiment.description }}</p>  
-     {% else %}
-     {% endif %}
-
-    <!--  <p class="article-content">{{ experiment.script }}</p> -->
-  </div>
-</div>
-
-<div class="article content-section">
-      <legend><b>Access Experiment</b></legend>
+<div>
+  <h1>{{ experiment.title }}</h1>
 
       {% if experiment.active == True %}
 
       <div class="input-group mb-3">
+        <div class="input-group-prepend">
+          <form method="POST" action="{{ url_for('web_experiments.de_activate_experiment', experiment_title=experiment.title, username=experiment.author) }}">
+            <button class="btn btn-warning" type="submit"><i class='fas fa-stop-circle mr-2'></i>{{ toggle_button }}</button>
+          
+        </form>
+        </div>
       <input type="text" class="form-control" aria-describedby="basic-addon2" id="link-to-exp" value="{{ url_for('alfredo.start', expid=expid, _external=True) }}">
       <div class="input-group-append">
         <button class="btn btn-outline-secondary" type="button" data-clipboard-target="#link-to-exp">
           <img src="../static/clippy.svg" alt="Copy to clipboard" width="20"> Copy Link
         </button>
-        <a class="btn btn-success" target="_blank" rel="noopener noreferrer" href="{{ url_for('alfredo.start', expid=expid) }}">Start</a>
+        <a class="btn btn-success" target="_blank" rel="noopener noreferrer" href="{{ url_for('alfredo.start', expid=expid) }}"><i class="fas fa-play mr-2"></i>Start</a>
       </div>
     </div>
 
     {% else %}
 
     <div class="input-group mb-3">
+      <div class="input-group-prepend">
+          <form method="POST" action="{{ url_for('web_experiments.de_activate_experiment', experiment_title=experiment.title, username=experiment.author) }}">
+          <button class="btn btn-primary" type="submit"><i class='fas fa-play-circle mr-2'></i>{{ toggle_button }}</button>
+        </form>
+        </div>
       <input type="text" class="form-control" aria-describedby="basic-addon2" id="link-to-exp" placeholder="(inactive)">
       <div class="input-group-append">
         <button class="btn btn-outline-secondary" type="button" data-clipboard-target="#link-to-exp">
           <img src="{{ url_for('static', filename='clippy.svg')}}" alt="Copy to clipboard" width="20"> Copy Link
         </button>
-        <a class="btn btn-success" href="#">Start</a>
+        <a class="btn btn-success" href="#"><i class="fas fa-play mr-2"></i>Start</a>
       </div>
     </div>
 
@@ -88,35 +46,94 @@
 
     </div>
 
-  <div class="article content-section">
-    <legend><b>Options</b></legend>
-      <div class="row">
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-5">
 
-        <form method="POST" action="{{ url_for('web_experiments.de_activate_experiment', experiment_title=experiment.title, username=experiment.author) }}">
-          <input class="btn btn-primary ml-3 mt-2 mb-2" type="submit" value="{{ toggle_button }}">
-        </form>
-
-        <a class="btn btn-primary ml-1 mt-2 mb-2" href="{{ url_for('web_experiments.web_export', experiment_title=experiment.title, username=experiment.author) }}">Export Data</a>
-      
-        <a class="btn btn-primary ml-1 mt-2 mb-2" href="{{ url_for('web_experiments.manage_resources', experiment_title=experiment.title, username=experiment.author) }}">Manage Resources</a>
-        
-        
-        <a class="btn btn-secondary ml-1 mt-2 mb-2" href="{{ url_for('web_experiments.update_experiment', exp_title=experiment.title, username=experiment.author) }}">Edit</a>
-      
-        <button type="button" class="btn btn-danger ml-1 mt-2 mb-2" data-toggle="modal" data-target="#deleteModal">Delete from Mortimer</button>
-      
+      <div class="col mb-4">
+    <div class="card h-100 text-center border-primary">
+      <div class="card-header border-primary">
+    Complete datasets
+  </div>
+      <div class="card-body text-primary">
+        <h1 class="card-text">{{ datasets["all_finished_datasets"] }}</h1>
       </div>
-
-      
-      
-
+      <div class="card-footer text-muted border-primary">
+    Total datasets: <span class="badge badge-light">{{ datasets["all_datasets"] }}</span>
+  </div>
     </div>
+  </div>
 
+  <div class="col mb-4">
+    <div class="card h-100 text-center border-success">
+      <div class="card-header border-success">
+    Last Update
+  </div>
+      <div class="card-body">
+        <h2 class="card-text text-success">{{ experiment.last_update.strftime('%Y-%m-%d') }}</h2>
+        <span class="text-muted">{{ experiment.last_update.strftime('%H:%M') }}</span>
+      </div>
+      <div class="card-footer text-muted border-success">
+    Created on <span class="badge badge-light">{{ experiment.date_created.strftime('%Y-%m-%d, %H:%M') }}</span>
+  </div>
+    </div>
+  </div>
+
+  <div class="col mb-4">
+    <div class="card h-100 text-center border-info">
+      <div class="card-header border-info">
+    Last activity
+  </div>
+      <div class="card-body border-info">
+        <h2 class="card-text text-info">{{ last_activity.strftime('%Y-%m-%d') }}</h2>
+        <span class="text-muted">{{ last_activity.strftime('%H:%M') }}</span>
+      </div>
+      <div class="card-footer text-muted border-info">
+    First activity on <span class="badge badge-light">{{ first_activity.strftime('%Y-%m-%d, %H:%M') }}</span>
+  </div>
+    </div>
+  </div>
+
+  <div class="col mb-4">
+    <div class="card h-100 text-center">
+      <div class="card-header">
+    Current version
+  </div>
+      <div class="card-body">
+        <h2 class="card-text"><span class="badge badge-secondary">{{ experiment.version }}</span></h2>
+      </div>
+    </div>
+  </div>
+
+  <div class="col mb-4">
+    <div class="card h-100 text-center">
+      <div class="card-header">
+    Access
+  </div>
+      <div class="card-body">
+        {% if experiment.password %}
+          <h2 class="card-text"><span class="badge badge-primary">protected</span></h2>
+          <span class="text-muted">{{experiment.password}}</span>
+        {% else %}
+          <h2 class="card-text"><span class="badge badge-success">public</span></h2>
+          <span class="text-muted">No password</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
 
     
 
-<div class="article content-section">
-  <legend><b>Datasets</b></legend>
+    {% if experiment.description %}
+    <h6 class="border-bottom pt-2 mt-3"><b>Description</b></h6>
+
+      <p class="article-content">{{ experiment.description }}</p>  
+     {% else %}
+     {% endif %}
+
+    
+
+<!-- <div class="article content-section">
+  <h3 class="pt-2"><b>Data</b></h3>
 
       <table class="table table-striped">
   <thead>
@@ -147,31 +164,21 @@
   </tbody>
 </table>
 
-    </div>
+    </div> -->
 
 
-<div class="article content-section">
-    <form method="POST" action="" enctype="multipart/form-data" class="needs-validation" novalidate>
-        {{ form.hidden_tag() }}
-        <legend><b>{{ form.script.label() }}</b></legend>
-        <!-- <div class="row">
-          <div class="col-xs ml-3">
-          </div>
-          <div class="col-xs ml-2"> -->
-            <div class="form-group">
-                    {{ form.script(class="form-control-file") }}
-                    {% if form.script.errors %}
-                        {% for error in form.script.errors %}
-                            <span class="text-danger">{{ error }}</span><br>
-                        {% endfor %}
-                    {% endif %}
-                </div>
-          <!-- </div>
-        </div> -->
-        <div class="form-group">
-                    {{ form.version.label(class="form-control-label") }}*
-                    {% if form.version.errors %}
-                        {{ form.version(class="form-control form-control-lg is-invalid") }} <!-- , placeholder=form.version.label.text -->
+<div class="mt-2">
+<form method="POST" action="{{ url_for('web_experiments.experiment', username=experiment.author, exp_title=experiment.title) }}" enctype="multipart/form-data" class="needs-validation" novalidate>
+  {{ form.hidden_tag() }}
+  <h3 class="border-bottom pt-2"><b>{{ form.script.label() }}</b></h3>
+  <div class="form-row">
+    <div class="col col-sm-2">
+      
+        <div class="form-group row">
+          <label class="col col-form-label">Version</label>
+          <div class="col">
+            {% if form.version.errors %}
+                        {{ form.version(class="form-control form-control-sm is-invalid") }} 
 
                         <div class="invalid-feedback">
                             {% for error in form.version.errors %}
@@ -180,19 +187,38 @@
                         </div>
                         
                     {% else %}
-                    {{ form.version(class="form-control form-control-lg", placeholder=experiment.version) }}
+                    {{ form.version(class="form-control form-control-sm", placeholder=experiment.version) }}
                     {% endif %}
-                    <small id="versionHelpBlock" class="form-text text-muted">
+          </div>
+        </div>             
+                    
+    </div>
+    <div class="col">
+     
+      {{ form.script(class="form-control-file") }}
+                    {% if form.script.errors %}
+                        {% for error in form.script.errors %}
+                            <span class="text-danger">{{ error }}</span><br>
+                        {% endfor %}
+                    {% endif %}
+    </div>
+  </div>
+  <small id="versionHelpBlock" class="form-text text-muted">
                       Changing the version number allows you to choose, for which versions of an experiment you want to download data. If you made substantial changes to your experiment, you should change the version.
                     </small>
-                </div>
-        <div class="form-group ml-2">
-              {{ form.submit(class="btn btn-primary btn-sm")}}
-          </div>
+  <div class="form-row pt-3">
+    <div class="col">
+      {{ form.submit(class="btn btn-primary btn-sm", id="submit")}}
+    </div>
+  </div>
+</form>
 
-        
-          
-      </form>
+
+</div>
+
+<div class="article content-section mt-5 float-right">
+
+      <button type="button" class="btn btn-danger ml-1 mt-2 mb-2" data-toggle="modal" data-target="#deleteModal"><i class='fas fa-trash mr-2'></i>Delete from Mortimer</button>
 
 </div>
 

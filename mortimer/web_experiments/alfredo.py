@@ -144,22 +144,16 @@ def start(expid):
     try:
         script = Script()
         script.set_generator(module.generate_experiment)
-        
-        custom_settings = {
-        "author": experiment.author,
-        "title": experiment.title,
-        "version": experiment.version,
-        "exp_id": str(experiment.id),
-        "path": experiment.path,
-        "session_id": sid,
-        "type": "web"
-        }
+
+        custom_settings = experiment.settings
+        custom_settings['mortimer_specific']['session_id'] = sid
 
         try:
-            if number_of_func_params(module.generate_experiment) > 1:
-                script.experiment = script.generate_experiment(custom_settings=custom_settings,**values)
+            if number_of_func_params(module.generate_experiment) > 2:
+                script.experiment = script.generate_experiment(config=custom_settings,**values)
+                
             else:
-                script.experiment = script.generate_experiment(custom_settings=custom_settings)
+                script.experiment = script.generate_experiment(config=custom_settings)
         except SyntaxError:
             flash("The definition of experiment title, type, or version in script.py is deprecated. Please define these parameters in config.conf, when you are working locally. Mortimer will set these parameters for you automatically. In your script.py, just use 'exp = Experiment()'.", "danger")
             return redirect(url_for('web_experiments.experiment', username=experiment.author, exp_title=experiment.title))
