@@ -149,8 +149,9 @@ def start(expid):
         custom_settings['mortimer_specific']['session_id'] = sid
 
         try:
-            if number_of_func_params(module.generate_experiment) > 1:
+            if number_of_func_params(module.generate_experiment) > 2:
                 script.experiment = script.generate_experiment(config=custom_settings,**values)
+                
             else:
                 script.experiment = script.generate_experiment(config=custom_settings)
         except SyntaxError:
