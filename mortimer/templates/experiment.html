@@ -4,7 +4,7 @@
 {% block content %}
 
 
-<div class="">
+<div>
   <h1>{{ experiment.title }}</h1>
 
       {% if experiment.active == True %}
@@ -46,7 +46,8 @@
 
     </div>
 
-    <div class="row row-cols-1 row-cols-md-2 pt-2">
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-5">
+
       <div class="col mb-4">
     <div class="card h-100 text-center border-primary">
       <div class="card-header border-primary">
@@ -60,6 +61,7 @@
   </div>
     </div>
   </div>
+
   <div class="col mb-4">
     <div class="card h-100 text-center border-success">
       <div class="card-header border-success">
@@ -74,6 +76,7 @@
   </div>
     </div>
   </div>
+
   <div class="col mb-4">
     <div class="card h-100 text-center border-info">
       <div class="card-header border-info">
@@ -88,6 +91,7 @@
   </div>
     </div>
   </div>
+
   <div class="col mb-4">
     <div class="card h-100 text-center">
       <div class="card-header">
@@ -98,6 +102,7 @@
       </div>
     </div>
   </div>
+
   <div class="col mb-4">
     <div class="card h-100 text-center">
       <div class="card-header">
