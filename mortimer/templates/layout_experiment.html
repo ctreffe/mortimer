@@ -20,7 +20,7 @@
                            <li class="nav-item nav-link">|</li>
                            <li class="nav-item"><a href="{{ url_for('web_experiments.experiment_config', experiment_title=experiment.title, username=experiment.author) }}" class="nav-link"><i class="fas fa-sliders-h mr-2"></i>Configuration</a></li>
                            <li class="nav-item nav-link">|</li>
-                           <li class="nav-item"><a href="{{ url_for('web_experiments.experiment_log', experiment_title=experiment.title, username=experiment.author) }}" class="nav-link"><i class="fas fa-clipboard mr-2"></i>Log*</a></li>
+                           <li class="nav-item"><a href="{{ url_for('web_experiments.experiment_log', experiment_title=experiment.title, username=experiment.author) }}" class="nav-link"><i class="fas fa-clipboard mr-2"></i>Log</a></li>
                        </ul>
 
 {% endblock %}
