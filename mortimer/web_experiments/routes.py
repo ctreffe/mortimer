@@ -139,9 +139,11 @@ def experiment(username, exp_title):
 
     # Number of finished datasets per version
     versions = {}
+    all_activity = []
     finished = []
-    cur = alfred_web_db.find({"exp_author_mail": current_user.email, "exp_name": exp_title})
+    cur = alfred_web_db.find({"exp_id": exp.id})
     for single_exp in cur:
+        all_activity.append(single_exp["start_time"])
         if single_exp["exp_version"] not in versions.keys():
             versions[single_exp["exp_version"]] = {"total": 1, "finished": 0, "unfinished": 0}
         else:
@@ -152,15 +154,23 @@ def experiment(username, exp_title):
             versions[single_exp["exp_version"]]["unfinished"] += 1
         finished.append(single_exp["start_time"])
 
-    # Time of first and last activity
-    if finished:
-        first_activity = datetime.fromtimestamp(min(finished))\
-            .strftime('%Y-%m-%d, %H:%M')
-        last_activity = datetime.fromtimestamp(max(finished))\
-            .strftime('%Y-%m-%d, %H:%M')
+    if all_activity:
+        first_activity = datetime.fromtimestamp(min(all_activity))
+        last_activity = datetime.fromtimestamp(max(all_activity))
     else:
         first_activity = "none"
         last_activity = "none"
+
+
+    # Time of first and last activity
+    # if finished:
+    #     first_activity = datetime.fromtimestamp(min(finished))\
+    #         .strftime('%Y-%m-%d, %H:%M')
+    #     last_activity = datetime.fromtimestamp(max(finished))\
+    #         .strftime('%Y-%m-%d, %H:%M')
+    # else:
+    #     first_activity = "none"
+    #     last_activity = "none"
 
     # Form for script.py upload
     form = NewScriptForm()
@@ -560,9 +570,9 @@ def experiment_config(username, experiment_title):
         exp.description = form.description.data
         if form.password.data:
             exp.public = False
-            exp.password = form.password.data
         else:
             exp.public = True
+        exp.password = form.password.data
 
         exp.settings['general']['debug'] = form.debug.data
 
