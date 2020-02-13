@@ -1,4 +1,4 @@
-import os
+import os, sys, collections
 import shutil
 import re
 from mortimer import export
@@ -639,4 +639,30 @@ def experiment_log(username, experiment_title):
     if exp.author!= current_user.username:
         abort(403)
 
-    return render_template('experiment_log.html', experiment=exp, username=exp.author)
+    p = re.compile(r"(?P<date>20.+?) - (?P<module>.+?) - (?P<log_level>.+?) - ((experiment id=)(?P<exp_id>.+?), )?(?P<message>.+\s*((?P<traceback>Traceback(.|\s)+?)(?=\d{4}-\d{2}-\d{2}))?)")
+    mortimer_path = os.path.abspath(os.path.dirname(sys.argv[0]))
+    log_path = os.path.join(mortimer_path, "log")
+    log_file = os.path.join(log_path, "alfred.log")
+
+    with open(log_file, 'r', encoding='utf-8') as f:
+        log = f.read()
+
+    log_entries = collections.deque()
+
+    for match in p.finditer(log):
+        if match.group('exp_id') == str(exp.id):
+            date = match.group('date')
+            module = match.group('module')
+            log_level = match.group('log_level')
+            exp_id = match.group('exp_id')
+            message = match.group('message')
+
+            entry_string = ", ".join(str(x) for x in [date, module, log_level, exp_id, message])
+
+            log_entries.appendleft(entry_string)
+
+    log_string = "\n".join(str(x) for x in log_entries)
+
+    return render_template('experiment_log.html', experiment=exp, username=exp.author, log_string=log_string)
+
+
