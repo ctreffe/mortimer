@@ -83,11 +83,29 @@
     Last activity
   </div>
       <div class="card-body border-info">
-        <h2 class="card-text text-info">{{ last_activity.strftime('%Y-%m-%d') }}</h2>
-        <span class="text-muted">{{ last_activity.strftime('%H:%M') }}</span>
+        <h2 class="card-text text-info">
+        {% if last_activity != 'none' %}
+        {{ last_activity.strftime('%Y-%m-%d') }}
+        {% else %}
+        - none -
+        {% endif %}
+      </h2>
+        <span class="text-muted">
+        {% if last_activity != 'none' %}
+        {{ last_activity.strftime('%H:%M') }}
+        {% else %}
+        - none -
+        {% endif %}
+      </span>
       </div>
       <div class="card-footer text-muted border-info">
-    First activity on <span class="badge badge-light">{{ first_activity.strftime('%Y-%m-%d, %H:%M') }}</span>
+    First activity on <span class="badge badge-light">
+    {% if first_activity != 'none' %}
+    {{ first_activity.strftime('%Y-%m-%d, %H:%M') }}
+    {% else %}
+    - none -
+    {% endif %}
+  </span>
   </div>
     </div>
   </div>
