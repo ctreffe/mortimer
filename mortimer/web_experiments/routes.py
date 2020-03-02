@@ -649,7 +649,7 @@ def experiment_log(username, experiment_title):
     if exp.author!= current_user.username:
         abort(403)
 
-    p = re.compile(r"(?P<date>20.+?) - (?P<module>.+?) - (?P<log_level>.+?) - ((experiment id=)(?P<exp_id>.+?), )?(?P<message>.+\s*((?P<traceback>Traceback(.|\s)+?)(?=\d{4}-\d{2}-\d{2}))?)")
+    p = re.compile(r"(?P<date>20.+?) - (?P<module>.+?) - (?P<log_level>.+?) - ((experiment id=)(?P<exp_id>.+?), )?(session id=(?P<session_id>.+?) - )?(?P<message>(.|\s)*?(?=(\d{4}-\d{2}-\d{2}|\Z)))")
     mortimer_path = os.path.abspath(os.path.dirname(sys.argv[0]))
     log_path = os.path.join(mortimer_path, "log")
     log_file = os.path.join(log_path, "alfred.log")
@@ -658,6 +658,7 @@ def experiment_log(username, experiment_title):
         log = f.read()
 
     log_entries = collections.deque()
+    flash_type = {'DEBUG': 'secondary', 'INFO': 'info', 'WARNING': 'warning', 'ERROR': 'danger', 'CRITICAL': 'danger'}
 
     for match in p.finditer(log):
         if match.group('exp_id') == str(exp.id):
@@ -665,14 +666,13 @@ def experiment_log(username, experiment_title):
             module = match.group('module')
             log_level = match.group('log_level')
             exp_id = match.group('exp_id')
-            message = match.group('message')
+            session_id = match.group('session_id')
+            message = match.group('message').replace('<', '&lt;').replace('>', '&gt;').rstrip()
+            
+            entry_info = '<span class="badge badge-light">{date}</span> - <span class="badge badge-{type}">{log_level}</span> - <b>exp id</b> = {exp_id} - <b>session id</b> = {session_id} - {module}'.format(date=date, type=flash_type[log_level], log_level=log_level, exp_id=exp_id, session_id=session_id, module=module)
+            flash_entry = '<div class="alert alert-{type}" role="alert">{entry_info}<hr><pre>{message}</pre></div>'.format(type=flash_type[log_level], entry_info=entry_info, message=message)
+            log_entries.appendleft(flash_entry)
 
-            entry_string = ", ".join(str(x) for x in [date, module, log_level, exp_id, message])
-
-            log_entries.appendleft(entry_string)
-
-    log_string = "\n".join(str(x) for x in log_entries)
-
-    return render_template('experiment_log.html', experiment=exp, username=exp.author, log_string=log_string)
+    return render_template('experiment_log.html', experiment=exp, username=exp.author, log=log_entries)
 
 
