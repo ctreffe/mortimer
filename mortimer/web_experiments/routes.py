@@ -660,6 +660,9 @@ def experiment_log(username, experiment_title):
     log_entries = collections.deque()
     flash_type = {'DEBUG': 'secondary', 'INFO': 'info', 'WARNING': 'warning', 'ERROR': 'danger', 'CRITICAL': 'danger'}
 
+    pattern_ip = re.compile(r"(host=\[(?P<ip>.+?)\])")
+    pattern_path = re.compile(r"(File \"(?P<path>.+))(?=/.+.py)")
+
     for match in p.finditer(log):
         if match.group('exp_id') == str(exp.id):
             date = match.group('date')
@@ -668,6 +671,9 @@ def experiment_log(username, experiment_title):
             exp_id = match.group('exp_id')
             session_id = match.group('session_id')
             message = match.group('message').replace('<', '&lt;').replace('>', '&gt;').rstrip()
+
+            message = pattern_ip.sub("host=[--removed--]", message)
+            message = pattern_path.sub("File \"...", message)
             
             entry_info = '<span class="badge badge-light">{date}</span> - <span class="badge badge-{type}">{log_level}</span> - <b>exp id</b> = {exp_id} - <b>session id</b> = {session_id} - {module}'.format(date=date, type=flash_type[log_level], log_level=log_level, exp_id=exp_id, session_id=session_id, module=module)
             flash_entry = '<div class="alert alert-{type}" role="alert">{entry_info}<hr><pre>{message}</pre></div>'.format(type=flash_type[log_level], entry_info=entry_info, message=message)
