@@ -15,11 +15,11 @@
 
 {% block content %}
 
-    {% for experiment in experiments.items %}
+    {% for experiment in experiments %}
         <article class="media content-section">
           <div class="media-body">
             <div class="article-metadata">
-              <a class="mr-2" href="#">{{ experiment.author }}</a>
+              
               <small class="text-muted">{{ experiment.date_created.strftime('%Y-%m-%d') }}</small>
             </div>
             <h2><a class="article-title" href="{{ url_for('local_experiments.local_experiment', experiment_title=experiment.title, username=experiment.author) }}">{{ experiment.title }}</a><button type="button" class="btn btn-danger btn-sm ml-3 mt-1 float-right" data-toggle="modal" data-target="#deleteModal{{ experiment.title }}">Delete from Mortimer</button></h2>
@@ -50,18 +50,6 @@
 </div>
     {% endfor %}
 
-    {% for page_num in experiments.iter_pages(left_edge=1, right_edge=1, left_current=1, right_current=2) %}
-
-        {% if page_num %}
-            {% if experiments.page == page_num %}
-            <a class="btn btn-secondary mb-4" href="{{ url_for('local_experiments.user_experiments', page=page_num, username=user.username)}}"> {{ page_num }}</a>
-            {% else %}
-            <a class="btn btn-outline-secondary mb-4" href="{{ url_for('local_experiments.user_experiments', page=page_num, username=user.username)}}"> {{ page_num }}</a>
-            {% endif %}
-            
-        {% else %}
-            ...
-    {% endif %}
-    {% endfor %}
+    
 
 {% endblock content %}
