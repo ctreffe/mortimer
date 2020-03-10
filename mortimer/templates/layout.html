@@ -13,16 +13,18 @@
 
         <ul class="list-unstyled comments">
 
-            <li><a href="{{ url_for('web_experiments.user_experiments', username=current_user.username) }}"><i class="fas fa-desktop mr-2"></i>Dashboard</a></li>
+            
+            <li><a href="{{ url_for('web_experiments.user_experiments', username=current_user.username) }}"><i class="fas fa-desktop mr-2"></i>Experiments</a></li>
             <li><a href="{{ url_for('web_experiments.new_experiment') }}"><i class="fas fa-plus-circle mr-2"></i>New Experiment</a></li>
             <hr class="lightrule">
-            <li><a href="#"><i class="fas fa-cog mr-2"></i>Settings*</a></li>
-            <li><a href="#"><i class="fas fa-question mr-2"></i>Help*</a></li>
             <li><a href="{{ url_for('main.futurize_script') }}"><i class="fas fa-dot-circle mr-2"></i>Futurize Script</a></li>
+            <hr class="lightrule">
+            <!-- <li><a href="#"><i class="fas fa-cog mr-2"></i>Settings*</a></li> -->
+            <!-- <li><a href="#"><i class="fas fa-question mr-2"></i>Help*</a></li> -->
             <li><a href="{{ url_for('users.account') }}"><i class="fas fa-user mr-2"></i>Account</a></li>
             <hr class="lightrule">
-            <li><a href="#"><i class="fas fa-quote-left mr-2"></i>About*</a></li>
-            <li><a href="{{ url_for('main.impressum') }}"><i class="fas fa-align-left mr-2"></i>Impressum*</a></li>
+            <!-- <li><a href="#"><i class="fas fa-quote-left mr-2"></i>About*</a></li> -->
+            <li><a href="{{ url_for('main.impressum') }}"><i class="fas fa-align-left mr-2"></i>Impressum</a></li>
         </ul>
 
     </nav>
