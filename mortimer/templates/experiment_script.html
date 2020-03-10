@@ -11,7 +11,7 @@
             <div class="form-group">
                 
                 {% if form.script.errors %}
-                {{ form.script(class="form-control form-control-sm is-invalid", placeholder=experiment.script) }}
+                {{ form.script(class="form-control form-control-sm is-invalid", style="font-family: 'Dejavu Sans Mono', monospace;",  placeholder=experiment.script) }}
 
                 <div class="invalid-feedback">
                     {% for error in form.script.errors %}
@@ -20,7 +20,7 @@
                 </div>
 
                 {% else %}
-                {{ form.script(class="form-control form-control-sm", rows="30", placeholder=experiment.script) }}
+                {{ form.script(class="form-control form-control-sm", style="font-family: 'Dejavu Sans Mono', monospace;", rows="30", placeholder=experiment.script) }}
                 {% endif %}
             </div>
 
