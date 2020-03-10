@@ -292,7 +292,7 @@ def display_directory(directories: list, parent_directory: str,
     return "<br>".join([display_first_directory, display_other_directories])
 
 
-def futurize_script(file):
+def perform_futurization(file):
     futurize = subprocess.run(['futurize', '-w', file], check=True, text=True)
 
     return futurize
@@ -332,7 +332,14 @@ def replace_all_patterns(file):
                             "One line had at least %i replacements. Something seems to be wrong" % max_iter)
                     iter = 0
 
+                gen_pattern = re.compile(r"(?P<gen>def generate_experiment\(self\):)")
+                exp_pattern = re.compile(r"(?P<exp>exp = Experiment\('web', exp_name, exp_version\))")
+                
+                line = gen_pattern.sub('def generate_experiment(self, config=None):', line)
+                line = exp_pattern.sub('exp = Experiment(config=config)', line)
+
                 code.append(line)
+
         code = "".join(code)
 
         if write:  # if parameter is true, we save the changes to the file
@@ -344,7 +351,7 @@ def replace_all_patterns(file):
     json_data = []
     path = os.path.join(current_app.root_path, "static",
                         "futurizing_alfred_scripts")
-    for pattern_file in os.listdir(path):
+    for pattern_file in sorted(os.listdir(path)):
         json_data.append(load_json(os.path.join(path, pattern_file)))
 
     for dct in json_data:

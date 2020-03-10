@@ -160,7 +160,7 @@ def start(expid):
             else:
                 script.experiment = script.generate_experiment(config=custom_settings)
         except SyntaxError:
-            flash("The definition of experiment title, type, or version in script.py is deprecated. Please define these parameters in config.conf, when you are working locally. Mortimer will set these parameters for you automatically. In your script.py, just use 'exp = Experiment()'.", "danger")
+            flash("The definition of experiment title, type, or version in script.py is deprecated. Please define these parameters in config.conf, when you are working locally. Mortimer will set these parameters for you automatically. In your script.py, just use 'exp = Experiment(config=config)'.", "danger")
             return redirect(url_for('web_experiments.experiment', username=experiment.author, exp_title=experiment.title))
 
     except Exception as e:

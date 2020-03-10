@@ -53,6 +53,9 @@ def new_experiment():
         else:
             exp.public = True
 
+        # save the exp to the data base
+        exp.save()
+
         exp_specific_settings = settings.ExperimentSpecificSettings()
         exp.settings = {
         'general': dict(settings.general),

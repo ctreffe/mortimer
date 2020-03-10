@@ -133,6 +133,10 @@ class ExperimentScriptForm(FlaskForm):
 
     submit = SubmitField("Save")
 
+class FuturizeScriptForm(FlaskForm):
+    script = TextAreaField("Script", validators=[DataRequired()])
+    submit = SubmitField("Futurize")
+
 
 class NewScriptForm(FlaskForm):
     script = FileField("Update script.py", validators=[FileAllowed(['py'])])
