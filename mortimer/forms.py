@@ -107,6 +107,7 @@ class WebExperimentForm(FlaskForm):
 
 class LocalExperimentForm(FlaskForm):
     title = StringField("Title", validators=[DataRequired()])
+    exp_id = StringField("Experiment ID", validators=[DataRequired()])
     description = TextAreaField("Description")
 
     def validate_title(self, title):
@@ -117,6 +118,13 @@ class LocalExperimentForm(FlaskForm):
         if experiment is not None:
             raise ValidationError(
                 "You already have a local experiment with this title. Please choose a unique title.")
+
+    def validate_exp_id(self, exp_id):
+        experiment = LocalExperiment.objects(exp_id__exact=exp_id.data).first()
+        print(experiment)
+        if experiment is not None:
+
+            raise ValidationError('There already exists an experiment with this ID in the database. Please choose a unique ID. If you already collected data using this ID, please contanct an administrator.')
 
     submit = SubmitField("Create")
 

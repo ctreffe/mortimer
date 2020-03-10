@@ -6,6 +6,7 @@ from mortimer import alfred_local_db
 from mortimer.config import Config
 from flask_login import current_user, login_required
 from datetime import datetime
+from uuid import uuid4
 
 local_experiments = Blueprint("local_experiments", __name__)
 
@@ -15,16 +16,18 @@ local_experiments = Blueprint("local_experiments", __name__)
 def new_local_experiment():
     form = LocalExperimentForm()
 
+    id = str(uuid4())
+
     if form.validate_on_submit():
 
         experiment = LocalExperiment(title=form.title.data, author=current_user.username,
-                                     description=form.description.data)
+                                     description=form.description.data, exp_id=form.exp_id.data)
 
         experiment.save()
         flash("New local experiment added. You can now download the corresponding data.", "success")
         return redirect(url_for('local_experiments.local_experiment', username=current_user.username, experiment_title=experiment.title))
 
-    return render_template("create_local_experiment.html", form=form, legend="New Local Experiment")
+    return render_template("create_local_experiment.html", form=form, legend="New Local Experiment", id=id)
 
 
 @local_experiments.route("/<username>/local/<path:experiment_title>", methods=["POST", "GET"])
@@ -39,10 +42,9 @@ def local_experiment(username, experiment_title):
 
     datasets = {}
 
-    datasets["all_datasets"] = alfred_local_db.count_documents(
-        {"exp_author": current_user.email, "exp_title": experiment_title})
+    datasets["all_datasets"] = alfred_local_db.count_documents({"exp_id": experiment.exp_id})
     datasets["all_finished_datasets"] = alfred_local_db.count_documents(
-        {"exp_author": current_user.email, "exp_title": experiment_title, "exp_finished": True})
+        {"exp_id": experiment.exp_id, "exp_finished": True})
     datasets["all_unfinished_datasets"] = datasets["all_datasets"] - \
         datasets["all_finished_datasets"]
 
@@ -50,7 +52,7 @@ def local_experiment(username, experiment_title):
     all_activity = []
     created = []
     cur = alfred_local_db.find(
-        {"exp_author": current_user.email, "exp_title": experiment_title})
+        {"exp_id": experiment.exp_id})
     for exp in cur:
         all_activity.append(exp["start_time"])
         if exp["exp_version"] not in versions.keys():
@@ -131,24 +133,23 @@ def local_export(username, experiment_title):
     if form.validate_on_submit():
         if "all versions" in form.version.data:
             results = alfred_local_db.count_documents(
-                {"exp_author": current_user.email, "exp_title": experiment_title})
+                {"exp_id": experiment.exp_id})
             if results == 0:
                 flash("No data found for this experiment.", "warning")
                 return redirect(url_for('web_experiments.web_export', username=experiment.author, experiment_title=experiment.title))
 
             cur = alfred_local_db.find(
-                {"exp_author": current_user.email, "exp_title": experiment_title})
+                {"exp_id": experiment.exp_id})
         else:
             for version in form.version.data:
                 results = []
             results.append(alfred_local_db.count_documents(
-                {"exp_author": current_user.email, "exp_title": experiment_title, "exp_version": form.version.data}))
+                {"exp_id": experiment.exp_id, "exp_version": form.version.data}))
             if max(results) == 0:
                 flash("No data found for this experiment.", "warning")
                 return redirect(url_for('web_experiments.web_export', username=experiment.author, experiment_title=experiment.title))
 
-            cur = alfred_local_db.find({"exp_author": current_user.email,
-                                        "exp_title": experiment_title, "exp_version": {"$in": form.version.data}})
+            cur = alfred_local_db.find({"exp_id": experiment.exp_id, "exp_version": {"$in": form.version.data}})
 
         none_value = None
         # if form.replace_none.data:

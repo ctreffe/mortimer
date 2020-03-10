@@ -6,7 +6,9 @@
 
 <div class="pb-2">
   <h1>{{ experiment.title }}</h1>
-  <small class="text-muted">Remember that you can only access experiments from the Alfred database, if the experiment author and title as defined in your <code>config.conf</code> match your Mortimer email address and the title in Mortimer.</small>
+  <p class="text-muted">Remember that you can only access experiments from the Alfred database, if <code>exp_id</code>  in your <code>config.conf</code> matches the experiment ID in mortimer.</p>
+
+  <p class="text-muted">The ID for this experiment is: <span class="badge badge-secondary">{{ experiment.exp_id }}</span></p>
 
     </div>
 
