@@ -1,60 +1,66 @@
 {% extends "layout.html" %}
 
+{% block navigation %}
+
+Futurize Script
+
+{% endblock navigation %}
+
 {% block content %}
-    <div class="article content-section">
-    <form method="POST" action="" enctype="multipart/form-data" class="needs-validation" novalidate>
-        {{ form.hidden_tag() }}
-        <legend class="border-bottom"><b>Futurize script.py</b></legend>
 
-        Here, we allow you to upload and futurize old Alfred scripts. When you click "Futurize", your code will first be made compatible with Python 3. Afterwards, old function, class and parameter names will be updated (e.g. changing "QuestionGroup" to "Section").
-
-            <div class="form-group mt-3">
-                    {{ form.script(class="form-control-file") }}
-                    {% if form.script.errors %}
-                        {% for error in form.script.errors %}
-                            <span class="text-danger">{{ error }}</span><br>
-                        {% endfor %}
-                    {% endif %}
-                </div>
-
-        <div class="form-group">
-              {{ form.submit(class="btn btn-primary", value="Futurize")}}
-          </div>  
-          
-      </form>
-
+<div class="alert alert-info" role="alert">
+    <!-- <h3>Futurizing a script</h3> -->
+  <b>By futurizing a script</b>, mortimer will perform two operations:
+  <ol>
+  <li>Run the <code>futurize</code> operation (<a href="https://python-future.org/futurize.html">info</a>) to make the script compatible with Python 3.</li>
+  <li>Run a function that updates alfred-specific names to the current version (for example, <code>exp.questionController.appendItem()</code> will be updated to <code>exp.page_controller.append()</code></li>
+</ol>
 </div>
 
-{% if script_name %}
-    <div class="article content-section">
-        <legend class="border-bottom"><b>Download updated script.py</b></legend>
-        Congratulations! You just futurized your script.py. To download, click here.
 
-        <form method="GET" action="{{ url_for('main.download_futurized_script', name=script_name) }}">
-          <input class="btn btn-primary mt-2 mb-2" type="submit" value="Download">
-        </form>
+<div class="row">
+    <div class="col col-sm-12 col-md-6">
+        <!-- <h3>Input script <div class="form-group">
+    {{ form.submit(class="btn btn-primary")}}
+</div></h3> -->
+
+        <form method="POST" action="" class="needs-validation" novalidate>
+        {{ form.hidden_tag() }}
+        <h3>Input script {{ form.submit(class="btn btn-primary")}}</h3>
+
+            <div class="form-group">
+                
+                {% if form.script.errors %}
+                {{ form.script(class="form-control form-control-sm is-invalid", style="font-family: 'Dejavu Sans Mono', monospace;" , rows="20") }}
+
+                <div class="invalid-feedback">
+                    {% for error in form.script.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                {% else %}
+                {{ form.script(class="form-control form-control-sm", style="font-family: 'Dejavu Sans Mono', monospace;", rows="20", placeholder="Input script") }}
+                {% endif %}
+            </div>
+
+</form>
+
     </div>
-{% endif %}
+    <div class="col col-sm-12 col-md-6">
+        <h3>Futurized script</h3>
+        <textarea class="form-control form-control-sm" style="font-family: 'Dejavu Sans Mono', monospace;" rows="20" placeholder="Futurized script">{{ new_script }}</textarea>
+    </div>
+</div>
+
+<div class="alert alert-warning" role="alert">
+    <h3>Please note:</h3>
+<ol>
+    <li>
+        <b>This process will not always be fully sufficient</b> to make your script compatible with the latest version of alfred, but significantly reduce the time needed.       
+    </li>
+    <li>Because the futurization employs regular expressions to substitute old expressions with new ones, you should be aware that <b>unintended changes could occur</b>, for example if a text display element contains text that matches the regular expression. This may not be likely, but possible.</li>
+</ol>
+</div>
 
 {% endblock content %}
-
-<script>
-// Example starter JavaScript for disabling form submissions if there are invalid fields
-(function() {
-  'use strict';
-  window.addEventListener('load', function() {
-    // Fetch all the forms we want to apply custom Bootstrap validation styles to
-    var forms = document.getElementsByClassName('needs-validation');
-    // Loop over them and prevent submission
-    var validation = Array.prototype.filter.call(forms, function(form) {
-      form.addEventListener('submit', function(event) {
-        if (form.checkValidity() === false) {
-          event.preventDefault();
-          event.stopPropagation();
-        }
-        form.classList.add('was-validated');
-      }, false);
-    });
-  }, false);
-})();
-</script>

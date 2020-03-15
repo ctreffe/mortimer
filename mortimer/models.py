@@ -59,6 +59,7 @@ class WebExperiment(db.Document):
     directory_name = db.StringField()   # name of exp directory
     user_directories = db.ListField(db.StringField())   # user-created directories
     config = db.StringField()   # possibility to include config.conf
+    settings = db.DictField()
 
     public = db.BooleanField(default=True)
     password = db.StringField()
@@ -73,6 +74,7 @@ class LocalExperiment(db.Document):
     author = db.StringField(required=True)
     title = db.StringField(required=True, unique_with="author")
     version = db.StringField(unique_with="title")
+    exp_id = db.StringField(required=True)
     available_versions = db.ListField(db.StringField())
     date_created = db.DateTimeField(default=datetime.utcnow, required=True)
     last_update = db.DateTimeField(default=datetime.utcnow, required=True)

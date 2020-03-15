@@ -3,15 +3,20 @@
 
 import sys
 import importlib.util
-from flask import Blueprint, abort, request, session, url_for, redirect, make_response, flash, send_file
+from flask import Blueprint, abort, request, session, url_for, redirect, make_response, flash, send_file, render_template
 from threading import Lock
 from time import time
 from uuid import uuid4
 from mortimer.models import WebExperiment
 from bson.objectid import ObjectId
+from alfred.alfredlog import init_logging, getLogger
 import re
 import os
 import inspect
+import traceback
+
+init_logging()
+logger = getLogger('alfred')
 
 
 class Script:
@@ -136,7 +141,7 @@ def start(expid):
     # get values passed by get or post request
     values = request.values.to_dict()
 
-    os.chdir(experiment.path)
+    # os.chdir(experiment.path)
 
     try:
         module = import_script(experiment.id)
@@ -147,27 +152,23 @@ def start(expid):
     try:
         script = Script()
         script.set_generator(module.generate_experiment)
+
+        custom_settings = experiment.settings
+        custom_settings['mortimer_specific']['session_id'] = sid
+
         try:
-            if number_of_func_params(module.generate_experiment) > 1:
-                script.experiment = script.generate_experiment(**values)
+            if number_of_func_params(module.generate_experiment) > 2:
+                script.experiment = script.generate_experiment(config=custom_settings,**values)
+                
             else:
-                script.experiment = script.generate_experiment()
+                script.experiment = script.generate_experiment(config=custom_settings)
         except SyntaxError:
-            flash("The definition of experiment title, type, or version in script.py is deprecated. Please define these parameters in config.conf, when you are working locally. Mortimer will set these parameters for you automatically. In your script.py, just use 'exp = alfred.Experiment()'.", "danger")
+            flash("The definition of experiment title, type, or version in script.py is deprecated. Please define these parameters in config.conf, when you are working locally. Mortimer will set these parameters for you automatically. In your script.py, just use 'exp = Experiment(config=config)'.", "danger")
             return redirect(url_for('web_experiments.experiment', username=experiment.author, exp_title=experiment.title))
 
     except Exception as e:
+        logger.error(msg=traceback.format_exc(), exp_id=str(experiment.id), session_id=sid)
         flash("Error during experiment generation:\n'{e}'".format(e=e), 'danger')
-        return redirect(url_for('web_experiments.experiment', username=experiment.author, exp_title=experiment.title))
-
-    try:
-        # uses the metadata from mortimer for the experiment instance
-        script.experiment.update(title=experiment.title,
-                                 version=experiment.version,
-                                 author=experiment.author,
-                                 uuid=experiment.id)
-    except Exception as e:
-        flash("Error during experiment update:\n'{e}'".format(e=e), 'danger')
         return redirect(url_for('web_experiments.experiment', username=experiment.author, exp_title=experiment.title))
 
     try:
@@ -193,54 +194,58 @@ def experiment():
 
     script = experiment_manager.get(sid)
 
-    if request.method == "POST":
+    try:
+        if request.method == "POST":
 
-        move = request.values.get('move', None)
-        directjump = request.values.get('directjump', None)
-        par = request.values.get('par', None)
-        page_token = request.values.get('page_token', None)
+            move = request.values.get('move', None)
+            directjump = request.values.get('directjump', None)
+            par = request.values.get('par', None)
+            page_token = request.values.get('page_token', None)
 
-        try:
-            token_list = session['page_tokens']
-            token_list.remove(page_token)
-            session['page_tokens'] = token_list
-        except ValueError:
+            try:
+                token_list = session['page_tokens']
+                token_list.remove(page_token)
+                session['page_tokens'] = token_list
+            except ValueError:
+                return redirect(url_for('alfredo.experiment'))
+
+            kwargs = request.values.to_dict()
+            kwargs.pop('move', None)
+            kwargs.pop('directjump', None)
+            kwargs.pop('par', None)
+
+            script.experiment.user_interface_controller.update_with_user_input(kwargs)
+            if move is None and directjump is None and par is None and kwargs == {}:
+                pass
+            elif directjump and par:
+                posList = list(map(int, par.split('.')))
+                script.experiment.user_interface_controller.move_to_position(posList)
+            elif move == 'started':
+                pass
+            elif move == 'forward':
+                script.experiment.user_interface_controller.move_forward()
+            elif move == 'backward':
+                script.experiment.user_interface_controller.move_backward()
+            elif move == 'jump' and par and re.match(r'^\d+(\.\d+)*$', par):
+                posList = list(map(int, par.split('.')))
+                script.experiment.user_interface_controller.move_to_position(posList)
+            else:
+                abort(400)
             return redirect(url_for('alfredo.experiment'))
 
-        kwargs = request.values.to_dict()
-        kwargs.pop('move', None)
-        kwargs.pop('directjump', None)
-        kwargs.pop('par', None)
+        elif request.method == "GET":
+            page_token = str(uuid4())
 
-        script.experiment.user_interface_controller.update_with_user_input(kwargs)
-        if move is None and directjump is None and par is None and kwargs == {}:
-            pass
-        elif directjump and par:
-            posList = list(map(int, par.split('.')))
-            script.experiment.user_interface_controller.move_to_position(posList)
-        elif move == 'started':
-            pass
-        elif move == 'forward':
-            script.experiment.user_interface_controller.move_forward()
-        elif move == 'backward':
-            script.experiment.user_interface_controller.move_backward()
-        elif move == 'jump' and par and re.match(r'^\d+(\.\d+)*$', par):
-            posList = list(map(int, par.split('.')))
-            script.experiment.user_interface_controller.move_to_position(posList)
-        else:
-            abort(400)
-        return redirect(url_for('alfredo.experiment'))
+            token_list = session['page_tokens']
+            token_list.append(page_token)
+            session['page_tokens'] = token_list
 
-    elif request.method == "GET":
-        page_token = str(uuid4())
-
-        token_list = session['page_tokens']
-        token_list.append(page_token)
-        session['page_tokens'] = token_list
-
-        resp = make_response(script.experiment.user_interface_controller.render(page_token))
-        resp.cache_control.no_cache = True
-        return resp
+            resp = make_response(script.experiment.user_interface_controller.render(page_token))
+            resp.cache_control.no_cache = True
+            return resp
+    except Exception as e:
+        logger.error(msg=traceback.format_exc(), exp_id=str(script.experiment.exp_id), session_id=sid)
+        return render_template('errors/500_alfred.html')
 
 
 @alfredo.route('/staticfile/<identifier>')

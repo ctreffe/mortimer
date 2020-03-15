@@ -1,11 +1,27 @@
-{% extends "layout.html" %}
+{% extends "skeleton.html" %}
 
-{% block content %}
-    <div class="content-section">
-        <form method="POST" action="" class="needs-validation" novalidate>
+
+{% block layout %}
+<div class="container">
+    <div class="jumbotron mt-5">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            &times;
+        </button>
+        {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+  <h1 class="display-4">Create an account</h1>
+  <p class="lead">Mortimer - A web Interface for deploying and managing alfred experiments.</p>
+  <hr class="my-4">
+<form method="POST" action="" class="needs-validation" novalidate>
             {{ form.hidden_tag() }}
             <fieldset class="form-group">
-                <legend class="border-bottom mb-4">Join Today</legend>
                 <div class="form-group">
                     {{ form.username.label(class="form-control-label") }}
 
@@ -99,16 +115,21 @@
                 {{ form.submit(class="btn btn-outline-primary")}}
             </div>
         </form>
-    </div>
-    <div class="border-top pt-3">
+  <hr class="my-4">
+  <div class="">
         <small class="text-muted">
             Already Have An Account? <a class="ml-2" href="{{ url_for('users.login') }}">Sign In</a>
         </small>
     </div>
+</div>
+<div class="text-center">
+    <a href="#" class="mr-2">Impressum</a>
+    <a href="https://github.com/ctreffe/mortimer" class="mr-2">Mortimer on Github</a>
+    <a href="https://github.com/ctreffe/alfred">Alfred on Github</a>
+</div>    
+    </div>
+{% endblock %}
 
-<!-- <h1>Register Page</h1> -->
-
-{% endblock content %}
 
 <script>
 // Example starter JavaScript for disabling form submissions if there are invalid fields

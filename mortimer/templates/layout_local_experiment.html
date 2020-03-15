@@ -1,0 +1,14 @@
+{% extends "layout.html" %}
+
+{% block navigation %}
+
+<ul class="nav navbar-nav mr-auto">
+                           <li class="nav-item">
+                            <a href="{{ url_for('local_experiments.local_experiment', experiment_title=experiment.title, username=experiment.author) }}" class="nav-link"><i class="fas fa-home mr-2 ml-2"></i>{{ experiment.title }}</a>
+                        </li>
+                           <li class="nav-item nav-link">|</li>
+                           <li class="nav-item"><a href="{{ url_for('local_experiments.local_export', experiment_title=experiment.title, username=experiment.author) }}" class="nav-link"><i class="fas fa-download mr-2"></i>Export</a></li>
+                       </ul>
+
+{% endblock %}
+

@@ -6,5 +6,8 @@
     "question_controller": "page_controller",
     "question": "page",
     "set_level": "setLevel",
-    "pageGroup": "section"
+    "pageGroup": "section",
+    "WebCompositePage": "Page",
+    "PageGroup": "Section"
+
 }

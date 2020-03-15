@@ -110,6 +110,7 @@ class WebExperimentForm(FlaskForm):
 
 class LocalExperimentForm(FlaskForm):
     title = StringField("Title", validators=[DataRequired()])
+    exp_id = StringField("Experiment ID", validators=[DataRequired()])
     description = TextAreaField("Description")
 
     def validate_title(self, title):
@@ -121,13 +122,17 @@ class LocalExperimentForm(FlaskForm):
             raise ValidationError(
                 "You already have a local experiment with this title. Please choose a unique title.")
 
+    def validate_exp_id(self, exp_id):
+        experiment = LocalExperiment.objects(exp_id__exact=exp_id.data).first()
+        print(experiment)
+        if experiment is not None:
+
+            raise ValidationError('There already exists an experiment with this ID in the database. Please choose a unique ID. If you already collected data using this ID, please contanct an administrator.')
+
     submit = SubmitField("Create")
 
 
-class UpdateExperimentForm(FlaskForm):
-    title = StringField("Title")
-    description = TextAreaField("Description")
-    password = StringField("Password")
+class ExperimentScriptForm(FlaskForm):
     script = TextAreaField("Script")
     version = StringField("Updated version", validators=[DataRequired()])
 
@@ -137,7 +142,11 @@ class UpdateExperimentForm(FlaskForm):
         except Exception:
             raise ValidationError("Please use only points and digits for the version number. Example: '1.3.2'")
 
-    submit = SubmitField("Update")
+    submit = SubmitField("Save")
+
+class FuturizeScriptForm(FlaskForm):
+    script = TextAreaField("Script", validators=[DataRequired()])
+    submit = SubmitField("Futurize")
 
 
 class NewScriptForm(FlaskForm):
@@ -210,3 +219,41 @@ class ExperimentExportForm(FlaskForm):
     none_value = StringField('Replace "None" values with custom string:')
 
     submit = SubmitField("Download")
+
+class ExperimentConfigurationForm(FlaskForm):
+    # general
+    title = StringField("Title", validators=[DataRequired()])
+    description = TextAreaField("Description")
+    password = StringField("Password")
+    debug = BooleanField("Debug mode")
+
+    # navigation
+    forward = StringField('Forward', validators=[DataRequired()])
+    backward = StringField('Backward', validators=[DataRequired()])
+    finish = StringField('Finish', validators=[DataRequired()])
+
+    # no input hints
+    no_inputTextEntryElement = StringField("TextEntryElement")
+    no_inputTextAreaElement = StringField("TextAreaElement")
+    no_inputRegEntryElement = StringField("RegEntryElement")
+    no_inputNumberEntryElement = StringField("NumberEntryElement")
+    no_inputPasswordElement = StringField("PasswordElement")
+    no_inputLikertMatrix = StringField("LikertMatrix")
+    no_inputLikertElement = StringField("LikertElement")
+    no_inputSingleChoiceElement = StringField("SingleChoiceElement")
+    no_inputMultipleChoiceElement = StringField("MultipleChoiceElement")
+    no_inputWebLikertImageElement = StringField("WebLikertImageElement")
+    no_inputLikertListElement = StringField("LikertListElement")
+    
+    # wrong input hints
+    corrective_RegEntry = StringField("RegEntryElement")
+    corrective_NumberEntry = StringField("NumberEntryElement")
+    corrective_Password = StringField("PasswordElement")
+
+    # messages
+    minimum_display_time = StringField("Minimum display time")
+
+    submit = SubmitField("Save")
+
+
+

@@ -1,20 +1,19 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
-
-import os
+import os, sys, collections
 import shutil
 import re
 from mortimer import export
 from flask import Blueprint, render_template, url_for, flash, redirect, request, abort, current_app, send_file
-from mortimer.forms import WebExperimentForm, UpdateExperimentForm, NewScriptForm, ExperimentExportForm
+from mortimer.forms import WebExperimentForm, ExperimentScriptForm, NewScriptForm, ExperimentExportForm, ExperimentConfigurationForm
 from mortimer.models import User, WebExperiment
-from mortimer.utils import display_directory, ScriptFile, ScriptString
+from mortimer.utils import display_directory, ScriptFile, ScriptString, _DictObj
 from mortimer import alfred_web_db
 from mortimer.config import Config
 from flask_login import current_user, login_required
 from werkzeug.utils import secure_filename
 from datetime import datetime
 from uuid import uuid4
+from alfred import settings
 
 web_experiments = Blueprint("web_experiments", __name__)
 
@@ -54,6 +53,31 @@ def new_experiment():
             exp.password = form.password.data
         else:
             exp.public = True
+
+        # save the exp to the data base
+        exp.save()
+
+        exp_specific_settings = settings.ExperimentSpecificSettings()
+        exp.settings = {
+        'general': dict(settings.general),
+
+        'experiment': {
+            'title': form.title.data, 
+            'author': current_user.username, 
+            'version': form.version.data, 
+            'type': settings.experiment.type, 
+            'exp_id': exp.id,
+            'qt_fullscreen': settings.experiment.qt_full_screen,
+            'web_layout': settings.experiment.web_layout            
+            },
+
+        'mortimer_specific': {'session_id': None, 'path': exp.path},
+        'log': dict(settings.log),
+        'navigation': dict(exp_specific_settings.navigation),
+        'debug': dict(exp_specific_settings.debug),
+        'hints': dict(exp_specific_settings.hints),
+        'messages': dict(exp_specific_settings.messages)
+        }
 
         # save the exp to the data base
         exp.save()
@@ -98,20 +122,20 @@ def experiment(username, exp_title):
     datasets = {}
 
     datasets["all_datasets"] = alfred_web_db\
-        .count_documents({"mortimer_id": exp.id})
+        .count_documents({"exp_id": exp.id})
 
     datasets["all_finished_datasets"] = alfred_web_db\
-        .count_documents({"mortimer_id": exp.id,
+        .count_documents({"exp_id": exp.id,
                           "exp_finished": True})
 
     datasets["all_unfinished_datasets"] = datasets["all_datasets"] - datasets["all_finished_datasets"]
 
     datasets["datasets_current_version"] = alfred_web_db\
-        .count_documents({"mortimer_id": exp.id,
+        .count_documents({"exp_id": exp.id,
                           "exp_version": exp.version})
 
     datasets["finished_datasets_current_version"] = alfred_web_db\
-        .count_documents({"mortimer_id": exp.id,
+        .count_documents({"exp_id": exp.id,
                           "exp_version": exp.version,
                           "exp_finished": True})
 
@@ -119,9 +143,11 @@ def experiment(username, exp_title):
 
     # Number of finished datasets per version
     versions = {}
+    all_activity = []
     finished = []
-    cur = alfred_web_db.find({"exp_author_mail": current_user.email, "exp_name": exp_title})
+    cur = alfred_web_db.find({"exp_id": exp.id})
     for single_exp in cur:
+        all_activity.append(single_exp["start_time"])
         if single_exp["exp_version"] not in versions.keys():
             versions[single_exp["exp_version"]] = {"total": 1, "finished": 0, "unfinished": 0}
         else:
@@ -132,15 +158,23 @@ def experiment(username, exp_title):
             versions[single_exp["exp_version"]]["unfinished"] += 1
         finished.append(single_exp["start_time"])
 
-    # Time of first and last activity
-    if finished:
-        first_activity = datetime.fromtimestamp(min(finished))\
-            .strftime('%Y-%m-%d, %H:%M')
-        last_activity = datetime.fromtimestamp(max(finished))\
-            .strftime('%Y-%m-%d, %H:%M')
+    if all_activity:
+        first_activity = datetime.fromtimestamp(min(all_activity))
+        last_activity = datetime.fromtimestamp(max(all_activity))
     else:
         first_activity = "none"
         last_activity = "none"
+
+
+    # Time of first and last activity
+    # if finished:
+    #     first_activity = datetime.fromtimestamp(min(finished))\
+    #         .strftime('%Y-%m-%d, %H:%M')
+    #     last_activity = datetime.fromtimestamp(max(finished))\
+    #         .strftime('%Y-%m-%d, %H:%M')
+    # else:
+    #     first_activity = "none"
+    #     last_activity = "none"
 
     # Form for script.py upload
     form = NewScriptForm()
@@ -179,35 +213,18 @@ def experiment(username, exp_title):
                            last_activity=last_activity, versions=versions, password_protection=password_protection)
 
 
-@web_experiments.route("/<username>/<path:exp_title>/update", methods=["GET", "POST"])
+@web_experiments.route("/<username>/<path:exp_title>/script", methods=["GET", "POST"])
 @login_required
-def update_experiment(username, exp_title):
+def experiment_script(username, exp_title):
 
     exp = WebExperiment.objects.get_or_404(title=exp_title, author=username)
 
     if exp.author != current_user.username:
         abort(403)
 
-    form = UpdateExperimentForm()
+    form = ExperimentScriptForm()
 
     if form.validate_on_submit():
-
-        # check for uniqueness of experiment title
-        title = form.title.data
-        if title and title != exp.title:
-            if WebExperiment.objects(title=title, author=username):
-                flash("You already have a web experiment with this title. Please choose a unique title. The \
-                changes were not saved.", "danger")
-                return redirect(url_for('web_experiments.experiment', exp_title=exp.title, username=exp.author))
-            else:
-                exp.title = title
-
-        # update password settings
-        if form.password.data:
-            exp.public = False
-            exp.password = form.password.data
-        else:
-            exp.public = True
 
         # update script
         script = ScriptString(exp, form.script.data)
@@ -220,7 +237,6 @@ def update_experiment(username, exp_title):
             exp.available_versions.append(exp.version)
 
         # save simple updates
-        exp.description = form.description.data
         exp.last_update = datetime.utcnow
 
         # save experiment
@@ -231,14 +247,11 @@ def update_experiment(username, exp_title):
         return redirect(url_for('web_experiments.experiment', exp_title=exp.title, username=exp.author))
 
     # pre-populate form
-    form.title.data = exp.title
-    form.description.data = exp.description
-    form.password.data = exp.password
     form.script.data = exp.script
     form.version.data = exp.version
 
-    return render_template("update_experiment.html", title="Update Experiment",
-                           experiment=exp, form=form, legend="Update Experiment")
+    return render_template("experiment_script.html", title="Experiment Script",
+                           experiment=exp, form=form, legend="Experiment Script")
 
 
 @web_experiments.route("/<username>/<path:experiment_title>/delete", methods=["POST", "GET"])  # only allow POST request
@@ -270,6 +283,14 @@ def upload_resources(username, experiment_title, relative_path):
 
     path = os.path.join(experiment.path, relative_path)
 
+    path_list = []
+
+    tail, head = os.path.split(relative_path)
+
+    while head != '':
+        path_list.insert(0, head)
+        tail, head = os.path.split(tail)
+
     if request.method == 'POST':
 
         for key, f in request.files.items():
@@ -291,7 +312,7 @@ def upload_resources(username, experiment_title, relative_path):
                                                                                      new_filenames[i]), "danger")
 
     return render_template("upload_resources.html", experiment=experiment, legend="Upload Resources",
-                           relative_path=relative_path)
+                           relative_path=relative_path, path_list=path_list)
 
 
 @web_experiments.route("/<username>/<path:experiment_title>/manage_resources", methods=["POST", "GET"])
@@ -338,8 +359,7 @@ def user_experiments(username):
         abort(403)
 
     experiments = WebExperiment.objects(author=user.username)\
-        .order_by("-last_update")\
-        .paginate(page=page, per_page=Config.EXP_PER_PAGE)
+        .order_by("-last_update")# \
 
     return render_template("user_experiments.html", experiments=experiments, user=user)
 
@@ -461,24 +481,24 @@ def web_export(username, experiment_title):
 
     if form.validate_on_submit():
         if "all versions" in form.version.data:
-            results = alfred_web_db.count_documents({"mortimer_id": experiment.id})
+            results = alfred_web_db.count_documents({"exp_id": experiment.id})
             if results == 0:
                 flash("No data found for this experiment.", "warning")
                 return redirect(url_for('web_experiments.web_export', username=experiment.author,
                                         experiment_title=experiment.title))
 
-            cur = alfred_web_db.find({"mortimer_id": experiment.id})
+            cur = alfred_web_db.find({"exp_id": experiment.id})
         else:
             for version in form.version.data:
                 results = []
-                results.append(alfred_web_db.count_documents({"mortimer_id": experiment.id,
+                results.append(alfred_web_db.count_documents({"exp_id": experiment.id,
                                                               "exp_version": version}))
             if max(results) == 0:
                 flash("No data found for this experiment.", "warning")
                 return redirect(url_for('web_experiments.web_export', username=experiment.author,
                                         experiment_title=experiment.title))
 
-            cur = alfred_web_db.find({"mortimer_id": experiment.id,
+            cur = alfred_web_db.find({"exp_id": experiment.id,
                                       "exp_version": {"$in": form.version.data}})
 
         none_value = None
@@ -537,5 +557,132 @@ def de_activate_experiment(username, experiment_title):
         experiment.save()
         flash("Experiment deactivated.", "info")
 
-    return redirect(url_for('web_experiments.experiment', username=current_user.username,
-                            exp_title=experiment.title))
+    return redirect(request.referrer)
+
+@web_experiments.route("/<username>/<path:experiment_title>/config", methods=["POST", "GET"])
+@login_required
+def experiment_config(username, experiment_title):
+    exp = WebExperiment.objects.get_or_404(title=experiment_title, author=username)
+
+    if exp.author!= current_user.username:
+        abort(403)
+
+    form = ExperimentConfigurationForm()
+
+    if form.validate_on_submit():
+        exp.title = form.title.data
+        exp.description = form.description.data
+        if form.password.data:
+            exp.public = False
+        else:
+            exp.public = True
+        exp.password = form.password.data
+
+        exp.settings['general']['debug'] = form.debug.data
+
+        exp.settings['experiment']['title'] = form.title.data
+        exp.settings['experiment']['author'] = current_user.username
+
+        exp.settings['navigation']['forward'] = form.forward.data
+        exp.settings['navigation']['backward'] = form.backward.data
+        exp.settings['navigation']['finish'] = form.finish.data
+
+        exp.settings['hints']['no_inputtextentryelement'] = form.no_inputTextEntryElement.data
+        exp.settings['hints']['no_inputtextareaelement'] = form.no_inputTextAreaElement.data
+        exp.settings['hints']['no_inputregentryelement'] = form.no_inputRegEntryElement.data
+        exp.settings['hints']['no_inputnumberentryelement'] = form.no_inputNumberEntryElement.data
+        exp.settings['hints']['no_inputpasswordelement'] = form.no_inputPasswordElement.data
+        exp.settings['hints']['no_inputlikertmatrix'] = form.no_inputLikertMatrix.data
+        exp.settings['hints']['no_inputlikertelement'] = form.no_inputLikertElement.data
+        exp.settings['hints']['no_inputsinglechoiceelement'] = form.no_inputSingleChoiceElement.data
+        exp.settings['hints']['no_inputmultiplechoiceelement'] = form.no_inputMultipleChoiceElement.data
+        exp.settings['hints']['no_inputweblikertimageelement'] = form.no_inputWebLikertImageElement.data
+        exp.settings['hints']['no_inputlikertlistelement'] = form.no_inputLikertListElement.data
+
+        exp.settings['hints']['corrective_regentry'] = form.corrective_RegEntry.data
+        exp.settings['hints']['corrective_numberentry'] = form.corrective_NumberEntry.data
+        exp.settings['hints']['corrective_password'] = form.corrective_Password.data 
+
+        exp.settings['messages']['minimum_display_time'] = form.minimum_display_time.data
+
+        exp.last_update = datetime.utcnow
+        exp.save()
+        flash("Experiment configuration updated", "success")
+
+        return redirect(request.referrer)
+
+    form.title.data = exp.title
+    form.description.data = exp.description
+    form.password.data = exp.password
+
+    try:
+        form.debug.data = exp.settings['general']['debug']
+
+        form.forward.data = exp.settings['navigation']['forward']
+        form.backward.data = exp.settings['navigation']['backward']
+        form.finish.data = exp.settings['navigation']['finish']
+
+        form.no_inputTextEntryElement.data = exp.settings['hints']['no_inputtextentryelement']
+        form.no_inputTextAreaElement.data = exp.settings['hints']['no_inputtextareaelement']
+        form.no_inputRegEntryElement.data = exp.settings['hints']['no_inputregentryelement']
+        form.no_inputNumberEntryElement.data = exp.settings['hints']['no_inputnumberentryelement']
+        form.no_inputPasswordElement.data = exp.settings['hints']['no_inputpasswordelement']
+        form.no_inputLikertMatrix.data = exp.settings['hints']['no_inputlikertmatrix']
+        form.no_inputLikertElement.data = exp.settings['hints']['no_inputlikertelement']
+        form.no_inputSingleChoiceElement.data = exp.settings['hints']['no_inputsinglechoiceelement']
+        form.no_inputMultipleChoiceElement.data = exp.settings['hints']['no_inputmultiplechoiceelement']
+        form.no_inputWebLikertImageElement.data = exp.settings['hints']['no_inputweblikertimageelement']
+        form.no_inputLikertListElement.data = exp.settings['hints']['no_inputlikertlistelement']
+
+        form.corrective_RegEntry.data = exp.settings['hints']['corrective_regentry']
+        form.corrective_NumberEntry.data = exp.settings['hints']['corrective_numberentry']
+        form.corrective_Password.data = exp.settings['hints']['corrective_password']
+
+        form.minimum_display_time.data = exp.settings['messages']['minimum_display_time']
+    except KeyError as e:
+        flash("Something about the settings for this experiment seems to be wrong. Error: {error}".format(error = e), "warning")
+
+    return render_template("experiment_config.html", form=form, experiment=exp, username=exp.author)
+
+
+@web_experiments.route("/<username>/<path:experiment_title>/log", methods=["GET"])
+@login_required
+def experiment_log(username, experiment_title):
+    exp = WebExperiment.objects.get_or_404(title=experiment_title, author=username)
+
+    if exp.author!= current_user.username:
+        abort(403)
+
+    p = re.compile(r"(?P<date>20.+?) - (?P<module>.+?) - (?P<log_level>.+?) - ((experiment id=)(?P<exp_id>.+?), )?(session id=(?P<session_id>.+?) - )?(?P<message>(.|\s)*?(?=(\d{4}-\d{2}-\d{2}|\Z)))")
+    mortimer_path = os.path.abspath(os.path.dirname(sys.argv[0]))
+    log_path = os.path.join(mortimer_path, "log")
+    log_file = os.path.join(log_path, "alfred.log")
+
+    with open(log_file, 'r', encoding='utf-8') as f:
+        log = f.read()
+
+    log_entries = collections.deque()
+    flash_type = {'DEBUG': 'secondary', 'INFO': 'info', 'WARNING': 'warning', 'ERROR': 'danger', 'CRITICAL': 'danger'}
+
+    pattern_ip = re.compile(r"(host=\[(?P<ip>.+?)\])")
+    pattern_path = re.compile(r"(File \"(?P<path>.+))(?=/.+.py)")
+
+    for match in p.finditer(log):
+        if match.group('exp_id') == str(exp.id):
+            date = match.group('date')
+            module = match.group('module')
+            log_level = match.group('log_level')
+            exp_id = match.group('exp_id')
+            session_id = match.group('session_id')
+            message = match.group('message').replace('<', '&lt;').replace('>', '&gt;').rstrip()
+
+            message = pattern_ip.sub("host=[--removed--]", message)
+            message = pattern_path.sub("File \"...", message)
+            
+            entry_info = '<span class="badge badge-light">{date}</span> - <span class="badge badge-{type}">{log_level}</span> - <b>exp id</b> = {exp_id} - <b>session id</b> = {session_id} - {module}'.format(date=date, type=flash_type[log_level], log_level=log_level, exp_id=exp_id, session_id=session_id, module=module)
+            flash_entry = '<div class="alert alert-{type}" role="alert">{entry_info}<hr><pre>{message}</pre></div>'.format(type=flash_type[log_level], entry_info=entry_info, message=message)
+            log_entries.appendleft(flash_entry)
+
+    return render_template('experiment_log.html', experiment=exp, username=exp.author, log=log_entries)
+
+

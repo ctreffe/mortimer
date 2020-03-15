@@ -1,90 +1,107 @@
-{% extends "layout.html" %}
+{% extends "layout_local_experiment.html" %}
+
 
 {% block content %}
 
-<div class="media content-section">
-  <div class="media-body">
-    <div>
-      <a class="mr-2" href="#">{{ experiment.author }}</a>
-      <small class="text-muted">{{ experiment.date_created.strftime('%Y-%m-%d') }}</small>
-    </div>
-    <legend class="border-bottom"><b>{{ experiment.title }}</b></legend>
 
-    <div class="row">
-      <div class="col-md-3"><small><b>Created in Mortimer</b></small>:</div><div class="col-md-3"><span class="badge badge-light">{{ experiment.date_created.strftime('%Y-%m-%d, %H:%M') }}</span></div>
-    </div>
-    <div class="row">
-      <div class="col-md-3"><small><b>Last Finished Dataset</b></small>:</div><div class="col-md-3"><span class="badge badge-light">{{ last_activity }}</span></div>
-    </div>
-    <div class="row">
-      <div class="col-md-3"><small><b>First Finished Dataset</b></small>:</div><div class="col-md-3"><span class="badge badge-light">{{ first_activity }}</span></div>
+<div class="pb-2">
+  <h1>{{ experiment.title }}</h1>
+  <p class="text-muted">Remember that you can only access experiments from the Alfred database, if <code>exp_id</code>  in your <code>config.conf</code> matches the experiment ID in mortimer.</p>
+
+  <p class="text-muted">The ID for this experiment is: <span class="badge badge-secondary">{{ experiment.exp_id }}</span></p>
+
     </div>
 
-    <div class="row">
-      <div class="col-md-3"><small><b>Version History</b></small>:</div><div class="col-md-3">
-        {% if versions %}
-        {% for version in versions %}
-        <span class="badge badge-dark"> {{ version }}</span>
-        {% endfor %}
-        {% else %}
-        <span class="badge badge-warning"> Experiment not found in database</span>
-        {% endif %}
+    <div class="row row-cols-1 row-cols-md-2 row-cols-xl">
+
+      <div class="col mb-4">
+    <div class="card h-100 text-center border-primary">
+      <div class="card-header border-primary">
+    Complete datasets
+  </div>
+      <div class="card-body text-primary">
+        <h1 class="card-text">{{ datasets["all_finished_datasets"] }}</h1>
       </div>
+      <div class="card-footer text-muted border-primary">
+    Total datasets: <span class="badge badge-light">{{ datasets["all_datasets"] }}</span>
+  </div>
     </div>
-
-    <small class="text-muted"><br>Remember that you can only access experiments from the Alfred database, if the experiment author as defined in <code>EXP_AUTHOR_MAIL</code> in your <code>script.py</code> matches your Mortimer email address.</small>
-
-    <h6 class="border-bottom pt-4"><b>Description</b></h6>
-
-      <p class="article-content">{{ experiment.description }}</p>  
-
-    <!--  <p class="article-content">{{ experiment.script }}</p> -->
   </div>
 
-
-</div>
-
-<div class="article content-section">
-  <legend><b>Options</b></legend>
-
+  <div class="col mb-4">
+    <div class="card h-100 text-center">
+      <div class="card-header">Export Data</div>
+      <div class="card-body">
         <a class="btn btn-primary mt-1 mb-1" href="{{ url_for('local_experiments.local_export', experiment_title=experiment.title, username=experiment.author) }}">Export Data</a>
-        <button type="button" class="btn btn-danger btn mt-1 mb-1" data-toggle="modal" data-target="#deleteModal">Delete from Mortimer</button>
+</div>
       
+    </div>
+  </div>
+
+  <div class="col mb-4">
+    <div class="card h-100 text-center border-success">
+      <div class="card-header border-success">
+    Last Update
+  </div>
+      <div class="card-body">
+        <h2 class="card-text text-success">{{ experiment.last_update.strftime('%Y-%m-%d') }}</h2>
+        <span class="text-muted">{{ experiment.last_update.strftime('%H:%M') }}</span>
+      </div>
+      <div class="card-footer text-muted border-success">
+    Created on <span class="badge badge-light">{{ experiment.date_created.strftime('%Y-%m-%d, %H:%M') }}</span>
+  </div>
+    </div>
+  </div>
+
+  <div class="col mb-4">
+    <div class="card h-100 text-center border-info">
+      <div class="card-header border-info">
+    Last activity
+  </div>
+      <div class="card-body border-info">
+        <h2 class="card-text text-info">
+        {% if last_activity != 'none' %}
+        {{ last_activity.strftime('%Y-%m-%d') }}
+        {% else %}
+        - none -
+        {% endif %}
+      </h2>
+        <span class="text-muted">
+        {% if last_activity != 'none' %}
+        {{ last_activity.strftime('%H:%M') }}
+        {% else %}
+        - none -
+        {% endif %}
+      </span>
+      </div>
+      <div class="card-footer text-muted border-info">
+    First activity on <span class="badge badge-light">
+    {% if first_activity != 'none' %}
+    {{ first_activity.strftime('%Y-%m-%d, %H:%M') }}
+    {% else %}
+    - none -
+    {% endif %}
+  </span>
+  </div>
+    </div>
+  </div>
 </div>
 
-<div class="article content-section">
-  <legend><b>Datasets</b></legend>
+    
 
-      <table class="table table-striped">
-  <thead>
-    <tr>
-      <th scope="col">N</th>
-      <th scope="col" class="text-center"><span class="badge badge-success">Finished</span></th>
-      <th scope="col" class="text-center"><span class="badge badge-warning">Unfinished</span></th>
-      <th scope="col" class="text-center"><span class="badge badge-dark">Total</span></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th scope="row">All Versions</th>
-      <td class="text-center">{{ datasets["all_finished_datasets"] }}</td>
-      <td class="text-center">{{ datasets["all_unfinished_datasets"] }}</td>
-      <td class="text-center">{{ datasets["all_datasets"] }}</td>
-    </tr>
-    {% for version, info in versions.items() %}
+    {% if experiment.description %}
+    <h6 class="border-bottom pt-2 mt-3"><b>Description</b></h6>
 
-    <tr>
-      <th scope="row">Version {{ version }} </th>
-      <td class="text-center">{{ info["finished"] }}</td>
-      <td class="text-center">{{  info["unfinished"] }}</td>
-      <td class="text-center">{{ info["total"] }}</td>
-    </tr>
+      <p class="article-content">{{ experiment.description }}</p>  
+     {% else %}
+     {% endif %}
 
-    {% endfor %}
-  </tbody>
-</table>
 
-    </div>
+<div class="article content-section mt-5 float-right">
+
+      <button type="button" class="btn btn-danger ml-1 mt-2 mb-2" data-toggle="modal" data-target="#deleteModal"><i class='fas fa-trash mr-2'></i>Delete from Mortimer</button>
+
+</div>
 
 <!-- Modal -->
 <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
@@ -112,3 +129,6 @@
 
 
 {% endblock content %}
+
+
+

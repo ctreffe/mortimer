@@ -1,0 +1,12 @@
+{% extends 'layout_experiment.html' %}
+
+{% block content %}
+
+<h3>Experiment Log</h3>
+
+{% for entry in log %}
+{{ entry|safe }}
+{% endfor %}
+
+
+{% endblock %}

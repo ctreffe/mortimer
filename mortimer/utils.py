@@ -21,15 +21,15 @@ def send_reset_email(user: str):
                   recipients=[user.email])
     msg.body = Template(''' Dear Mortimer user,
 
-                            a request to reset your password was made for your email address.
-                            
-                            To reset your password, visit the following link:
-                            {{ URL }}
-                            
-                            If you did not make this request, you can simply ignore this email and no changes will be made.
-                            
-                            Kind regards,
-                            The Mortimer Team
+a request to reset your password was made for your email address.
+
+To reset your password, visit the following link:
+{{ URL }}
+
+If you did not make this request, you can simply ignore this email and no changes will be made.
+
+Kind regards,
+The Mortimer Team
                         ''', lstrip_blocks=True).render(URL=url_for('users.reset_password', token=token, _external=True))
 
     mail.send(msg)
@@ -295,7 +295,7 @@ def display_directory(directories: list, parent_directory: str,
     return "<br>".join([display_first_directory, display_other_directories])
 
 
-def futurize_script(file):
+def perform_futurization(file):
     futurize = subprocess.run(['futurize', '-w', file], check=True, text=True)
 
     return futurize
@@ -335,7 +335,14 @@ def replace_all_patterns(file):
                             "One line had at least %i replacements. Something seems to be wrong" % max_iter)
                     iter = 0
 
+                gen_pattern = re.compile(r"(?P<gen>def generate_experiment\(self\):)")
+                exp_pattern = re.compile(r"(?P<exp>exp = Experiment\('web', exp_name, exp_version\))")
+                
+                line = gen_pattern.sub('def generate_experiment(self, config=None):', line)
+                line = exp_pattern.sub('exp = Experiment(config=config)', line)
+
                 code.append(line)
+
         code = "".join(code)
 
         if write:  # if parameter is true, we save the changes to the file
@@ -347,7 +354,7 @@ def replace_all_patterns(file):
     json_data = []
     path = os.path.join(current_app.root_path, "static",
                         "futurizing_alfred_scripts")
-    for pattern_file in os.listdir(path):
+    for pattern_file in sorted(os.listdir(path)):
         json_data.append(load_json(os.path.join(path, pattern_file)))
 
     for dct in json_data:
@@ -401,3 +408,18 @@ class ScriptFile(ScriptString):
             self.script = f.read()
 
         os.remove(path)
+
+
+class _DictObj(dict):
+    """
+    This class allows dot notation to access dict elements
+
+    Example:
+    d = _DictObj()
+    d.hello = "Hello World"
+    print d.hello # Hello World
+    """
+
+    __getattr__ = dict.__getitem__
+    __setattr__ = dict.__setitem__
+    __delattr__ = dict.__delitem__

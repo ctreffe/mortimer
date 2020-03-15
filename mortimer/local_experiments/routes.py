@@ -9,6 +9,7 @@ from mortimer import alfred_local_db
 from mortimer.config import Config
 from flask_login import current_user, login_required
 from datetime import datetime
+from uuid import uuid4
 
 local_experiments = Blueprint("local_experiments", __name__)
 
@@ -18,16 +19,18 @@ local_experiments = Blueprint("local_experiments", __name__)
 def new_local_experiment():
     form = LocalExperimentForm()
 
+    id = str(uuid4())
+
     if form.validate_on_submit():
 
         experiment = LocalExperiment(title=form.title.data, author=current_user.username,
-                                     description=form.description.data)
+                                     description=form.description.data, exp_id=form.exp_id.data)
 
         experiment.save()
         flash("New local experiment added. You can now download the corresponding data.", "success")
         return redirect(url_for('local_experiments.local_experiment', username=current_user.username, experiment_title=experiment.title))
 
-    return render_template("create_local_experiment.html", form=form, legend="New Local Experiment")
+    return render_template("create_local_experiment.html", form=form, legend="New Local Experiment", id=id)
 
 
 @local_experiments.route("/<username>/local/<path:experiment_title>", methods=["POST", "GET"])
@@ -42,18 +45,19 @@ def local_experiment(username, experiment_title):
 
     datasets = {}
 
-    datasets["all_datasets"] = alfred_local_db.count_documents(
-        {"exp_author_mail": current_user.email, "exp_name": experiment_title})
+    datasets["all_datasets"] = alfred_local_db.count_documents({"exp_id": experiment.exp_id})
     datasets["all_finished_datasets"] = alfred_local_db.count_documents(
-        {"exp_author_mail": current_user.email, "exp_name": experiment_title, "exp_finished": True})
+        {"exp_id": experiment.exp_id, "exp_finished": True})
     datasets["all_unfinished_datasets"] = datasets["all_datasets"] - \
         datasets["all_finished_datasets"]
 
     versions = {}
+    all_activity = []
     created = []
     cur = alfred_local_db.find(
-        {"exp_author_mail": current_user.email, "exp_name": experiment_title})
+        {"exp_id": experiment.exp_id})
     for exp in cur:
+        all_activity.append(exp["start_time"])
         if exp["exp_version"] not in versions.keys():
             versions[exp["exp_version"]] = {
                 "total": 1, "finished": 0, "unfinished": 0}
@@ -65,14 +69,15 @@ def local_experiment(username, experiment_title):
             versions[exp["exp_version"]]["unfinished"] += 1
         created.append(exp["start_time"])
 
-    if created:
-        first_activity = datetime.fromtimestamp(
-            min(created)).strftime('%Y-%m-%d, %H:%M')
-        last_activity = datetime.fromtimestamp(
-            max(created)).strftime('%Y-%m-%d, %H:%M')
+    if all_activity:
+        first_activity = datetime.fromtimestamp(min(all_activity))
+        last_activity = datetime.fromtimestamp(max(all_activity))
     else:
         first_activity = "none"
         last_activity = "none"
+
+    if not versions:
+        flash('Experiment not found in database.', 'danger')
 
     return render_template("local_experiment.html",
                            experiment=experiment, expid=str(experiment.id), datasets=datasets,
@@ -101,8 +106,8 @@ def user_experiments(username):
         abort(403)
 
     experiments = LocalExperiment.objects(author=user.username)\
-        .order_by("-date_created")\
-        .paginate(page=page, per_page=Config.EXP_PER_PAGE)
+        .order_by("-date_created")#\
+        # .paginate(page=page, per_page=Config.EXP_PER_PAGE)
 
     return render_template("user_local_experiments.html", experiments=experiments, user=user)
 
@@ -118,7 +123,7 @@ def local_export(username, experiment_title):
 
     form = ExperimentExportForm()
     cur = alfred_local_db.find(
-        {"exp_author_mail": current_user.email, "exp_name": experiment.title})
+        {"exp_author": current_user.email, "exp_title": experiment.title})
 
     available_versions = ["all versions"]
     for exp in cur:
@@ -131,24 +136,23 @@ def local_export(username, experiment_title):
     if form.validate_on_submit():
         if "all versions" in form.version.data:
             results = alfred_local_db.count_documents(
-                {"exp_author_mail": current_user.email, "exp_name": experiment_title})
+                {"exp_id": experiment.exp_id})
             if results == 0:
                 flash("No data found for this experiment.", "warning")
                 return redirect(url_for('web_experiments.web_export', username=experiment.author, experiment_title=experiment.title))
 
             cur = alfred_local_db.find(
-                {"exp_author_mail": current_user.email, "exp_name": experiment_title})
+                {"exp_id": experiment.exp_id})
         else:
             for version in form.version.data:
                 results = []
             results.append(alfred_local_db.count_documents(
-                {"exp_author_mail": current_user.email, "exp_name": experiment_title, "exp_version": form.version.data}))
+                {"exp_id": experiment.exp_id, "exp_version": form.version.data}))
             if max(results) == 0:
                 flash("No data found for this experiment.", "warning")
                 return redirect(url_for('web_experiments.web_export', username=experiment.author, experiment_title=experiment.title))
 
-            cur = alfred_local_db.find({"exp_author_mail": current_user.email,
-                                        "exp_name": experiment_title, "exp_version": {"$in": form.version.data}})
+            cur = alfred_local_db.find({"exp_id": experiment.exp_id, "exp_version": {"$in": form.version.data}})
 
         none_value = None
         # if form.replace_none.data:
@@ -180,7 +184,7 @@ def local_export(username, experiment_title):
                              cache_timeout=1, as_attachment=True,
                              attachment_filename='export.xlsx')
 
-    return render_template("web_export.html", form=form, experiment=experiment, legend="Export data")
+    return render_template("local_export.html", form=form, experiment=experiment, legend="Export data")
 
 
 # only allow POST requests

@@ -1,17 +1,32 @@
 {% extends "layout.html" %}
 
+{% block navigation %}
+
+<ul class="nav navbar-nav mr-auto">
+                           <li class="nav-item">
+                            <a href="{{ url_for('web_experiments.new_experiment') }}" class="nav-link">
+                                <i class="fas fa-globe mr-2"></i>Web Experiment</a>
+                        </li>
+                           <li class="nav-item nav-link">|</li>
+                           <li class="nav-item"><a href="{{ url_for('local_experiments.new_local_experiment') }}" class="nav-link active"><i class="fas fa-dot-circle mr-2"></i>Local Experiment (current)</a></li>
+                       </ul>
+
+{% endblock %}
+
 {% block content %}
 
 <div class="content-section">
         <form method="POST" enctype="multipart/form-data" action="{{ url_for('local_experiments.new_local_experiment') }}" class="needs-validation" novalidate>
             {{ form.hidden_tag() }}
             <fieldset class="form-group">
-                <legend class="border-bottom mb-4">{{ legend }}</legend>
+                <legend class="border-bottom">{{ legend }}</legend>
 
-                <div class="form-group">
+                <span class="text-muted">Unique ID for your convenience: <span class="badge badge-secondary">{{ id }}</span></span>
+
+                <div class="form-group mt-2">
                     {{ form.title.label(class="form-control-label") }}
                     {% if form.title.errors %}
-                        {{ form.title(class="form-control form-control-lg is-invalid") }} <!-- , placeholder=form.title.label.text -->
+                        {{ form.title(class="form-control form-control is-invalid") }} <!-- , placeholder=form.title.label.text -->
 
                         <div class="invalid-feedback">
                             {% for error in form.title.errors %}
@@ -20,7 +35,24 @@
                         </div>
                         
                     {% else %}
-                    {{ form.title(class="form-control form-control-lg") }}
+                    {{ form.title(class="form-control form-control") }}
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    {{ form.exp_id.label(class="form-control-label") }}
+                    {% if form.exp_id.errors %}
+                        {{ form.exp_id(class="form-control form-control is-invalid") }} <!-- , placeholder=form.exp_id.label.text -->
+
+
+                        <div class="invalid-feedback">
+                            {% for error in form.exp_id.errors %}
+                                <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                        
+                    {% else %}
+                    {{ form.exp_id(class="form-control form-control", placeholder="Must be equal to exp_id in config.conf.") }}
                     {% endif %}
                 </div>
 
@@ -28,7 +60,7 @@
                 <div class="form-group">
                     {{ form.description.label(class="form-control-label") }}
                     {% if form.description.errors %}
-                        {{ form.description(class="form-control form-control-lg is-invalid") }}
+                        {{ form.description(class="form-control form-control is-invalid") }}
 
                         <div class="invalid-feedback">
                             {% for error in form.description.errors %}
@@ -37,7 +69,7 @@
                         </div>
                         
                     {% else %}
-                    {{ form.description(class="form-control form-control-lg") }}
+                    {{ form.description(class="form-control form-control") }}
                     {% endif %}
                 </div>
 
