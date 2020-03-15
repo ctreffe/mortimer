@@ -1,4 +1,4 @@
-# Mortimer v1.0
+# Mortimer v0.4-beta
 
 ## Breaking changes
 - **Separation of web and local experiments**. Web experiments hosted via mortimer and local experiments now save their data into different collections in the Alfred database (`web` and `local`). This means that you can be completely sure that your web and local experiments don't interfere.
