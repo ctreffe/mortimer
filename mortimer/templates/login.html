@@ -4,8 +4,20 @@
 {% block layout %}
 <div class="container">
     <div class="jumbotron mt-5">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="alert alert-{{ category }}">
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            &times;
+        </button>
+        {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
   <h1 class="display-4">mortimer</h1>
-  <p class="lead">Web Interface for deploying and managing Alfred experiments.</p>
+  <p class="lead">Web Interface for deploying and managing alfred experiments.</p>
   <hr class="my-4">
 <form method="POST" action="" class="needs-validation" novalidate>
             {{ form.hidden_tag() }}

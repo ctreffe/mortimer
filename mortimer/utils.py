@@ -18,15 +18,15 @@ def send_reset_email(user: str):
                   recipients=[user.email])
     msg.body = Template(''' Dear Mortimer user,
 
-                            a request to reset your password was made for your email address.
-                            
-                            To reset your password, visit the following link:
-                            {{ URL }}
-                            
-                            If you did not make this request, you can simply ignore this email and no changes will be made.
-                            
-                            Kind regards,
-                            The Mortimer Team
+a request to reset your password was made for your email address.
+
+To reset your password, visit the following link:
+{{ URL }}
+
+If you did not make this request, you can simply ignore this email and no changes will be made.
+
+Kind regards,
+The Mortimer Team
                         ''', lstrip_blocks=True).render(URL=url_for('users.reset_password', token=token, _external=True))
 
     mail.send(msg)
