@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from flask import Blueprint
 from flask import render_template, url_for, flash, redirect, request
 from mortimer import bcrypt

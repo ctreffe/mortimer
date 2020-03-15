@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import os
 
 # For security reasons (this code is public), we use a lot of environmentt variables here.

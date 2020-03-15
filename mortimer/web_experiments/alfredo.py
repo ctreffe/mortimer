@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 import sys
 import importlib.util
 from flask import Blueprint, abort, request, session, url_for, redirect, make_response, flash, send_file, render_template
