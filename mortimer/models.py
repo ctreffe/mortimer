@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
 from flask import current_app
 from mortimer import db, login_manager
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
@@ -45,6 +48,9 @@ class WebExperiment(db.Document):
     date_created = db.DateTimeField(default=datetime.utcnow, required=True)
     last_update = db.DateTimeField(default=datetime.utcnow, required=True)
     description = db.StringField()
+
+    title_from_script = db.StringField()
+    author_mail_from_script = db.StringField()
 
     script = db.StringField()
     script_name = db.StringField()

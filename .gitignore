@@ -24,3 +24,4 @@ wsgi.py
 move_to_default_alfred.conf 
 alfredo2_ca_chain.pem
 alfred.conf
+exp/
