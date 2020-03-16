@@ -296,7 +296,7 @@ def display_directory(directories: list, parent_directory: str,
 
 
 def perform_futurization(file):
-    futurize = subprocess.run(['futurize', '-w', file], check=True, text=True)
+    futurize = subprocess.run(['futurize', '-w', file], check=True, universal_newlines=True)
 
     return futurize
 
