@@ -65,7 +65,7 @@ def new_experiment():
             'author': current_user.username, 
             'version': form.version.data, 
             'type': settings.experiment.type, 
-            'exp_id': exp.id,
+            'exp_id': str(exp.id),
             'qt_fullscreen': settings.experiment.qt_full_screen,
             'web_layout': settings.experiment.web_layout            
             },
@@ -121,20 +121,20 @@ def experiment(username, exp_title):
     datasets = {}
 
     datasets["all_datasets"] = alfred_web_db\
-        .count_documents({"exp_id": exp.id})
+        .count_documents({"exp_id": str(exp.id)})
 
     datasets["all_finished_datasets"] = alfred_web_db\
-        .count_documents({"exp_id": exp.id,
+        .count_documents({"exp_id": str(exp.id),
                           "exp_finished": True})
 
     datasets["all_unfinished_datasets"] = datasets["all_datasets"] - datasets["all_finished_datasets"]
 
     datasets["datasets_current_version"] = alfred_web_db\
-        .count_documents({"exp_id": exp.id,
+        .count_documents({"exp_id": str(exp.id),
                           "exp_version": exp.version})
 
     datasets["finished_datasets_current_version"] = alfred_web_db\
-        .count_documents({"exp_id": exp.id,
+        .count_documents({"exp_id": str(exp.id),
                           "exp_version": exp.version,
                           "exp_finished": True})
 
@@ -144,7 +144,7 @@ def experiment(username, exp_title):
     versions = {}
     all_activity = []
     finished = []
-    cur = alfred_web_db.find({"exp_id": exp.id})
+    cur = alfred_web_db.find({"exp_id": str(exp.id)})
     for single_exp in cur:
         all_activity.append(single_exp["start_time"])
         if single_exp["exp_version"] not in versions.keys():
@@ -480,24 +480,24 @@ def web_export(username, experiment_title):
 
     if form.validate_on_submit():
         if "all versions" in form.version.data:
-            results = alfred_web_db.count_documents({"exp_id": experiment.id})
+            results = alfred_web_db.count_documents({"exp_id": str(experiment.id)})
             if results == 0:
                 flash("No data found for this experiment.", "warning")
                 return redirect(url_for('web_experiments.web_export', username=experiment.author,
                                         experiment_title=experiment.title))
 
-            cur = alfred_web_db.find({"exp_id": experiment.id})
+            cur = alfred_web_db.find({"exp_id": str(experiment.id)})
         else:
             for version in form.version.data:
                 results = []
-                results.append(alfred_web_db.count_documents({"exp_id": experiment.id,
+                results.append(alfred_web_db.count_documents({"exp_id": str(experiment.id),
                                                               "exp_version": version}))
             if max(results) == 0:
                 flash("No data found for this experiment.", "warning")
                 return redirect(url_for('web_experiments.web_export', username=experiment.author,
                                         experiment_title=experiment.title))
 
-            cur = alfred_web_db.find({"exp_id": experiment.id,
+            cur = alfred_web_db.find({"exp_id": str(experiment.id),
                                       "exp_version": {"$in": form.version.data}})
 
         none_value = None
