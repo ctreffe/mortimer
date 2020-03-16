@@ -653,7 +653,7 @@ def experiment_log(username, experiment_title):
     if exp.author!= current_user.username:
         abort(403)
 
-    p = re.compile(r"(?P<date>20.+?) - (?P<module>.+?) - (?P<log_level>.+?) - ((experiment id=)(?P<exp_id>.+?), )?(session id=(?P<session_id>.+?) - )?(?P<message>(.|\s)*?(?=(\d{4}-\d{2}-\d{2}|\Z)))")
+    p = re.compile(r"(?P<date>20.+?) - (?P<module>.+?) - (?P<log_level>.+?) - ((experiment id=)(?P<exp_id>.+?), )?(session id=(?P<session_id>.+?) - )?(?P<message>(.|\s)*?(?=(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}|\Z)))")
     mortimer_path = os.path.abspath(os.path.dirname(sys.argv[0]))
     log_path = os.path.join(mortimer_path, "log")
     log_file = os.path.join(log_path, "alfred.log")
