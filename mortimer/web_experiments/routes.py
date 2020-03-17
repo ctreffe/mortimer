@@ -6,14 +6,14 @@ from mortimer import export
 from flask import Blueprint, render_template, url_for, flash, redirect, request, abort, current_app, send_file
 from mortimer.forms import WebExperimentForm, ExperimentScriptForm, NewScriptForm, ExperimentExportForm, ExperimentConfigurationForm
 from mortimer.models import User, WebExperiment
-from mortimer.utils import display_directory, ScriptFile, ScriptString, _DictObj
+from mortimer.utils import display_directory, ScriptFile, ScriptString, _DictObj, set_experiment_settings
 from mortimer import alfred_web_db
 from mortimer.config import Config
 from flask_login import current_user, login_required
 from werkzeug.utils import secure_filename
 from datetime import datetime
 from uuid import uuid4
-from alfred import settings
+
 
 web_experiments = Blueprint("web_experiments", __name__)
 
@@ -54,30 +54,8 @@ def new_experiment():
         else:
             exp.public = True
 
-        # save the exp to the data base
-        exp.save()
-
-        exp_specific_settings = settings.ExperimentSpecificSettings()
-        exp.settings = {
-        'general': dict(settings.general),
-
-        'experiment': {
-            'title': form.title.data, 
-            'author': current_user.username, 
-            'version': form.version.data, 
-            'type': settings.experiment.type, 
-            'exp_id': str(exp.id),
-            'qt_fullscreen': settings.experiment.qt_full_screen,
-            'web_layout': settings.experiment.web_layout            
-            },
-
-        'mortimer_specific': {'session_id': None, 'path': exp.path},
-        'log': dict(settings.log),
-        'navigation': dict(exp_specific_settings.navigation),
-        'debug': dict(exp_specific_settings.debug),
-        'hints': dict(exp_specific_settings.hints),
-        'messages': dict(exp_specific_settings.messages)
-        }
+        exp.settings = set_experiment_settings(title=form.title.data, author=current_user.username, 
+            version=form.version.data, exp_id=str(exp.id), path=exp.path)
 
         # save the exp to the data base
         exp.save()
@@ -178,6 +156,11 @@ def experiment(username, exp_title):
 
     # Form for script.py upload
     form = NewScriptForm()
+
+    if not exp.settings:
+        exp.settings = set_experiment_settings(title=exp.title, author=current_user.username, 
+            version=exp.version, exp_id=str(exp.id), path=exp.path)
+        exp.save()
 
     if form.validate_on_submit() and form.script.data:
 
