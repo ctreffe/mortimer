@@ -3,7 +3,7 @@
 
 import sys
 import importlib.util
-from flask import Blueprint, abort, request, session, url_for, redirect, make_response, flash, send_file, render_template
+from flask import Blueprint, abort, request, session, url_for, redirect, make_response, flash, send_file, render_template, send_from_directory
 from threading import Lock
 from time import time
 from uuid import uuid4
@@ -254,13 +254,14 @@ def staticfile(identifier):
         sid = session['sid']
         script = experiment_manager.get(sid)
         path, content_type = script.experiment.user_interface_controller.get_static_file(identifier)
+        dirname, filename = os.path.split(path)
+        resp = make_response(send_from_directory(dirname, filename, mimetype=content_type))
+        # resp.cache_control.no_cache = True
+        return resp
 
     except KeyError:
         abort(404)
-    resp = make_response(send_file(path, mimetype=content_type))
 
-    # resp.cache_control.no_cache = True
-    return resp
 
 
 @alfredo.route('/dynamicfile/<identifier>')
