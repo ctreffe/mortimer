@@ -54,6 +54,7 @@ def new_experiment():
         else:
             exp.public = True
 
+        exp.save()  # needed to create an exp ID
         exp.settings = set_experiment_settings(title=form.title.data, author=current_user.username, 
             version=form.version.data, exp_id=str(exp.id), path=exp.path)
 
