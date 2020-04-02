@@ -4,6 +4,7 @@
 import sys
 import importlib.util
 from flask import Blueprint, abort, request, session, url_for, redirect, make_response, flash, send_file, render_template, send_from_directory
+from flask_login import current_user
 from threading import Lock
 from time import time
 from uuid import uuid4
@@ -147,7 +148,11 @@ def start(expid):
         module = import_script(experiment.id)
     except Exception as e:
         flash("Error during script import:\n'{e}'".format(e=e), 'danger')
-        return redirect(url_for('web_experiments.experiment', username=experiment.author, exp_title=experiment.title))
+        logger.error(msg=traceback.format_exc(), exp_id=str(experiment.id), session_id=sid)
+        if current_user.is_authenticated:
+            return redirect(url_for('web_experiments.experiment', username=experiment.author, exp_title=experiment.title))
+        else:
+            abort(500)
 
     try:
         script = Script()
