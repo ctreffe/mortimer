@@ -9,7 +9,7 @@
             <legend class="border-bottom">{{ legend }}</legend>
 
             <div class="form-group">
-                
+
                 {% if form.script.errors %}
                 {{ form.script(class="form-control form-control-sm is-invalid", style="font-family: 'Dejavu Sans Mono', monospace;",  placeholder=experiment.script) }}
 
@@ -25,30 +25,32 @@
             </div>
 
             <div class="form-group">
-                    {{ form.version.label(class="form-control-label") }}*
-                    {% if form.version.errors %}
-                        {{ form.version(class="form-control form-control-lg is-invalid") }} <!-- , placeholder=form.version.label.text -->
+                {{ form.version.label(class="form-control-label") }}*
+                {% if form.version.errors %}
+                {{ form.version(class="form-control form-control-lg is-invalid") }}
+                <!-- , placeholder=form.version.label.text -->
 
-                        <div class="invalid-feedback">
-                            {% for error in form.version.errors %}
-                                <span>{{ error }}</span>
-                            {% endfor %}
-                        </div>
-                        
-                    {% else %}
-                    {{ form.version(class="form-control form-control-lg", placeholder=experiment.version) }}
-                    {% endif %}
-                    <small id="versionHelpBlock" class="form-text text-muted">
-                      Changing the version number allows you to choose, for which versions of an experiment you want to download data. If you made substantial changes to your experiment, you should change the version.
-                    </small>
+                <div class="invalid-feedback">
+                    {% for error in form.version.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
                 </div>
 
+                {% else %}
+                {{ form.version(class="form-control form-control-lg", placeholder=experiment.version) }}
+                {% endif %}
+                <small id="versionHelpBlock" class="form-text text-muted">
+                    Changing the version number allows you to choose, for which versions of an experiment you want to
+                    download data. If you made substantial changes to your experiment, you should change the version.
+                </small>
+            </div>
 
-</fieldset>
-<div class="form-group">
-    {{ form.submit(class="btn btn-primary")}}
-</div>
-</form>
+
+        </fieldset>
+        <div class="form-group">
+            {{ form.submit(class="btn btn-primary")}}
+        </div>
+    </form>
 </div>
 
 {% endblock content %}

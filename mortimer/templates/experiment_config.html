@@ -13,7 +13,7 @@
             </div>
             <div class="col-xl-10">
                 {% if form.title.errors %}
-                
+
                 {{ form.title(class="form-control form-control-sm is-invalid") }}
 
                 <div class="invalid-feedback">
@@ -24,7 +24,7 @@
 
                 {% else %}
                 {{ form.title(class="form-control form-control-sm") }}
-                {% endif %}    
+                {% endif %}
             </div>
         </div>
 
@@ -35,7 +35,7 @@
             </div>
             <div class="col-xl-10">
                 {% if form.description.errors %}
-                
+
                 {{ form.description(class="form-control form-control-sm is-invalid") }}
 
                 <div class="invalid-feedback">
@@ -46,7 +46,7 @@
 
                 {% else %}
                 {{ form.description(class="form-control form-control-sm") }}
-                {% endif %}    
+                {% endif %}
             </div>
         </div>
 
@@ -56,7 +56,7 @@
             </div>
             <div class="col-xl-10">
                 {% if form.password.errors %}
-                
+
                 {{ form.password(class="form-control form-control-sm is-invalid") }}
 
                 <div class="invalid-feedback">
@@ -67,10 +67,11 @@
 
                 {% else %}
                 {{ form.password(class="form-control form-control-sm") }}
-                {% endif %} 
+                {% endif %}
                 <small id="passwordHelpBlock" class="form-text text-muted">
-                      Here, you can protect access to your experiment with a password. Just leave this field empty if you want the experiment to be public.
-                    </small>   
+                    Here, you can protect access to your experiment with a password. Just leave this field empty if you
+                    want the experiment to be public.
+                </small>
             </div>
         </div>
 
@@ -109,7 +110,7 @@
             </div>
             <div class="col-xl-10">
                 {% if form.forward.errors %}
-                
+
                 {{ form.forward(class="form-control form-control-sm is-invalid") }}
 
                 <div class="invalid-feedback">
@@ -120,7 +121,7 @@
 
                 {% else %}
                 {{ form.forward(class="form-control form-control-sm") }}
-                {% endif %}    
+                {% endif %}
             </div>
         </div>
 
@@ -130,7 +131,7 @@
             </div>
             <div class="col-xl-10">
                 {% if form.backward.errors %}
-                
+
                 {{ form.backward(class="form-control form-control-sm is-invalid") }}
 
                 <div class="invalid-feedback">
@@ -141,7 +142,7 @@
 
                 {% else %}
                 {{ form.backward(class="form-control form-control-sm") }}
-                {% endif %}    
+                {% endif %}
             </div>
         </div>
 
@@ -151,7 +152,7 @@
             </div>
             <div class="col-xl-10">
                 {% if form.finish.errors %}
-                
+
                 {{ form.finish(class="form-control form-control-sm is-invalid") }}
 
                 <div class="invalid-feedback">
@@ -162,14 +163,14 @@
 
                 {% else %}
                 {{ form.finish(class="form-control form-control-sm") }}
-                {% endif %}    
+                {% endif %}
             </div>
         </div>
 
         <h4 class="pt-4 pb-2 border-bottom"><i class="fas fa-file-alt mr-2"></i>No Input Hints</h4>
-<small id="noInputHelp" class="form-text text-muted pb-3">
-                      This text will be displayed if a participant does not fill out a required element.
-                    </small>
+        <small id="noInputHelp" class="form-text text-muted pb-3">
+            This text will be displayed if a participant does not fill out a required element.
+        </small>
 
         <div class="form-group row">
             <div class="col-xl-2 col-form-label">
@@ -177,7 +178,7 @@
             </div>
             <div class="col-xl-10">
                 {% if form.no_inputTextEntryElement.errors %}
-                
+
                 {{ form.no_inputTextEntryElement(class="form-control form-control-sm is-invalid") }}
 
                 <div class="invalid-feedback">
@@ -188,7 +189,7 @@
 
                 {% else %}
                 {{ form.no_inputTextEntryElement(class="form-control form-control-sm") }}
-                {% endif %}    
+                {% endif %}
             </div>
         </div>
 
@@ -198,7 +199,7 @@
             </div>
             <div class="col-xl-10">
                 {% if form.no_inputTextAreaElement.errors %}
-                
+
                 {{ form.no_inputTextAreaElement(class="form-control form-control-sm is-invalid") }}
 
                 <div class="invalid-feedback">
@@ -209,7 +210,7 @@
 
                 {% else %}
                 {{ form.no_inputTextAreaElement(class="form-control form-control-sm") }}
-                {% endif %}    
+                {% endif %}
             </div>
         </div>
 
@@ -219,7 +220,7 @@
             </div>
             <div class="col-xl-10">
                 {% if form.no_inputRegEntryElement.errors %}
-                
+
                 {{ form.no_inputRegEntryElement(class="form-control form-control-sm is-invalid") }}
 
                 <div class="invalid-feedback">
@@ -230,7 +231,7 @@
 
                 {% else %}
                 {{ form.no_inputRegEntryElement(class="form-control form-control-sm") }}
-                {% endif %}    
+                {% endif %}
             </div>
         </div>
 
@@ -240,7 +241,7 @@
             </div>
             <div class="col-xl-10">
                 {% if form.no_inputNumberEntryElement.errors %}
-                
+
                 {{ form.no_inputNumberEntryElement(class="form-control form-control-sm is-invalid") }}
 
                 <div class="invalid-feedback">
@@ -251,7 +252,7 @@
 
                 {% else %}
                 {{ form.no_inputNumberEntryElement(class="form-control form-control-sm") }}
-                {% endif %}    
+                {% endif %}
             </div>
         </div>
 
@@ -261,7 +262,7 @@
             </div>
             <div class="col-xl-10">
                 {% if form.no_inputPasswordElement.errors %}
-                
+
                 {{ form.no_inputPasswordElement(class="form-control form-control-sm is-invalid") }}
 
                 <div class="invalid-feedback">
@@ -284,7 +285,7 @@
             </div>
             <div class="col-xl-10">
                 {% if form.no_inputLikertMatrix.errors %}
-                
+
                 {{ form.no_inputLikertMatrix(class="form-control form-control-sm is-invalid") }}
 
                 <div class="invalid-feedback">
@@ -295,7 +296,7 @@
 
                 {% else %}
                 {{ form.no_inputLikertMatrix(class="form-control form-control-sm") }}
-                {% endif %}    
+                {% endif %}
             </div>
         </div>
 
@@ -305,7 +306,7 @@
             </div>
             <div class="col-xl-10">
                 {% if form.no_inputLikertElement.errors %}
-                
+
                 {{ form.no_inputLikertElement(class="form-control form-control-sm is-invalid") }}
 
                 <div class="invalid-feedback">
@@ -316,7 +317,7 @@
 
                 {% else %}
                 {{ form.no_inputLikertElement(class="form-control form-control-sm") }}
-                {% endif %}    
+                {% endif %}
             </div>
         </div>
 
@@ -326,7 +327,7 @@
             </div>
             <div class="col-xl-10">
                 {% if form.no_inputSingleChoiceElement.errors %}
-                
+
                 {{ form.no_inputSingleChoiceElement(class="form-control form-control-sm is-invalid") }}
 
                 <div class="invalid-feedback">
@@ -337,7 +338,7 @@
 
                 {% else %}
                 {{ form.no_inputSingleChoiceElement(class="form-control form-control-sm") }}
-                {% endif %}    
+                {% endif %}
             </div>
         </div>
 
@@ -347,7 +348,7 @@
             </div>
             <div class="col-xl-10">
                 {% if form.no_inputMultipleChoiceElement.errors %}
-                
+
                 {{ form.no_inputMultipleChoiceElement(class="form-control form-control-sm is-invalid") }}
 
                 <div class="invalid-feedback">
@@ -358,7 +359,7 @@
 
                 {% else %}
                 {{ form.no_inputMultipleChoiceElement(class="form-control form-control-sm") }}
-                {% endif %}    
+                {% endif %}
             </div>
         </div>
 
@@ -368,7 +369,7 @@
             </div>
             <div class="col-xl-10">
                 {% if form.no_inputWebLikertImageElement.errors %}
-                
+
                 {{ form.no_inputWebLikertImageElement(class="form-control form-control-sm is-invalid") }}
 
                 <div class="invalid-feedback">
@@ -379,7 +380,7 @@
 
                 {% else %}
                 {{ form.no_inputWebLikertImageElement(class="form-control form-control-sm") }}
-                {% endif %}    
+                {% endif %}
             </div>
         </div>
 
@@ -389,7 +390,7 @@
             </div>
             <div class="col-xl-10">
                 {% if form.no_inputLikertListElement.errors %}
-                
+
                 {{ form.no_inputLikertListElement(class="form-control form-control-sm is-invalid") }}
 
                 <div class="invalid-feedback">
@@ -400,14 +401,15 @@
 
                 {% else %}
                 {{ form.no_inputLikertListElement(class="form-control form-control-sm") }}
-                {% endif %}    
+                {% endif %}
             </div>
         </div>
 
         <h4 class="pt-4 pb-2 border-bottom"><i class="fas fa-check-circle mr-2"></i>Corrective Hints</h4>
         <small id="correctiveHintHelp" class="form-text text-muted pb-3">
-                      This text will be displayed if a participant gives input to an element that does not match the specified requirements.
-                    </small>
+            This text will be displayed if a participant gives input to an element that does not match the specified
+            requirements.
+        </small>
 
         <div class="form-group row">
             <div class="col-xl-2 col-form-label">
@@ -415,7 +417,7 @@
             </div>
             <div class="col-xl-10">
                 {% if form.corrective_RegEntry.errors %}
-                
+
                 {{ form.corrective_RegEntry(class="form-control form-control-sm is-invalid") }}
 
                 <div class="invalid-feedback">
@@ -426,7 +428,7 @@
 
                 {% else %}
                 {{ form.corrective_RegEntry(class="form-control form-control-sm") }}
-                {% endif %}    
+                {% endif %}
             </div>
         </div>
 
@@ -436,7 +438,7 @@
             </div>
             <div class="col-xl-10">
                 {% if form.corrective_NumberEntry.errors %}
-                
+
                 {{ form.corrective_NumberEntry(class="form-control form-control-sm is-invalid") }}
 
                 <div class="invalid-feedback">
@@ -447,7 +449,7 @@
 
                 {% else %}
                 {{ form.corrective_NumberEntry(class="form-control form-control-sm") }}
-                {% endif %}    
+                {% endif %}
             </div>
         </div>
 
@@ -457,7 +459,7 @@
             </div>
             <div class="col-xl-10">
                 {% if form.corrective_Password.errors %}
-                
+
                 {{ form.corrective_Password(class="form-control form-control-sm is-invalid") }}
 
                 <div class="invalid-feedback">
@@ -468,20 +470,20 @@
 
                 {% else %}
                 {{ form.corrective_Password(class="form-control form-control-sm") }}
-                {% endif %}    
+                {% endif %}
             </div>
         </div>
 
 
         <h4 class="pt-4 pb-2 border-bottom"><i class="fas fa-comment mr-2"></i>Messages</h4>
 
-         <div class="form-group row">
+        <div class="form-group row">
             <div class="col-xl-2 col-form-label">
                 {{ form.minimum_display_time.label(class="form-control-label") }}
             </div>
             <div class="col-xl-10">
                 {% if form.minimum_display_time.errors %}
-                
+
                 {{ form.minimum_display_time(class="form-control form-control-sm is-invalid") }}
 
                 <div class="invalid-feedback">
@@ -494,8 +496,10 @@
                 {{ form.minimum_display_time(class="form-control form-control-sm") }}
                 {% endif %}
                 <small id="minimumDisplayTimeHelp" class="form-text text-muted">
-                      This text will be displayed if a participant clicks the "forward" button before the specified minimum display time of the current page is reached. ${mdt} is a placeholder for the minimum display time.
-                    </small>    
+                    This text will be displayed if a participant clicks the "forward" button before the specified
+                    minimum display time of the current page is reached. ${mdt} is a placeholder for the minimum display
+                    time.
+                </small>
             </div>
         </div>
 
@@ -503,7 +507,7 @@
             {{ form.submit(class="btn btn-primary")}}
         </div>
     </fieldset>
-    
+
 </form>
 
 {% endblock %}

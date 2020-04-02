@@ -4,28 +4,35 @@
 
 <div class="content-section mb-3">
 
-        <small>Directories created here are placed in the main experiment directory that also contains your <code style="color:black">script.py</code> </small> <br>
+  <small>Directories created here are placed in the main experiment directory that also contains your <code
+      style="color:black">script.py</code> </small> <br>
 
-        <button class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#NewDirectory" aria-expanded="false" aria-controls="collapseExample">
-        New Directory
-        </button>
-        <button type="button" class="btn btn-danger btn-sm mt-1 mb-1" data-toggle="modal" data-target="#deleteModal">Delete All Files</button>
-        
-        <div class="collapse" id="NewDirectory">
-            <form action="{{ url_for('web_experiments.new_directory', experiment_title=experiment.title, username=experiment.author) }}", method="POST">
-                <div><input class="form-control form-control-lg mr-3 mb-3 mt-3" id="new_directory" name="new_directory" required type="text" value="" placeholder="Name">
-                <input class="btn btn-primary btn-sm" type="submit" value="Create"></div>
-                
+  <button class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#NewDirectory"
+    aria-expanded="false" aria-controls="collapseExample">
+    New Directory
+  </button>
+  <button type="button" class="btn btn-danger btn-sm mt-1 mb-1" data-toggle="modal" data-target="#deleteModal">Delete
+    All Files</button>
 
-            </form>
-        </div>
+  <div class="collapse" id="NewDirectory">
+    <form
+      action="{{ url_for('web_experiments.new_directory', experiment_title=experiment.title, username=experiment.author) }}"
+      , method="POST">
+      <div><input class="form-control form-control-lg mr-3 mb-3 mt-3" id="new_directory" name="new_directory" required
+          type="text" value="" placeholder="Name">
+        <input class="btn btn-primary btn-sm" type="submit" value="Create"></div>
+
+
+    </form>
+  </div>
 
 </div>
 
 {{ display|safe }}
 
 <!-- Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel"
+  aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -35,11 +42,13 @@
         </button>
       </div>
       <div class="modal-body">
-        Are you sure that you want to delete <b>all user-created directories and files</b> for this experiment? The data stored in Mortimer will be lost!
+        Are you sure that you want to delete <b>all user-created directories and files</b> for this experiment? The data
+        stored in Mortimer will be lost!
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-        <form method="POST" action="{{ url_for('web_experiments.delete_all_files', experiment_title=experiment.title, username=experiment.author) }}">
+        <form method="POST"
+          action="{{ url_for('web_experiments.delete_all_files', experiment_title=experiment.title, username=experiment.author) }}">
           <input class="btn btn-danger" type="submit" value="Delete">
         </form>
       </div>

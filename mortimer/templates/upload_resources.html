@@ -2,43 +2,47 @@
 
 {% block custom_css %}
 <!-- Dropzone CSS -->
-  {{ dropzone.load_css() }}
-  {{ dropzone.style('border: 2px dashed #0087F7; margin: 10px 0 10px;') }}
+{{ dropzone.load_css() }}
+{{ dropzone.style('border: 2px dashed #0087F7; margin: 10px 0 10px;') }}
 {% endblock %}
 
 {% block content %}
 
 <div class="content-section">
-    <div class="article-metadata">
+  <div class="article-metadata">
 
-            You can upload files with a size up to 10 MB. For larger files, please use an external hosting solution.
-            <br> <br>
+    You can upload files with a size up to 10 MB. For larger files, please use an external hosting solution.
+    <br> <br>
 
-            <b>Note:</b> The names of uploaded files are subject to a security check. If a filename is insecure, the upload will change it to a secure form. An allowed filename must for example not contain slashes (<code>/</code>), umlauts (<code>äöü</code>) or whitespace. Please make sure that all your filenames are secure. 
-            <br> <br>
-            <b>Example</b><br>
-            Not allowed: <code>../../../../home/username/.bashrc</code><br>
-            Allowed: <code>home_username_.bashrc</code>
+    <b>Note:</b> The names of uploaded files are subject to a security check. If a filename is insecure, the upload will
+    change it to a secure form. An allowed filename must for example not contain slashes (<code>/</code>), umlauts
+    (<code>äöü</code>) or whitespace. Please make sure that all your filenames are secure.
+    <br> <br>
+    <b>Example</b><br>
+    Not allowed: <code>../../../../home/username/.bashrc</code><br>
+    Allowed: <code>home_username_.bashrc</code>
 
-            <nav aria-label="breadcrumb" class="mt-2">
-  <ol class="breadcrumb">
-    <li class="breadcrumb-item"><a href="{{ url_for('web_experiments.manage_resources', experiment_title=experiment.title, username=experiment.author) }}">{{ experiment.title }}</a></li>
-    {% for dir in path_list %}
-    <li class="breadcrumb-item">{{ dir }}</li>
-    {% endfor %}
-  </ol>
-</nav>
+    <nav aria-label="breadcrumb" class="mt-2">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a
+            href="{{ url_for('web_experiments.manage_resources', experiment_title=experiment.title, username=experiment.author) }}">{{ experiment.title }}</a>
+        </li>
+        {% for dir in path_list %}
+        <li class="breadcrumb-item">{{ dir }}</li>
+        {% endfor %}
+      </ol>
+    </nav>
 
-            {{ dropzone.create(url_for('web_experiments.upload_resources', experiment_title=experiment.title, username=experiment.author, relative_path=relative_path)) }}
-        <button id="upload" class="btn btn-primary">Upload</button>
+    {{ dropzone.create(url_for('web_experiments.upload_resources', experiment_title=experiment.title, username=experiment.author, relative_path=relative_path)) }}
+    <button id="upload" class="btn btn-primary">Upload</button>
 
-</div>
+  </div>
 
-{% endblock content %}
+  {% endblock content %}
 
-{% block custom_js %}
-    <!-- Dropzone JavaScript -->
-  
+  {% block custom_js %}
+  <!-- Dropzone JavaScript -->
+
   {{ dropzone.load_js() }}
   {{ dropzone.config(custom_options='autoProcessQueue: false, addRemoveLinks: true, parallelUploads: 20') }}
-{% endblock %}
+  {% endblock %}

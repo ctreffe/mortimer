@@ -4,21 +4,21 @@
 
 <div class="content-section">
     <div class="article-metadata">
-              <a class="mr-2" href="#">{{ experiment.author }}</a>
-              <small class="text-muted">{{ experiment.date_created.strftime('%Y-%m-%d') }}</small>
-            </div>
+        <a class="mr-2" href="#">{{ experiment.author }}</a>
+        <small class="text-muted">{{ experiment.date_created.strftime('%Y-%m-%d') }}</small>
+    </div>
     <form method="POST" action="" enctype="multipart/form-data" class="needs-validation" novalidate>
         {{ form.hidden_tag() }}
         <fieldset class="form-group">
             <legend class="border-bottom">{{ experiment.title }}: {{ legend }}</legend>
 
-        <div class="pb-3">
-        <small class="text-muted">
-            Newest Version: {{ newest_version }}
-        </small>
-        </div>
+            <div class="pb-3">
+                <small class="text-muted">
+                    Newest Version: {{ newest_version }}
+                </small>
+            </div>
 
-        <div class="form-group">
+            <div class="form-group">
                 {{ form.updated_version.label(class="form-control-label") }}
                 {% if form.updated_version.errors %}
                 {{ form.updated_version(class="form-control form-control-lg is-invalid", placeholder="Must be equal to script.py version.") }}
@@ -35,14 +35,14 @@
             </div>
 
             <div class="form-group">
-                    {{ form.script.label() }}
-                    {{ form.script(class="form-control-file") }}
-                    {% if form.script.errors %}
-                        {% for error in form.script.errors %}
-                            <span class="text-danger">{{ error }}</span><br>
-                        {% endfor %}
-                    {% endif %}
-                </div>
+                {{ form.script.label() }}
+                {{ form.script(class="form-control-file") }}
+                {% if form.script.errors %}
+                {% for error in form.script.errors %}
+                <span class="text-danger">{{ error }}</span><br>
+                {% endfor %}
+                {% endif %}
+            </div>
 
             <div class="form-group">
                 {{ form.changes.label(class="form-control-label") }}
@@ -59,14 +59,14 @@
                 {{ form.changes(class="form-control form-control-lg") }}
                 {% endif %}
             </div>
-            
 
 
-</fieldset>
-<div class="form-group">
-    {{ form.submit(class="btn btn-outline-primary")}}
-</div>
-</form>
+
+        </fieldset>
+        <div class="form-group">
+            {{ form.submit(class="btn btn-outline-primary")}}
+        </div>
+    </form>
 </div>
 
 {% endblock content %}
