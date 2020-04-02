@@ -243,7 +243,7 @@ def experiment():
             resp = make_response(script.experiment.user_interface_controller.render(page_token))
             resp.cache_control.no_cache = True
             return resp
-    except Exception as e:
+    except Exception:
         logger.error(msg=traceback.format_exc(), exp_id=str(script.experiment.exp_id), session_id=sid)
         return render_template('errors/500_alfred.html')
 
