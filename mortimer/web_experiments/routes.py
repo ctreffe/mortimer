@@ -132,6 +132,10 @@ def experiment(username, exp_title):
     else:
         password_protection = "enabled"
 
+    # Query database: Used versions
+    alfred_versions = alfred_web_db.distinct("alfred_version", filter={"exp_id": str(exp.id), "exp_finished": True})
+    alfred_versions.sort()
+
     # Query Database: Number of datasets
 
     datasets = {}
@@ -249,6 +253,7 @@ def experiment(username, exp_title):
     return render_template(
         "experiment.html",
         experiment=exp,
+        alfred_versions=alfred_versions,
         expid=str(exp.id),
         form=form,
         status=status,

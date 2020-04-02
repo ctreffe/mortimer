@@ -151,6 +151,15 @@
 {% else %}
 {% endif %}
 
+<div class="alert alert-info" role="alert">
+  <!-- <h3>Futurizing a script</h3> -->
+  <b>When you publish research</b> conducted using Alfred, please cite. <span title="In this proposed citation, we use the latest alfred version number that was used for data collection in the current experiment. The doi will always link to the Zenodo repository with all versions."><i class="fas fa-info-circle"></i></span><br>
+  Treffenstaedt, C., Wiemann, P. & Brachem, J. (2020). Alfred - A library for rapid experiment development (Version {{ alfred_versions[-1] }}). Göttingen, Germany: <a href="https://doi.org/10.5281/zenodo.1437219">https://doi.org/10.5281/zenodo.1437219</a>
+</div>
+Alfred versions used for data collection in this experiment:
+{% for v in alfred_versions %}
+    <span class="badge badge-dark">{{ v }}</span>
+{% endfor %}
 
 
 <!-- <div class="article content-section">
