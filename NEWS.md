@@ -1,3 +1,9 @@
+# Mortimer v0.4.3
+
+## Smaller changes
+
+* Improved error handling.
+
 # Mortimer v0.4.2
 
 ## Bugfixes
