@@ -7,7 +7,7 @@
         <div class="">
             <ul class="list-unstyled comments">
                 <li><a href="{{ url_for('main.home') }}" class="pl-3 pt-2">
-                        <h3>mortimer</h3>
+                        <h3 style="display: inline;">mortimer</h3><small class="text-light"> v {{ v_mortimer }}</small>
                     </a></li>
             </ul>
 
@@ -31,6 +31,10 @@
             <!-- <li><a href="#"><i class="fas fa-quote-left mr-2"></i>About*</a></li> -->
             <li><a href="{{ url_for('main.impressum') }}"><i class="fas fa-align-left mr-2"></i>Impressum</a></li>
         </ul>
+
+        <footer style="position: fixed; bottom:0; height:40px;">
+            <small class="text-light pl-4">running alfred v{{ v_alfred }}</small>
+        </footer>
 
     </nav>
 
