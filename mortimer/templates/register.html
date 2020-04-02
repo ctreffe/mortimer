@@ -8,51 +8,51 @@
         {% if messages %}
         {% for category, message in messages %}
         <div class="alert alert-{{ category }}">
-          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-            &times;
-        </button>
-        {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                &times;
+            </button>
+            {{ message }}
         </div>
         {% endfor %}
         {% endif %}
         {% endwith %}
-  <h1 class="display-4">Create an account</h1>
-  <p class="lead">Mortimer - A web Interface for deploying and managing alfred experiments.</p>
-  <hr class="my-4">
-<form method="POST" action="" class="needs-validation" novalidate>
+        <h1 class="display-4">Create an account</h1>
+        <p class="lead">Mortimer - A web Interface for deploying and managing alfred experiments.</p>
+        <hr class="my-4">
+        <form method="POST" action="" class="needs-validation" novalidate>
             {{ form.hidden_tag() }}
             <fieldset class="form-group">
                 <div class="form-group">
                     {{ form.username.label(class="form-control-label") }}
 
                     {% if form.username.errors %}
-                        {{ form.username(class="form-control form-control-lg is-invalid") }}
+                    {{ form.username(class="form-control form-control-lg is-invalid") }}
 
-                        <div class="invalid-feedback">
-                            {% for error in form.username.errors %}
-                                <span>{{ error }}</span>
-                            {% endfor %}
-                        </div>
+                    <div class="invalid-feedback">
+                        {% for error in form.username.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
 
                     {% else %}
-                        {{ form.username(class="form-control form-control-lg") }}
+                    {{ form.username(class="form-control form-control-lg") }}
                     {% endif %}
 
-                    
-                    
+
+
                 </div>
 
                 <div class="form-group">
                     {{ form.email.label(class="form-control-label") }}
                     {% if form.email.errors %}
-                        {{ form.email(class="form-control form-control-lg is-invalid") }}
+                    {{ form.email(class="form-control form-control-lg is-invalid") }}
 
-                        <div class="invalid-feedback">
-                            {% for error in form.email.errors %}
-                                <span>{{ error }}</span>
-                            {% endfor %}
-                        </div>
-                        
+                    <div class="invalid-feedback">
+                        {% for error in form.email.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+
                     {% else %}
                     {{ form.email(class="form-control form-control-lg") }}
                     {% endif %}
@@ -61,15 +61,15 @@
                 <div class="form-group">
                     {{ form.password.label(class="form-control-label") }}
                     {% if form.password.errors %}
-                        {{ form.password(class="form-control form-control-lg is-invalid") }}
+                    {{ form.password(class="form-control form-control-lg is-invalid") }}
 
-                        <div class="invalid-feedback">
-                            {% for error in form.password.errors %}
-                                <span>{{ error }}</span>
-                            {% endfor %}
-                        </div>
-                    
-                    {% else %}    
+                    <div class="invalid-feedback">
+                        {% for error in form.password.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+
+                    {% else %}
                     {{ form.password(class="form-control form-control-lg") }}
                     {% endif %}
                 </div>
@@ -77,37 +77,37 @@
                 <div class="form-group">
                     {{ form.confirm_password.label(class="form-control-label") }}
                     {% if form.confirm_password.errors %}
-                        {{ form.confirm_password(class="form-control form-control-lg is-invalid") }}
+                    {{ form.confirm_password(class="form-control form-control-lg is-invalid") }}
 
-                        <div class="invalid-feedback">
-                            {% for error in form.confirm_password.errors %}
-                                <span>{{ error }}</span>
-                            {% endfor %}
-                        </div>
-                        
-                    
+                    <div class="invalid-feedback">
+                        {% for error in form.confirm_password.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+
+
                     {% else %}
-                        {{ form.confirm_password(class="form-control form-control-lg") }}
+                    {{ form.confirm_password(class="form-control form-control-lg") }}
                     {% endif %}
-                    
+
                 </div>
 
                 <div class="form-group">
                     {{ form.parole.label(class="form-control-label") }}
                     {% if form.parole.errors %}
-                        {{ form.parole(class="form-control form-control-lg is-invalid") }}
+                    {{ form.parole(class="form-control form-control-lg is-invalid") }}
 
-                        <div class="invalid-feedback">
-                            {% for error in form.parole.errors %}
-                                <span>{{ error }}</span>
-                            {% endfor %}
-                        </div>
-                    
-                    {% else %}    
+                    <div class="invalid-feedback">
+                        {% for error in form.parole.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+
+                    {% else %}
                     {{ form.parole(class="form-control form-control-lg") }}
                     {% endif %}
                     <small id="passwordHelpBlock" class="form-text text-muted">
-                      If you don't know what to put in here, you can contact alfred@psych.uni-goettingen.de
+                        If you don't know what to put in here, you can contact alfred@psych.uni-goettingen.de
                     </small>
                 </div>
             </fieldset>
@@ -115,39 +115,39 @@
                 {{ form.submit(class="btn btn-outline-primary")}}
             </div>
         </form>
-  <hr class="my-4">
-  <div class="">
-        <small class="text-muted">
-            Already Have An Account? <a class="ml-2" href="{{ url_for('users.login') }}">Sign In</a>
-        </small>
+        <hr class="my-4">
+        <div class="">
+            <small class="text-muted">
+                Already Have An Account? <a class="ml-2" href="{{ url_for('users.login') }}">Sign In</a>
+            </small>
+        </div>
+    </div>
+    <div class="text-center">
+        <a href="#" class="mr-2">Impressum</a>
+        <a href="https://github.com/ctreffe/mortimer" class="mr-2">Mortimer on Github</a>
+        <a href="https://github.com/ctreffe/alfred">Alfred on Github</a>
     </div>
 </div>
-<div class="text-center">
-    <a href="#" class="mr-2">Impressum</a>
-    <a href="https://github.com/ctreffe/mortimer" class="mr-2">Mortimer on Github</a>
-    <a href="https://github.com/ctreffe/alfred">Alfred on Github</a>
-</div>    
-    </div>
 {% endblock %}
 
 
 <script>
-// Example starter JavaScript for disabling form submissions if there are invalid fields
-(function() {
-  'use strict';
-  window.addEventListener('load', function() {
-    // Fetch all the forms we want to apply custom Bootstrap validation styles to
-    var forms = document.getElementsByClassName('needs-validation');
-    // Loop over them and prevent submission
-    var validation = Array.prototype.filter.call(forms, function(form) {
-      form.addEventListener('submit', function(event) {
-        if (form.checkValidity() === false) {
-          event.preventDefault();
-          event.stopPropagation();
-        }
-        form.classList.add('was-validated');
-      }, false);
-    });
-  }, false);
-})();
+    // Example starter JavaScript for disabling form submissions if there are invalid fields
+    (function () {
+        'use strict';
+        window.addEventListener('load', function () {
+            // Fetch all the forms we want to apply custom Bootstrap validation styles to
+            var forms = document.getElementsByClassName('needs-validation');
+            // Loop over them and prevent submission
+            var validation = Array.prototype.filter.call(forms, function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (form.checkValidity() === false) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                    }
+                    form.classList.add('was-validated');
+                }, false);
+            });
+        }, false);
+    })();
 </script>

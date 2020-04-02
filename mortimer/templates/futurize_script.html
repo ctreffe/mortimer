@@ -10,11 +10,14 @@ Futurize Script
 
 <div class="alert alert-info" role="alert">
     <!-- <h3>Futurizing a script</h3> -->
-  <b>By futurizing a script</b>, mortimer will perform two operations:
-  <ol>
-  <li>Run the <code>futurize</code> operation (<a href="https://python-future.org/futurize.html">info</a>) to make the script compatible with Python 3.</li>
-  <li>Run a function that updates alfred-specific names to the current version (for example, <code>exp.questionController.appendItem()</code> will be updated to <code>exp.page_controller.append()</code></li>
-</ol>
+    <b>By futurizing a script</b>, mortimer will perform two operations:
+    <ol>
+        <li>Run the <code>futurize</code> operation (<a href="https://python-future.org/futurize.html">info</a>) to make
+            the script compatible with Python 3.</li>
+        <li>Run a function that updates alfred-specific names to the current version (for example,
+            <code>exp.questionController.appendItem()</code> will be updated to
+            <code>exp.page_controller.append()</code></li>
+    </ol>
 </div>
 
 
@@ -25,11 +28,11 @@ Futurize Script
 </div></h3> -->
 
         <form method="POST" action="" class="needs-validation" novalidate>
-        {{ form.hidden_tag() }}
-        <h3>Input script {{ form.submit(class="btn btn-primary")}}</h3>
+            {{ form.hidden_tag() }}
+            <h3>Input script {{ form.submit(class="btn btn-primary")}}</h3>
 
             <div class="form-group">
-                
+
                 {% if form.script.errors %}
                 {{ form.script(class="form-control form-control-sm is-invalid", style="font-family: 'Dejavu Sans Mono', monospace;" , rows="20") }}
 
@@ -44,23 +47,27 @@ Futurize Script
                 {% endif %}
             </div>
 
-</form>
+        </form>
 
     </div>
     <div class="col col-sm-12 col-md-6">
         <h3>Futurized script</h3>
-        <textarea class="form-control form-control-sm" style="font-family: 'Dejavu Sans Mono', monospace;" rows="20" placeholder="Futurized script">{{ new_script }}</textarea>
+        <textarea class="form-control form-control-sm" style="font-family: 'Dejavu Sans Mono', monospace;" rows="20"
+            placeholder="Futurized script">{{ new_script }}</textarea>
     </div>
 </div>
 
 <div class="alert alert-warning" role="alert">
     <h3>Please note:</h3>
-<ol>
-    <li>
-        <b>This process will not always be fully sufficient</b> to make your script compatible with the latest version of alfred, but significantly reduce the time needed.       
-    </li>
-    <li>Because the futurization employs regular expressions to substitute old expressions with new ones, you should be aware that <b>unintended changes could occur</b>, for example if a text display element contains text that matches the regular expression. This may not be likely, but possible.</li>
-</ol>
+    <ol>
+        <li>
+            <b>This process will not always be fully sufficient</b> to make your script compatible with the latest
+            version of alfred, but significantly reduce the time needed.
+        </li>
+        <li>Because the futurization employs regular expressions to substitute old expressions with new ones, you should
+            be aware that <b>unintended changes could occur</b>, for example if a text display element contains text
+            that matches the regular expression. This may not be likely, but possible.</li>
+    </ol>
 </div>
 
 {% endblock content %}

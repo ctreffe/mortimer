@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 from __future__ import print_function
@@ -14,7 +13,7 @@ import io
 def make_str_bytes(f):
     # Creating the byteIO object from the StringIO Object
     bytes_f = io.BytesIO()
-    bytes_f.write(f.getvalue().encode('utf-8'))
+    bytes_f.write(f.getvalue().encode("utf-8"))
     # seeking was necessary. Python 3.5.2, Flask 0.12.2
     bytes_f.seek(0)
     f.close()
@@ -29,13 +28,15 @@ def to_json(cursor):
     return sIO
 
 
-def to_csv(cursor, none_value=None, remove_linebreaks=False, dialect='excel', **writerparams):
+def to_csv(
+    cursor, none_value=None, remove_linebreaks=False, dialect="excel", **writerparams
+):
     rows = cursor_to_rows(cursor, none_value)
     if remove_linebreaks:
         for i in range(1, len(rows)):
             for j in range(len(rows[i])):
                 if isinstance(rows[i][j], str) or isinstance(rows[i][j], str):
-                    rows[i][j].replace('\n', '')
+                    rows[i][j].replace("\n", "")
     csvfile = io.StringIO()
     writer = csv.writer(csvfile, dialect=dialect, **writerparams)
     for row in rows:
@@ -44,27 +45,33 @@ def to_csv(cursor, none_value=None, remove_linebreaks=False, dialect='excel', **
 
 
 def to_excel_csv(cursor, none_value=None, **writerparams):
-    return to_csv(cursor, none_value=none_value, remove_linebreaks=True,
-                  delimiter=';', dialect='excel', **writerparams)
+    return to_csv(
+        cursor,
+        none_value=none_value,
+        remove_linebreaks=True,
+        delimiter=";",
+        dialect="excel",
+        **writerparams
+    )
 
 
-def to_excel(cursor, none_value=None):
-    from openpyxl import Workbook
-    wb = Workbook(encoding='utf-8')
-    sheet = wb.get_active_sheet()
-    docs = cursor_to_rows(cursor, none_value)
-    for i in range(len(docs)):
-        for j in range(len(docs[i])):
-            tmp = docs[i][j]
-            if not(isinstance(tmp, str) and isinstance(tmp, str) and
-                    isinstance(tmp, float) and isinstance(tmp, int)):
-                tmp = str(tmp)
-            sheet.cell(row=i, column=j).value = tmp
-    # f = TemporaryFile()
-    f = io.StringIO()
-    wb.save(f)
-    f.seek(0)
-    return f
+# def to_excel(cursor, none_value=None):
+#     from openpyxl import Workbook
+#     wb = Workbook(encoding='utf-8')
+#     sheet = wb.get_active_sheet()
+#     docs = cursor_to_rows(cursor, none_value)
+#     for i in range(len(docs)):
+#         for j in range(len(docs[i])):
+#             tmp = docs[i][j]
+#             if not(isinstance(tmp, str) and isinstance(tmp, str) and
+#                     isinstance(tmp, float) and isinstance(tmp, int)):
+#                 tmp = str(tmp)
+#             sheet.cell(row=i, column=j).value = tmp
+#     # f = TemporaryFile()
+#     f = io.StringIO()
+#     wb.save(f)
+#     f.seek(0)
+#     return f
 
 
 def natural_sort(l):
@@ -72,7 +79,8 @@ def natural_sort(l):
         return int(text) if text.isdigit() else text.lower()
 
     def alphanum_key(key):
-        return [convert(c) for c in re.split('([0-9]+)', key[0])]
+        return [convert(c) for c in re.split("([0-9]+)", key[0])]
+
     return sorted(l, key=alphanum_key)
 
 
@@ -90,7 +98,7 @@ def cursor_to_rows(cursor, none_value=None):
 
 class Header(object):
     def __init__(self, *docs):
-        self.tag = docs[0]['tag']
+        self.tag = docs[0]["tag"]
         self.parent = None
         self.names = []
         self.children = []
@@ -104,24 +112,24 @@ class Header(object):
         return self
 
     def addDoc(self, doc):
-        assert(self.tag == doc['tag'])
+        assert self.tag == doc["tag"]
         for k, v in natural_sort(list(doc.items())):
-            if k in ['_id', 'tag', 'uid']:
+            if k in ["_id", "tag", "uid"]:
                 pass
-            elif k == 'subtree_data':
+            elif k == "subtree_data":
                 for subDoc in v:
                     if subDoc == {}:
                         continue
                     found = False
                     for child in self.children:
-                        if subDoc['tag'] == child.tag:
+                        if subDoc["tag"] == child.tag:
                             child.addDoc(subDoc)
                             found = True
                             break
                     if not found:
                         self.children.append(Header(subDoc).setParent(self))
-            elif k == 'additional_data':
-                v['tag'] = 'additional_data'
+            elif k == "additional_data":
+                v["tag"] = "additional_data"
                 if self.additional_data is None:
                     self.additional_data = Header(v)
                 else:
@@ -131,7 +139,7 @@ class Header(object):
 
     def getFlatHeaders(self, with_root=True, deep=True, additional_data=True):
         rl = []
-        pre = self.tag + '.' if with_root else ''
+        pre = self.tag + "." if with_root else ""
         for name in self.names:
             rl.append(pre + name)
         if deep:
@@ -145,23 +153,25 @@ class Header(object):
 
     def getDataFromDoc(self, doc):
         rv = []
-        assert(doc == {} or doc['tag'] == self.tag)
+        assert doc == {} or doc["tag"] == self.tag
         headers = self.getFlatHeaders(False, False, False)
         for header in headers:
             rv.append(doc.get(header, None))
         for child in self.children:
             found = False
-            for subDoc in doc.get('subtree_data', []):
+            for subDoc in doc.get("subtree_data", []):
                 try:
-                    if subDoc['tag'] == child.tag:
+                    if subDoc["tag"] == child.tag:
                         found = True
                         break
-                except KeyError as e:
+                except KeyError:
                     print(subDoc)
                     raise Exception("break")
             rv = rv + child.getDataFromDoc(subDoc if found else {})
         if self.additional_data:
-            rv = rv + self.additional_data.getDataFromDoc(doc.get('additional_data', {}))
+            rv = rv + self.additional_data.getDataFromDoc(
+                doc.get("additional_data", {})
+            )
         return rv
 
     def getDataFromDocs(self, docs):
@@ -172,8 +182,8 @@ class Header(object):
 
     def __unicode__(self):
         if self.parent:
-            return str(self.parent) + '.' + self.tag
+            return str(self.parent) + "." + self.tag
         return str(self.tag)
 
     def __str__(self):
-        return str(self).encode('utf-8')
+        return str(self).encode("utf-8")

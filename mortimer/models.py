@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
 from flask import current_app
@@ -55,10 +54,10 @@ class WebExperiment(db.Document):
     script = db.StringField()
     script_name = db.StringField()
     script_fullpath = db.StringField()
-    path = db.StringField()     # full path to exp directory
-    directory_name = db.StringField()   # name of exp directory
-    user_directories = db.ListField(db.StringField())   # user-created directories
-    config = db.StringField()   # possibility to include config.conf
+    path = db.StringField()  # full path to exp directory
+    directory_name = db.StringField()  # name of exp directory
+    user_directories = db.ListField(db.StringField())  # user-created directories
+    config = db.StringField()  # possibility to include config.conf
     settings = db.DictField()
 
     public = db.BooleanField(default=True)
@@ -67,7 +66,12 @@ class WebExperiment(db.Document):
     active = db.BooleanField(default=False)
 
     def __repr__(self):
-        return "Experiment(Title: %s, Version: %s, Created: %s, Author: %s)" % (self.title, self.version, self.date_created, self.author)
+        return "Experiment(Title: %s, Version: %s, Created: %s, Author: %s)" % (
+            self.title,
+            self.version,
+            self.date_created,
+            self.author,
+        )
 
 
 class LocalExperiment(db.Document):
@@ -81,4 +85,7 @@ class LocalExperiment(db.Document):
     description = db.StringField()
 
     def __repr__(self):
-        return "Local WebExperiment(Title: %s, Version: %s, Created: %s, Author: %s)" % (self.title, self.version, self.date_created, self.author)
+        return (
+            "Local WebExperiment(Title: %s, Version: %s, Created: %s, Author: %s)"
+            % (self.title, self.version, self.date_created, self.author)
+        )

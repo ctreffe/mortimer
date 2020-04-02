@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+
 # -*- coding: utf-8 -*-
 
 import os
@@ -12,6 +12,34 @@ from flask_mail import Message
 from flask import url_for
 from uuid import uuid4
 from jinja2 import Template
+
+
+def set_experiment_settings(title, version, author, exp_id, path):
+    from alfred import settings
+    exp_specific_settings = settings.ExperimentSpecificSettings()
+
+    settings = {
+        'general': dict(settings.general),
+
+        'experiment': {
+            'title': title, 
+            'author': author, 
+            'version': version, 
+            'type': settings.experiment.type, 
+            'exp_id': exp_id,
+            'qt_fullscreen': settings.experiment.qt_full_screen,
+            'web_layout': settings.experiment.web_layout            
+            },
+
+        'mortimer_specific': {'session_id': None, 'path': path},
+        'log': dict(settings.log),
+        'navigation': dict(exp_specific_settings.navigation),
+        'debug': dict(exp_specific_settings.debug),
+        'hints': dict(exp_specific_settings.hints),
+        'messages': dict(exp_specific_settings.messages)
+        }
+
+    return settings
 
 
 def send_reset_email(user: str):
@@ -296,7 +324,7 @@ def display_directory(directories: list, parent_directory: str,
 
 
 def perform_futurization(file):
-    futurize = subprocess.run(['futurize', '-w', file], check=True, text=True)
+    futurize = subprocess.run(['futurize', '-w', file], check=True, universal_newlines=True)
 
     return futurize
 

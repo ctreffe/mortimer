@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+
 # -*- coding: utf-8 -*-
 
 from flask import Flask
@@ -8,6 +8,9 @@ from flask_login import LoginManager
 from flask_mail import Mail
 from flask_dropzone import Dropzone
 import pymongo
+import alfred
+
+__version__ = '0.4.2'
 
 # the EnvironSetter sets enviroment variables for the current session
 # It is not included in the GitHub repository, because it contains sensitive
@@ -77,6 +80,13 @@ def create_app(config_class=Config):
     app.register_blueprint(alfredo)
     app.register_blueprint(local_experiments)
     app.register_blueprint(errors)
+
+    # global variables for use in templates
+    @app.context_processor
+    def version_processor():
+        mv = __version__
+        from alfred import __version__ as av
+        return {"v_mortimer": mv, "v_alfred": av}
 
     # bind extensions to app instance
     db.init_app(app)

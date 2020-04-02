@@ -1,6 +1,6 @@
 {
     "AutoHideQuestion": "AutoHidePage",
-    "CompositeQuestion": "CompositePage",
+    "CompositeQuestion": "Page",
     "CoreCompositeQuestion": "CoreCompositePage",
     "DemographicQuestion": "DemographicPage",
     "DynamicQuestion": "DynamicPage",

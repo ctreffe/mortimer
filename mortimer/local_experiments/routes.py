@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+
 # -*- coding: utf-8 -*-
 
 from mortimer import export
@@ -99,7 +99,7 @@ def experiments():
 @login_required
 def user_experiments(username):
 
-    page = request.args.get("page", 1, type=int)
+    # page = request.args.get("page", 1, type=int)
     user = User.objects.get_or_404(username=username)
 
     if user.username != current_user.username:
