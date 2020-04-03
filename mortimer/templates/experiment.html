@@ -140,8 +140,20 @@
       </div>
     </div>
   </div>
-</div>
 
+  <div class="col mb-4">
+    <div class="card h-100 text-center">
+      <div class="card-header">
+        Script
+      </div>
+      <div class="card-body">
+        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#uploadModal"><i
+            class="fas fa-upload"></i> Upload Script</button>
+      </div>
+    </div>
+  </div>
+
+</div>
 
 
 {% if experiment.description %}
@@ -153,101 +165,17 @@
 
 <div class="alert alert-info" role="alert">
   <!-- <h3>Futurizing a script</h3> -->
-  <b>When you publish research</b> conducted using Alfred, please cite. <span title="In this proposed citation, we use the latest alfred version number that was used for data collection in the current experiment. The doi will always link to the Zenodo repository with all versions."><i class="fas fa-info-circle"></i></span><br>
-  Treffenstaedt, C., Wiemann, P. & Brachem, J. (2020). Alfred - A library for rapid experiment development (Version {{ alfred_versions[-1] }}). Göttingen, Germany: <a href="https://doi.org/10.5281/zenodo.1437219">https://doi.org/10.5281/zenodo.1437219</a>
+  <b>When you publish research</b> conducted using Alfred, please cite. <span
+    title="In this proposed citation, we use the latest alfred version number that was used for data collection in the current experiment. The doi will always link to the Zenodo repository with all versions."><i
+      class="fas fa-info-circle"></i></span><br>
+  Treffenstaedt, C., Wiemann, P. & Brachem, J. (2020). Alfred - A library for rapid experiment development (Version
+  {{ alfred_versions[-1] }}). Göttingen, Germany: <a
+    href="https://doi.org/10.5281/zenodo.1437219">https://doi.org/10.5281/zenodo.1437219</a>
 </div>
 Alfred versions used for data collection in this experiment:
 {% for v in alfred_versions %}
-    <span class="badge badge-dark">{{ v }}</span>
+<span class="badge badge-dark">{{ v }}</span>
 {% endfor %}
-
-
-<!-- <div class="article content-section">
-  <h3 class="pt-2"><b>Data</b></h3>
-
-      <table class="table table-striped">
-  <thead>
-    <tr>
-      <th scope="col">N</th>
-      <th scope="col" class="text-center"><span class="badge badge-success">Finished</span></th>
-      <th scope="col" class="text-center"><span class="badge badge-warning">Unfinished</span></th>
-      <th scope="col" class="text-center"><span class="badge badge-dark">Total</span></th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th scope="row">All Versions</th>
-      <td class="text-center">{{ datasets["all_finished_datasets"] }}</td>
-      <td class="text-center">{{ datasets["all_unfinished_datasets"] }}</td>
-      <td class="text-center">{{ datasets["all_datasets"] }}</td>
-    </tr>
-    {% for version, info in versions.items() %}
-
-    <tr>
-      <th scope="row">Version {{ version }} </th>
-      <td class="text-center">{{ info["finished"] }}</td>
-      <td class="text-center">{{  info["unfinished"] }}</td>
-      <td class="text-center">{{ info["total"] }}</td>
-    </tr>
-
-    {% endfor %}
-  </tbody>
-</table>
-
-    </div> -->
-
-
-<div class="mt-2">
-  <form method="POST"
-    action="{{ url_for('web_experiments.experiment', username=experiment.author, exp_title=experiment.title) }}"
-    enctype="multipart/form-data" class="needs-validation" novalidate>
-    {{ form.hidden_tag() }}
-    <h3 class="border-bottom pt-2"><b>{{ form.script.label() }}</b></h3>
-    <div class="form-row">
-      <div class="col col-sm-2">
-
-        <div class="form-group row">
-          <label class="col col-form-label">Version</label>
-          <div class="col">
-            {% if form.version.errors %}
-            {{ form.version(class="form-control form-control-sm is-invalid") }}
-
-            <div class="invalid-feedback">
-              {% for error in form.version.errors %}
-              <span>{{ error }}</span>
-              {% endfor %}
-            </div>
-
-            {% else %}
-            {{ form.version(class="form-control form-control-sm", placeholder=experiment.version) }}
-            {% endif %}
-          </div>
-        </div>
-
-      </div>
-      <div class="col">
-
-        {{ form.script(class="form-control-file") }}
-        {% if form.script.errors %}
-        {% for error in form.script.errors %}
-        <span class="text-danger">{{ error }}</span><br>
-        {% endfor %}
-        {% endif %}
-      </div>
-    </div>
-    <small id="versionHelpBlock" class="form-text text-muted">
-      Changing the version number allows you to choose, for which versions of an experiment you want to download data.
-      If you made substantial changes to your experiment, you should change the version.
-    </small>
-    <div class="form-row pt-3">
-      <div class="col">
-        {{ form.submit(class="btn btn-primary btn-sm", id="submit")}}
-      </div>
-    </div>
-  </form>
-
-
-</div>
 
 <div class="article content-section mt-5 float-right">
 
@@ -276,6 +204,69 @@ Alfred versions used for data collection in this experiment:
         <form method="POST"
           action="{{ url_for('web_experiments.delete_experiment', experiment_title=experiment.title, username=experiment.author) }}">
           <input class="btn btn-danger" type="submit" value="Delete">
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="uploadModalLabel">Upload script.py</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>Here, you can upload a new script.py. Your current script.py will be replaced.</p>
+      </div>
+      <div class="modal-footer">
+        <form method="POST"
+          action="{{ url_for('web_experiments.experiment', username=experiment.author, exp_title=experiment.title) }}"
+          enctype="multipart/form-data" class="needs-validation" novalidate>
+          {{ form.hidden_tag() }}
+
+          <div class="form-group">
+
+            {{ form.script(class="form-control-file") }}
+            {% if form.script.errors %}
+            {% for error in form.script.errors %}
+            <span class="text-danger">{{ error }}</span><br>
+            {% endfor %}
+            {% endif %}
+          </div>
+
+          <div class="form-group">
+            {{ form.version.label(class="form-control-label") }}*
+            {% if form.version.errors %}
+            {{ form.version(class="form-control form-control-sm is-invalid") }}
+            <!-- , placeholder=form.version.label.text -->
+
+            <div class="invalid-feedback">
+              {% for error in form.version.errors %}
+              <span>{{ error }}</span>
+              {% endfor %}
+            </div>
+
+            {% else %}
+            {{ form.version(class="form-control form-control-sm", placeholder=experiment.version) }}
+            {% endif %}
+          </div>
+
+          <small id="versionHelpBlock" class="form-text text-muted">
+            Changing the version number allows you to choose, for which versions of an experiment you want to download
+            data.
+            If you made substantial changes to your experiment, you should change the version.
+          </small>
+          <div class="form-row pt-3">
+            <div class="col">
+              {{ form.submit(class="btn btn-primary", id="submit")}}
+            </div>
+          </div>
         </form>
       </div>
     </div>
