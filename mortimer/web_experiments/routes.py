@@ -183,10 +183,12 @@ def experiment(username, exp_title):
         else:
             versions[single_exp["exp_version"]]["unfinished"] += 1
         finished.append(single_exp["start_time"])
+    
+    start_times = filter(None, all_activity)
 
-    if all_activity:
-        first_activity = datetime.fromtimestamp(min(all_activity))
-        last_activity = datetime.fromtimestamp(max(all_activity))
+    if start_times:
+        first_activity = datetime.fromtimestamp(min(start_times))
+        last_activity = datetime.fromtimestamp(max(start_times))
     else:
         first_activity = "none"
         last_activity = "none"
