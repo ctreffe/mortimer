@@ -184,7 +184,7 @@ def experiment(username, exp_title):
             versions[single_exp["exp_version"]]["unfinished"] += 1
         finished.append(single_exp["start_time"])
     
-    start_times = filter(None, all_activity)
+    start_times = list(filter(None, all_activity))
 
     if start_times:
         first_activity = datetime.fromtimestamp(min(start_times))
