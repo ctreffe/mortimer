@@ -1,8 +1,13 @@
 # Mortimer v0.4.3
 
+## Bugfixes
+
+* Fixed a bug that caused the `web_experiments.experiment()` page to crash as a consequence of a specific experiment startup error.
+
 ## Smaller changes
 
-* Improved error handling.
+* Improved error handling: Subjects will now always receive a neutral error page, if an experiment crashes. Previously, they were redirected to the login page in some cases.
+* Small UI improvements
 
 # Mortimer v0.4.2
 
