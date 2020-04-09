@@ -8,9 +8,8 @@ from flask_login import LoginManager
 from flask_mail import Mail
 from flask_dropzone import Dropzone
 import pymongo
-import alfred
 
-__version__ = '0.4.2'
+__version__ = '0.4.3'
 
 # the EnvironSetter sets enviroment variables for the current session
 # It is not included in the GitHub repository, because it contains sensitive

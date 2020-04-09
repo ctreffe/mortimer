@@ -65,7 +65,7 @@ class Config:
 
     # Flask-Dropzone settings:
     DROPZONE_ALLOWED_FILE_CUSTOM = True
-    DROPZONE_ALLOWED_FILE_TYPE = ".pdf, image/*, .txt, .xml, .pem, .mp3, .mp4, .ogg"
+    DROPZONE_ALLOWED_FILE_TYPE = ".pdf, image/*, .txt, .xml, .pem, .mp3, .mp4, .ogg, .csv"
     DROPZONE_MAX_FILE_SIZE = 10
     DROPZONE_MAX_FILES = 100
     DROPZONE_UPLOAD_ON_CLICK = True

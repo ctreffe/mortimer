@@ -34,7 +34,7 @@
 
 #sidebar ul.components {
   padding: 20px 0;
-  border-bttom: 1px solid #47748b;
+  border-bottom: 1px solid #47748b;
 }
 
 #sidebar ul p {
@@ -56,8 +56,8 @@
   /*background: #343a40;*/
 }
 
-#contentNav {
-  color: #fff;
+/* #contentNav {
+  color: inherit;
 }
 
 #contentNav ul li a{
@@ -66,8 +66,8 @@
 }
 
 #contentNav ul li a:hover {
-  color: #343a40;
-}
+  color: #6c757d;
+} */
 
 #sidebar ul li.active > a, a[aria-expanded="true"] {
   color: #fff;
