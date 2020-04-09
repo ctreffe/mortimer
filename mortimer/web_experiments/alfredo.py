@@ -147,7 +147,7 @@ def start(expid):
     try:
         module = import_script(experiment.id)
     except Exception as e:
-        flash("Error during script import:\n'{e}'".format(e=e), 'danger')
+        flash("Error during script import. For details, take a look at the log.", 'danger')
         logger.error(msg=traceback.format_exc(), exp_id=str(experiment.id), session_id=sid)
         if current_user.is_authenticated:
             return redirect(url_for('web_experiments.experiment', username=experiment.author, exp_title=experiment.title))
@@ -177,7 +177,7 @@ def start(expid):
     except Exception as e:
         logger.error(msg=traceback.format_exc(), exp_id=str(experiment.id), session_id=sid)
         if current_user.is_authenticated:
-            flash("Error during experiment generation:\n'{e}'".format(e=e), 'danger')
+            flash("Error during experiment generation. For details, take a look at the log.", 'danger')
             return redirect(url_for('web_experiments.experiment', username=experiment.author, exp_title=experiment.title))
         else:
             abort(500)
@@ -186,8 +186,9 @@ def start(expid):
         # start experiment
         script.experiment.start()
     except Exception as e:
+        logger.error(msg=traceback.format_exc(), exp_id=str(experiment.id), session_id=sid)
         if current_user.is_authenticated:
-            flash("Error during experiment startup:\n'{e}'".format(e=e), 'danger')
+            flash("Error during experiment startup. For details, take a look at the log.", 'danger')
             return redirect(url_for('web_experiments.experiment', username=experiment.author, exp_title=experiment.title))
         else:
             abort(500)
