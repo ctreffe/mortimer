@@ -168,20 +168,29 @@ def start(expid):
             else:
                 script.experiment = script.generate_experiment(config=custom_settings)
         except SyntaxError:
-            flash("The definition of experiment title, type, or version in script.py is deprecated. Please define these parameters in config.conf, when you are working locally. Mortimer will set these parameters for you automatically. In your script.py, just use 'exp = Experiment(config=config)'.", "danger")
-            return redirect(url_for('web_experiments.experiment', username=experiment.author, exp_title=experiment.title))
+            if current_user.is_authenticated:
+                flash("The definition of experiment title, type, or version in script.py is deprecated. Please define these parameters in config.conf, when you are working locally. Mortimer will set these parameters for you automatically. In your script.py, just use 'exp = Experiment(config=config)'.", "danger")
+                return redirect(url_for('web_experiments.experiment', username=experiment.author, exp_title=experiment.title))
+            else:
+                abort(500)
 
     except Exception as e:
         logger.error(msg=traceback.format_exc(), exp_id=str(experiment.id), session_id=sid)
-        flash("Error during experiment generation:\n'{e}'".format(e=e), 'danger')
-        return redirect(url_for('web_experiments.experiment', username=experiment.author, exp_title=experiment.title))
+        if current_user.is_authenticated:
+            flash("Error during experiment generation:\n'{e}'".format(e=e), 'danger')
+            return redirect(url_for('web_experiments.experiment', username=experiment.author, exp_title=experiment.title))
+        else:
+            abort(500)
 
     try:
         # start experiment
         script.experiment.start()
     except Exception as e:
-        flash("Error during experiment startup:\n'{e}'".format(e=e), 'danger')
-        return redirect(url_for('web_experiments.experiment', username=experiment.author, exp_title=experiment.title))
+        if current_user.is_authenticated:
+            flash("Error during experiment startup:\n'{e}'".format(e=e), 'danger')
+            return redirect(url_for('web_experiments.experiment', username=experiment.author, exp_title=experiment.title))
+        else:
+            abort(500)
 
     # set session variables
     experiment_manager.save(sid, script)
