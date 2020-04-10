@@ -9,7 +9,7 @@ from datetime import datetime
 from flask import current_app
 from mortimer import mail
 from flask_mail import Message
-from flask import url_for, current_app
+from flask import url_for, current_app, render_template
 from uuid import uuid4
 from jinja2 import Template
 from cryptography.fernet import Fernet
@@ -115,39 +115,9 @@ def display_directory(directories: list, parent_directory: str,
                           experiment_title=experiment_title,
                           username=experiment_author,
                           relative_path=filepath)
-            display_one = Template('''<div class=\"row m-1\">
-            <div class="col-md-10 float-left">
-             <span class=\"ml-2\">- {{f}}</span>
-            </div>
-            <div class="col-md-2 btn btn-outline-danger btn-sm"
-             <button type="button" data-toggle="modal" data-target="#deleteModal_{{filepath}}">Delete</button>
-            </div>
-            </div>
-
-                <div class="modal fade" id="deleteModal_{{filepath}}" tabindex="-1" role="dialog" aria-labelledby="deleteModal_{{filepath}}Label" aria-hidden="true">
-                  <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                      <div class="modal-header">
-                        <h5 class="modal-title" id="deleteModal_{{filepath}}Label">Delete All Files</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                          <span aria-hidden="true">&times;</span>
-                        </button>
-                      </div>
-                      <div class="modal-body">
-                        Are you sure that you want to delete the file <code>{{f}}</code>? The data stored in Mortimer will be lost!
-                      </div>
-                      <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <form method="POST" action="{{url}}">
-                          <input class="btn btn-danger" type="submit" value="Delete">
-                        </form>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-            ''')
-
-            out.append(display_one.render(f=f, filepath=filepath, url=url))
+            fileid = "{}_{}".format(f.replace(".", ""), str(uuid4()))
+            single_file = render_template("additional/display_one_file.html", f=f, fileid=fileid, url=url)
+            out.append(single_file)
         return "".join(out)
 
     def display_directory_controls(directory: str,
@@ -173,63 +143,7 @@ def display_directory(directories: list, parent_directory: str,
                                        username=experiment_author,
                                        relative_path=path)
 
-        out = Template('''<div>
-                    <p>
-                        <span><code style="color:black">{{path}}</code></span>
-                        <span class="float-md-right">
-                        <button class=\"btn btn-outline-primary btn-sm ml-2\" type=\"button\" data-toggle=\"collapse\" data-target=\"#collapse_{{directory}}_{{call_id}}\" aria-expanded=\"false\" aria-controls=\"collapseExample\">
-                        Show Files
-                        </button>
-                        <button class=\"btn btn-outline-primary btn-sm\" type=\"button\" data-toggle=\"collapse\" data-target=\"#NewDirectory_{{directory}}_{{call_id}}\" aria-expanded=\"false\" aria-controls=\"collapseExample\">
-                        New Subdirectory
-                        </button>
-                        <a class=\"btn btn-outline-success btn-sm\" href=\"{{upload_url}}\">Upload Files</a>
-                        <button type="button" class="btn btn-outline-danger btn-sm mt-1 mb-1" data-toggle="modal" data-target="#deleteModal_{{directory}}_{{call_id}}">Delete Directory</button>
-                        </span>
-                    </p>
-
-                    <div class="collapse" id="NewDirectory_{{directory}}_{{call_id}}">
-                        <form action="{{new_subdirectory_url}}", method="POST">
-                            <div><input class="form-control form-control-lg mr-3 mb-3 mt-3" id="new_directory" name="new_directory" required type="text" value="" placeholder="Name">
-                            <input class="btn btn-outline-primary btn-sm" type="submit" value="Create"></div>
-
-
-                        </form>
-                    </div>
-
-                    <div class=\"collapse pt-3\" id=\"collapse_{{directory}}_{{call_id}}\">
-                    {{file_display}} <br>
-                    </div>
-
-
-                    {{subdirectory_display}}
-
-                </div>
-
-                <div class="modal fade" id="deleteModal_{{directory}}_{{call_id}}" tabindex="-1" role="dialog" aria-labelledby="deleteModal_{{directory}}Label_{{call_id}}" aria-hidden="true">
-                  <div class="modal-dialog" role="document">
-                    <div class="modal-content">
-                      <div class="modal-header">
-                        <h5 class="modal-title" id="deleteModal_{{directory}}Label_{{call_id}}">Delete All Files</h5>
-                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                          <span aria-hidden="true">&times;</span>
-                        </button>
-                      </div>
-                      <div class="modal-body">
-                        Are you sure that you want to delete the directory <code>{{path}}</code>? The data stored in Mortimer will be lost!
-                      </div>
-                      <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <form method="POST" action="{{delete_directory_url}}">
-                          <input class="btn btn-danger" type="submit" value="Delete">
-                        </form>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                ''')
-
-        return out.render(path=path,
+        return render_template("additional/display_dir_controls.html", path=path,
                           directory=directory,
                           upload_url=upload_url,
                           call_id=call_id,
