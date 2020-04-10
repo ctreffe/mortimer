@@ -1,3 +1,11 @@
+# Mortimer v0.4.4
+
+## Encryption Keys
+
+* Every user now has a unique fernet encryption key, generated via `cryptography.fernet.Fernet.generate_key()`. The key is passed as an entry in the `config` dictionary (key: `encryption_key`) to the `generate_experiment()` function in `alfredo.py`. 
+* The key itself is saved to the mortimer database in encrypted form.
+* **Usage**: In your script.py, you can encrypt and decrypt data via `alfred.Experiment.encryptor` (**alfred v1.0.6**+), which is an instance of `cryptography.fernet.Fernet`, initialized with the key. It offers the methods `alfred.Experiment.decryptor.encrypt()` and `alfred.Experiment.decryptor.decrypt()`. **Note** that these methods require input of type `bytes` and return data of type `bytes`, so make sure to convert your data when using it. See the [Fernet documentation](https://cryptography.io/en/latest/fernet/) for more.
+
 # Mortimer v0.4.3
 
 ## Bugfixes

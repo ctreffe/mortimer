@@ -9,6 +9,7 @@ from threading import Lock
 from time import time
 from uuid import uuid4
 from mortimer.models import WebExperiment
+from mortimer.utils import create_fernet
 from bson.objectid import ObjectId
 from alfred.alfredlog import init_logging, getLogger
 import re
@@ -160,6 +161,13 @@ def start(expid):
 
         custom_settings = experiment.settings
         custom_settings['mortimer_specific']['session_id'] = sid
+        
+        if current_user.encryption_key:
+            f = create_fernet()
+            key = f.decrypt(current_user.encryption_key)
+            custom_settings["encryption_key"] = key
+        else:
+            flash("Please log out and back in again to generate your personal encryption key.", "warning")
 
         try:
             if number_of_func_params(module.generate_experiment) > 2:
