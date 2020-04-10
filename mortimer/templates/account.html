@@ -3,13 +3,18 @@
 {% block content %}
 
 <div class="content-section">
-    <div class="media">
-
-    </div>
     <form method="POST" action="" class="needs-validation" novalidate>
         {{ form.hidden_tag() }}
         <fieldset class="form-group">
             <legend class="border-bottom mb-4">Account Info</legend>
+            <!-- Encryption key status -->
+            {% if current_user.encryption_key %}
+            <p><i class="fas fa-check-circle"></i> Your account is ready for using encryption in your alfred
+                experiments.</p>
+            {% else %}
+            <p><i class="fas fa-times-circle"></i> Your account is not ready for using encryption in your alfred
+                experiments. Please log out and log back in again to get ready!</p>
+            {% endif %}
             <div class="form-group">
                 {{ form.username.label(class="form-control-label") }}
 

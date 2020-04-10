@@ -9,9 +9,14 @@ from datetime import datetime
 from flask import current_app
 from mortimer import mail
 from flask_mail import Message
-from flask import url_for
+from flask import url_for, current_app
 from uuid import uuid4
 from jinja2 import Template
+from cryptography.fernet import Fernet
+
+def create_fernet():
+    app_fernet_key = current_app.config["FERNET_KEY"].encode()
+    return Fernet(app_fernet_key)
 
 
 def set_experiment_settings(title, version, author, exp_id, path):
