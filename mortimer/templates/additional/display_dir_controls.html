@@ -1,0 +1,62 @@
+<div>
+    <p>
+        <span><code style="color:black">{{path}}</code></span>
+        <span class="float-md-right">
+            <button class="btn btn-outline-primary btn-sm ml-2" type="button" data-toggle="collapse"
+                data-target="#collapse_{{directory}}_{{call_id}}" aria-expanded="false" aria-controls="collapseExample">
+                Show Files
+            </button>
+            <button class="btn btn-outline-primary btn-sm" type="button" data-toggle="collapse"
+                data-target="#NewDirectory_{{directory}}_{{call_id}}" aria-expanded="false"
+                aria-controls="collapseExample">
+                New Subdirectory
+            </button>
+            <a class="btn btn-outline-success btn-sm" href="{{upload_url}}">Upload Files</a>
+            <button type="button" class="btn btn-outline-danger btn-sm mt-1 mb-1" data-toggle="modal"
+                data-target="#deleteModal_{{directory}}_{{call_id}}">Delete Directory</button>
+        </span>
+    </p>
+
+    <div class="collapse" id="NewDirectory_{{directory}}_{{call_id}}">
+        <form action="{{new_subdirectory_url}}" , method="POST">
+            <div><input class="form-control form-control-lg mr-3 mb-3 mt-3" id="new_directory" name="new_directory"
+                    required type="text" value="" placeholder="Name">
+                <input class="btn btn-outline-primary btn-sm" type="submit" value="Create">
+            </div>
+
+
+        </form>
+    </div>
+
+    <div class="collapse pt-3" id="collapse_{{directory}}_{{call_id}}">
+        {{file_display|safe}} <br>
+    </div>
+
+
+    {{subdirectory_display}}
+
+</div>
+
+<div class="modal fade" id="deleteModal_{{directory}}_{{call_id}}" tabindex="-1" role="dialog"
+    aria-labelledby="deleteModal_{{directory}}Label_{{call_id}}" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deleteModal_{{directory}}Label_{{call_id}}">Delete All Files</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure that you want to delete the directory <code>{{path}}</code>? The data stored in Mortimer
+                will be lost!
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <form method="POST" action="{{delete_directory_url}}">
+                    <input class="btn btn-danger" type="submit" value="Delete">
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

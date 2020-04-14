@@ -2,9 +2,11 @@
 
 from flask import current_app
 from mortimer import db, login_manager
+from mortimer.utils import create_fernet
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from datetime import datetime
 from flask_login import UserMixin
+from cryptography.fernet import Fernet
 
 
 @login_manager.user_loader
@@ -16,6 +18,7 @@ class User(db.Document, UserMixin):
     username = db.StringField(required=True, unique=True, max_length=20)
     email = db.EmailField(required=True, unique=True)
     role = db.StringField(required=True, default="user")
+    encryption_key = db.BinaryField()
     password = db.StringField(required=True)
     experiments = db.ListField(db.ObjectIdField())
 
@@ -23,6 +26,13 @@ class User(db.Document, UserMixin):
         # methode for creating a token for password reset
         s = Serializer(current_app.config["SECRET_KEY"], expires_sec)
         return s.dumps({"user_id": str(self.id)}).decode("utf-8")
+    
+    @staticmethod
+    def generate_encryption_key():
+        key = Fernet.generate_key()
+        f = create_fernet()
+        encrypted_key = f.encrypt(key)
+        return encrypted_key
 
     @staticmethod
     def verify_reset_token(token):

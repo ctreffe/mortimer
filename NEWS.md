@@ -1,3 +1,15 @@
+# Mortimer v0.4.4
+
+## Encryption Keys
+
+* Every user now has a unique fernet encryption key, generated via `cryptography.fernet.Fernet.generate_key()`. The key is passed as an entry in the `config` dictionary (key: `encryption_key`) to the `generate_experiment()` function in `alfredo.py`. 
+* The key itself is saved to the mortimer database in encrypted form.
+* Usage: See [here](https://github.com/ctreffe/alfred/releases/tag/v1.0.6)
+
+## Bugfixes
+
+* Fixed a bug that prevent the deletion of single files in the resources pane to work properly.
+
 # Mortimer v0.4.3
 
 ## Bugfixes

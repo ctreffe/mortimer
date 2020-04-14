@@ -25,6 +25,7 @@ def register():
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode("utf-8")
         user = User(username=form.username.data, email=form.email.data, password=hashed_password)
+        user.encryption_key = User.generate_encryption_key()
         user.save()
         flash("Account created for %s." % form.username.data, "success")
         return redirect(url_for('users.login'))
@@ -52,6 +53,12 @@ def login():
             login_user(user, remember=form.remember.data)
             next_page = request.args.get("next")
             flash("Login Successful.", "success")
+
+            # for backwards compatibility, generate encryption key if there isnt already one
+            if not user.encryption_key:
+                user.encryption_key = User.generate_encryption_key()
+                user.save()
+
             return redirect(next_page) if next_page else redirect(url_for('main.home'))
         else:
             flash("Login Unsuccessful. Please check username and password", "danger")
@@ -84,7 +91,7 @@ def account():
         form.username.data = current_user.username
         form.email.data = current_user.email
 
-    return render_template("account.html", title="Account", form=form)
+    return render_template("account.html", title="Account", form=form, user = current_user)
 
 
 @users.route("/reset_password", methods=["GET", "POST"])

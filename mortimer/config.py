@@ -21,9 +21,12 @@ class Config:
         ssl_ca_certs = None
         ssl_ca_path = None
 
-    SECRET_KEY = os.environ.get(
-        "SECRET_KEY"
-    )  # secret key of flask app (e.g. for encrypted session data)
+    # secret key of app (e.g. for encrypted session data)
+    SECRET_KEY = os.environ.get("SECRET_KEY")
+    
+    # URL-safe base64-encoded 32-byte key for fernet encryption 
+    FERNET_KEY = os.environ.get("FERNET_KEY")
+
     PAROLE = os.environ.get("PAROLE")  # Parole/Passphrase for registration
     EXP_PER_PAGE = 10  # number of experiments displayed per page
 
@@ -65,7 +68,9 @@ class Config:
 
     # Flask-Dropzone settings:
     DROPZONE_ALLOWED_FILE_CUSTOM = True
-    DROPZONE_ALLOWED_FILE_TYPE = ".pdf, image/*, .txt, .xml, .pem, .mp3, .mp4, .ogg, .csv"
+    DROPZONE_ALLOWED_FILE_TYPE = (
+        ".pdf, image/*, .txt, .xml, .pem, .mp3, .mp4, .ogg, .csv"
+    )
     DROPZONE_MAX_FILE_SIZE = 10
     DROPZONE_MAX_FILES = 100
     DROPZONE_UPLOAD_ON_CLICK = True
