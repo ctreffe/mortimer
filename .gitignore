@@ -27,3 +27,5 @@ alfred.conf
 exp/
 .vscode/settings.json
 test.py
+test_copy.py
+test_copy2.py
