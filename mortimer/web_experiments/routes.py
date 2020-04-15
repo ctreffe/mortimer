@@ -132,76 +132,55 @@ def experiment(username, exp_title):
     else:
         password_protection = "enabled"
 
-    # Query database: Used versions
-    alfred_versions = alfred_web_db.distinct("alfred_version", filter={"exp_id": str(exp.id), "exp_finished": True})
+
+    # Query Database
+    db = alfred_web_db
+
+    f_id = {"exp_id": str(exp.id)}
+    f_fin = {"exp_finished": True}
+    f_ver = {"exp_version": exp.version}
+
+    # Used versions
+    alfred_versions = db.distinct("alfred_version", {**f_id, **f_fin})
     alfred_versions.sort()
 
-    # Query Database: Number of datasets
+    # Number of datasets
+    n = {}
+    n["total"] = db.count_documents(f_id)
+    n["fin"] = db.count_documents({**f_id, **f_fin})
+    n["unfin"] = n["total"] - n["fin"]
+    n["current_ver"] = db.count_documents({**f_id, **f_ver})
+    n["fin_current_ver"]  = db.count_documents({**f_fin, **f_id, **f_ver})
+    n["unfin_current_ver"] = n["current_ver"] - n["fin_current_ver"]
 
-    datasets = {}
-
-    datasets["all_datasets"] = alfred_web_db.count_documents({"exp_id": str(exp.id)})
-
-    datasets["all_finished_datasets"] = alfred_web_db.count_documents(
-        {"exp_id": str(exp.id), "exp_finished": True}
-    )
-
-    datasets["all_unfinished_datasets"] = (
-        datasets["all_datasets"] - datasets["all_finished_datasets"]
-    )
-
-    datasets["datasets_current_version"] = alfred_web_db.count_documents(
-        {"exp_id": str(exp.id), "exp_version": exp.version}
-    )
-
-    datasets["finished_datasets_current_version"] = alfred_web_db.count_documents(
-        {"exp_id": str(exp.id), "exp_version": exp.version, "exp_finished": True}
-    )
-
-    datasets["unfinished_datasets_current_version"] = (
-        datasets["datasets_current_version"]
-        - datasets["finished_datasets_current_version"]
-    )
-
-    # Number of finished datasets per version
-    versions = {}
-    all_activity = []
-    finished = []
-    cur = alfred_web_db.find({"exp_id": str(exp.id)})
-    for single_exp in cur:
-        all_activity.append(single_exp["start_time"])
-        if single_exp["exp_version"] not in versions.keys():
-            versions[single_exp["exp_version"]] = {
-                "total": 1,
-                "finished": 0,
-                "unfinished": 0,
-            }
-        else:
-            versions[single_exp["exp_version"]]["total"] += 1
-        if single_exp["exp_finished"]:
-            versions[single_exp["exp_version"]]["finished"] += 1
-        else:
-            versions[single_exp["exp_version"]]["unfinished"] += 1
-        finished.append(single_exp["start_time"])
+    # Number of datasets per version
+    for v in exp.available_versions:
+        f_ver = {"exp_version": v, **f_id}
+        t = "{}_total".format(v)
+        fin = "{}_fin".format(v)
+        unfin = "{}_unfin".format(v)
+        
+        n[t] = db.count_documents(f_ver)
+        n[fin] = db.count_documents({**f_fin, **f_ver})
+        n[unfin] = n[t] - n[fin]
     
-    start_times = list(filter(None, all_activity))
+    # start time
+    group = {
+        "_id": 1, 
+        "first": {"$min": "$start_time"}, 
+        "last": {"$max": "$start_time"}
+    }
+    pipe = [{"$match": f_id}, {"$group": group}]
+    times = list(db.aggregate(pipe))
 
-    if start_times:
-        first_activity = datetime.fromtimestamp(min(start_times))
-        last_activity = datetime.fromtimestamp(max(start_times))
+    activity = {}
+    if times:
+        activity["first"] = datetime.fromtimestamp(times[0]["first"])
+        activity["last"] = datetime.fromtimestamp(times[0]["last"])
     else:
-        first_activity = "none"
-        last_activity = "none"
-
-    # Time of first and last activity
-    # if finished:
-    #     first_activity = datetime.fromtimestamp(min(finished))\
-    #         .strftime('%Y-%m-%d, %H:%M')
-    #     last_activity = datetime.fromtimestamp(max(finished))\
-    #         .strftime('%Y-%m-%d, %H:%M')
-    # else:
-    #     first_activity = "none"
-    #     last_activity = "none"
+        activity["first"] = "none"
+        activity["last"] = "none"
+    
 
     # Form for script.py upload
     form = NewScriptForm()
@@ -260,10 +239,8 @@ def experiment(username, exp_title):
         form=form,
         status=status,
         toggle_button=toggle_button,
-        datasets=datasets,
-        first_activity=first_activity,
-        last_activity=last_activity,
-        versions=versions,
+        n=n,
+        activity=activity,
         password_protection=password_protection,
     )
 
