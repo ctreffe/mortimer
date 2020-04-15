@@ -207,6 +207,7 @@ def experiment(username, exp_title):
         # update version
         if exp.version != form.version.data:
             exp.version = form.version.data
+            exp.settings["experiment"]["version"] = form.version.data
             exp.available_versions.append(exp.version)
 
         # save experiment
@@ -266,6 +267,7 @@ def experiment_script(username, exp_title):
         # update version
         if exp.version != form.version.data:
             exp.version = form.version.data
+            exp.settings["experiment"]["version"] = form.version.data
             exp.available_versions.append(exp.version)
 
         # save simple updates
