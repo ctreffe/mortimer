@@ -439,11 +439,12 @@ def user_experiments(username):
     if user.username != current_user.username:
         abort(403)
 
-    experiments = WebExperiment.objects(author=user.username).order_by(
+    # pylint: disable=no-member
+    experiments = WebExperiment.objects(author_id=user.id).order_by(
         "-last_update"
-    )  # \
+    )
 
-    return render_template("user_experiments.html", experiments=experiments, user=user)
+    return render_template("user_experiments.html", experiments=experiments, user=user, secure_filename=secure_filename)
 
 
 @web_experiments.route(
