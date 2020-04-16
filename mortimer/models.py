@@ -1,13 +1,19 @@
 # -*- coding: utf-8 -*-
+import random
+import string
+from datetime import datetime
 
+from pymongo import MongoClient
+from cryptography.fernet import Fernet
 from flask import current_app
+from flask_login import UserMixin
+from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 from alfred import settings as alfred_settings
+
 from mortimer import db, login_manager
 from mortimer.utils import create_fernet
-from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
-from datetime import datetime
-from flask_login import UserMixin
-from cryptography.fernet import Fernet
+
+# pylint: disable=no-member
 
 
 @login_manager.user_loader
@@ -23,17 +29,60 @@ class User(db.Document, UserMixin):
     password = db.StringField(required=True)
     experiments = db.ListField(db.ObjectIdField())
 
+    alfred_user = db.StringField()
+    alfred_pw = db.BinaryField()
+    alfred_col = db.StringField()
+
     def get_reset_token(self, expires_sec=1800):
         # methode for creating a token for password reset
         s = Serializer(current_app.config["SECRET_KEY"], expires_sec)
         return s.dumps({"user_id": str(self.id)}).decode("utf-8")
-    
+
     @staticmethod
-    def generate_encryption_key():
+    def generate_encryption_key() -> bytes:
+        """Generate a new fernet encryption key and encrypt it with the apps secret fernet key.
+        """
         key = Fernet.generate_key()
         f = create_fernet()
         encrypted_key = f.encrypt(key)
         return encrypted_key
+    
+    @staticmethod
+    def generate_password() -> bytes:
+        """Generate a random password and encrypt it with the apps secret fernet key.
+        """
+        f = create_fernet()
+        letters = string.ascii_lowercase
+        pw_raw = "".join(random.choice(letters) for i in range(20))
+        pw_enc = f.encrypt(pw_raw.encode())
+        return pw_enc
+
+    def create_db_user(self):
+        """Create a new user in the alfred database.
+        """
+        alfred_db = current_app.config["MONGODB_ALFRED_SETTINGS"]["db"]
+        user_lower = self.username.lower().replace(" ", "_")
+        rolename = "alfredAccess_{}".format(user_lower)
+        res = {"db": alfred_db, "collection": self.alfred_col}
+        act = ["find", "insert", "update"]
+        priv = [{"resource": res, "actions": act}]
+
+        cred = current_app.config["MONGODB_SETTINGS"]
+
+        client = MongoClient(
+            host=cred["host"],
+            port=cred["port"],
+            username=cred["username"],
+            password=cred["password"],
+            ssl=cred["ssl"],
+            ssl_ca_certs=cred["ssl_ca_certs"]
+        )
+
+        client.alfred.command("createRole", rolename, privileges=priv, roles=[])
+
+        client.alfred.command(
+            "createUser", self.alfred_user, pwd=self.alfred_pw, roles=[rolename]
+        )
 
     @staticmethod
     def verify_reset_token(token):
@@ -52,6 +101,7 @@ class User(db.Document, UserMixin):
 
 class WebExperiment(db.Document):
     author = db.StringField(required=True)
+    author_id = db.ObjectIdField()
     title = db.StringField(required=True, unique_with="author")
     version = db.StringField(required=True)
     available_versions = db.ListField(db.StringField())
