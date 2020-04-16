@@ -21,7 +21,7 @@ def create_fernet():
 def send_reset_email(user: str):
     token = user.get_reset_token()
     msg = Message("Password Reset Request",
-                  sender="mortimer.test1@gmail.com",
+                  sender="alfred@psych.uni-goettingen.de",
                   recipients=[user.email])
     msg.body = Template(''' Dear Mortimer user,
 
@@ -33,7 +33,15 @@ To reset your password, visit the following link:
 If you did not make this request, you can simply ignore this email and no changes will be made.
 
 Kind regards,
-The Mortimer Team
+The Mortimer & Alfred Team
+-- 
+Alfred Support
+
+Georg-August-Universität Göttingen
+Wirtschafts- und Sozialpsychologie
+
+E-Mail: alfred@psych.uni-goettingen.de
+Web: psych.uni-goettingen.de/ecosop
                         ''', lstrip_blocks=True).render(URL=url_for('users.reset_password', token=token, _external=True))
 
     mail.send(msg)
