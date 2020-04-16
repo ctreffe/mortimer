@@ -57,10 +57,10 @@
         Complete datasets
       </div>
       <div class="card-body text-primary">
-        <h1 class="card-text">{{ datasets["all_finished_datasets"] }}</h1>
+        <h1 class="card-text">{{ n["fin"] }}</h1>
       </div>
       <div class="card-footer text-muted border-primary">
-        Total datasets: <span class="badge badge-light">{{ datasets["all_datasets"] }}</span>
+        Total datasets: <span class="badge badge-light">{{ n["total"] }}</span>
       </div>
     </div>
   </div>
@@ -87,15 +87,15 @@
       </div>
       <div class="card-body border-info">
         <h2 class="card-text text-info">
-          {% if last_activity != 'none' %}
-          {{ last_activity.strftime('%Y-%m-%d') }}
+          {% if activity["last"] != 'none' %}
+          {{ activity["last"].strftime('%Y-%m-%d') }}
           {% else %}
           - none -
           {% endif %}
         </h2>
         <span class="text-muted">
-          {% if last_activity != 'none' %}
-          {{ last_activity.strftime('%H:%M') }}
+          {% if activity["last"] != 'none' %}
+          {{ activity["last"].strftime('%H:%M') }}
           {% else %}
           - none -
           {% endif %}
@@ -103,8 +103,8 @@
       </div>
       <div class="card-footer text-muted border-info">
         First activity on <span class="badge badge-light">
-          {% if first_activity != 'none' %}
-          {{ first_activity.strftime('%Y-%m-%d, %H:%M') }}
+          {% if activity["first"] != 'none' %}
+          {{ activity["first"].strftime('%Y-%m-%d, %H:%M') }}
           {% else %}
           - none -
           {% endif %}

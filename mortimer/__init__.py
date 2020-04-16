@@ -9,7 +9,7 @@ from flask_mail import Mail
 from flask_dropzone import Dropzone
 import pymongo
 
-__version__ = '0.4.4'
+__version__ = '0.4.5'
 
 # the EnvironSetter sets enviroment variables for the current session
 # It is not included in the GitHub repository, because it contains sensitive
@@ -45,17 +45,17 @@ dropzone = Dropzone()                           # for multiple file upload
 db = MongoEngine()   # mortimer database
 
 # database for querying alfred collections
-client = pymongo.MongoClient(host=Config.MONGODB_ALFRED_SETTINGS["host"],
-                             port=Config.MONGODB_ALFRED_SETTINGS["port"],
-                             username=Config.MONGODB_ALFRED_SETTINGS["username"],
-                             password=Config.MONGODB_ALFRED_SETTINGS["password"],
-                             authSource=Config.MONGODB_ALFRED_SETTINGS["authentication_source"],
+db_config = Config.MONGODB_ALFRED_SETTINGS
+client = pymongo.MongoClient(host=db_config["host"],
+                             port=db_config["port"],
+                             username=db_config["username"],
+                             password=db_config["password"],
+                             authSource=db_config["authentication_source"],
                              ssl=Config.mongodb_ssl,
                              ssl_ca_certs=Config.ssl_ca_path
                              )
 
-alfred_db = client.alfred           # checkin database
-alfred_web_db = alfred_db.web       # web collection
+alfred_db = client[db_config["db"]]           # checkin database
 alfred_local_db = alfred_db.local   # local collection
 
 

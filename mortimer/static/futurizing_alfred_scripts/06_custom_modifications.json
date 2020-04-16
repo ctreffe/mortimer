@@ -8,6 +8,6 @@
     "set_level": "setLevel",
     "pageGroup": "section",
     "WebCompositePage": "Page",
-    "PageGroup": "Section"
-
+    "PageGroup": "Section",
+    "appends": "append"
 }

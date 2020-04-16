@@ -69,7 +69,8 @@
   color: #6c757d;
 } */
 
-#sidebar ul li.active > a, a[aria-expanded="true"] {
+#sidebar ul li.active>a,
+a[aria-expanded="true"] {
   color: #fff;
   background: #6c757d;
 }
@@ -89,17 +90,26 @@ hr.lightrule {
 CONTENT STYLE
 ------------------------------------------------------ */
 #content {
-    width: calc(100% - 200px);
-    padding: 0px;
-    min-height: 100vh;
-    transition: all 0.3s;
-    position: absolute;
-    top: 0;
-    right: 0;
+  width: calc(100% - 200px);
+  padding: 0px;
+  min-height: 100vh;
+  transition: all 0.3s;
+  position: absolute;
+  top: 0;
+  right: 0;
 }
 
 #contentBody {
   padding: 20px;
+}
+
+pre {
+  overflow-x: auto;
+  white-space: pre-wrap;
+  white-space: -moz-pre-wrap;
+  white-space: -pre-wrap;
+  white-space: -o-pre-wrap;
+  word-wrap: break-word;
 }
 
 /*#content.hidden {
@@ -111,14 +121,14 @@ MEDIA QUERIES
 ------------------------------------------------------ */
 /*Styling Dropdowns (Triangle to the right)*/
 a[data-toggle="collapse"] {
-    position: relative;
+  position: relative;
 }
 
 /*Styling Dropdowns (Triangle to the right)*/
 .dropdown-toggle::after {
-    display: block;
-    position: absolute;
-    top: 50%;
-    right: 20px;
-    transform: translateY(-50%);
+  display: block;
+  position: absolute;
+  top: 50%;
+  right: 20px;
+  transform: translateY(-50%);
 }

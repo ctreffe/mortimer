@@ -1,37 +1,21 @@
 # -*- coding: utf-8 -*-
-import os, sys, collections, shutil, re
-from flask import (
-    Blueprint,
-    render_template,
-    url_for,
-    flash,
-    redirect,
-    request,
-    abort,
-    current_app,
-    send_file,
-)
-from flask_login import current_user, login_required
-from werkzeug.utils import secure_filename
+import collections, os, re, shutil, sys
 from datetime import datetime
 from uuid import uuid4
-from mortimer import export, alfred_web_db
-from mortimer.forms import (
-    WebExperimentForm,
-    ExperimentScriptForm,
-    NewScriptForm,
-    ExperimentExportForm,
-    ExperimentConfigurationForm,
-)
-from mortimer.models import User, WebExperiment
-from mortimer.utils import (
-    display_directory,
-    ScriptFile,
-    ScriptString,
-    _DictObj,
-    set_experiment_settings
-)
+
+from flask import (Blueprint, abort, current_app, flash, redirect,
+                   render_template, request, send_file, url_for)
+from flask_login import current_user, login_required
+from werkzeug.utils import secure_filename
+
+from mortimer import alfred_db, export
 from mortimer.config import Config
+from mortimer.forms import (ExperimentConfigurationForm, ExperimentExportForm,
+                            ExperimentScriptForm, NewScriptForm,
+                            WebExperimentForm)
+from mortimer.models import User, WebExperiment
+from mortimer.utils import (ScriptFile, ScriptString, _DictObj,
+                            display_directory)
 
 web_experiments = Blueprint("web_experiments", __name__)
 
@@ -47,6 +31,7 @@ def new_experiment():
         exp = WebExperiment(
             title=form.title.data,
             author=current_user.username,
+            author_id=current_user.id,
             version=form.version.data,
             description=form.description.data,
         )
@@ -80,19 +65,12 @@ def new_experiment():
             exp.public = True
 
         exp.save()  # IMPORTANT! Needed to create an exp ID
-        exp.settings = set_experiment_settings(
-            title=form.title.data,
-            author=current_user.username,
-            version=form.version.data,
-            exp_id=str(exp.id),
-            path=exp.path,
-        )
-
+        exp.set_settings()
         # save the exp to the data base
         exp.save()
 
         # append an entry for the current experiment to the current user
-        current_user.experiments.append(exp.id)
+        current_user.experiments.append(exp.id) # pylint: disable=no-member
         current_user.save()
 
         flash("Your Experiment has been created.", "success")
@@ -106,15 +84,14 @@ def new_experiment():
         title="New Experiment",
         form=form,
         legend="New Experiment",
-    )
+    ) 
 
 
 @web_experiments.route("/<username>/<path:exp_title>", methods=["POST", "GET"])
 @login_required
 def experiment(username, exp_title):
 
-    exp = WebExperiment.objects.get_or_404(title=exp_title, author=username)
-
+    exp = WebExperiment.objects.get_or_404(title=exp_title, author=username) # pylint: disable=no-member
     if exp.author != current_user.username:
         abort(403)
 
@@ -132,88 +109,61 @@ def experiment(username, exp_title):
     else:
         password_protection = "enabled"
 
-    # Query database: Used versions
-    alfred_versions = alfred_web_db.distinct("alfred_version", filter={"exp_id": str(exp.id), "exp_finished": True})
+
+    # Query Database
+    db = alfred_db[current_user.alfred_col]
+
+    f_id = {"exp_id": str(exp.id)}
+    f_fin = {"exp_finished": True}
+    f_ver = {"exp_version": exp.version}
+
+    # Used versions
+    alfred_versions = db.distinct("alfred_version", {**f_id, **f_fin})
     alfred_versions.sort()
 
-    # Query Database: Number of datasets
+    # Number of datasets
+    n = {}
+    n["total"] = db.count_documents(f_id)
+    n["fin"] = db.count_documents({**f_id, **f_fin})
+    n["unfin"] = n["total"] - n["fin"]
+    n["current_ver"] = db.count_documents({**f_id, **f_ver})
+    n["fin_current_ver"]  = db.count_documents({**f_fin, **f_id, **f_ver})
+    n["unfin_current_ver"] = n["current_ver"] - n["fin_current_ver"]
 
-    datasets = {}
-
-    datasets["all_datasets"] = alfred_web_db.count_documents({"exp_id": str(exp.id)})
-
-    datasets["all_finished_datasets"] = alfred_web_db.count_documents(
-        {"exp_id": str(exp.id), "exp_finished": True}
-    )
-
-    datasets["all_unfinished_datasets"] = (
-        datasets["all_datasets"] - datasets["all_finished_datasets"]
-    )
-
-    datasets["datasets_current_version"] = alfred_web_db.count_documents(
-        {"exp_id": str(exp.id), "exp_version": exp.version}
-    )
-
-    datasets["finished_datasets_current_version"] = alfred_web_db.count_documents(
-        {"exp_id": str(exp.id), "exp_version": exp.version, "exp_finished": True}
-    )
-
-    datasets["unfinished_datasets_current_version"] = (
-        datasets["datasets_current_version"]
-        - datasets["finished_datasets_current_version"]
-    )
-
-    # Number of finished datasets per version
-    versions = {}
-    all_activity = []
-    finished = []
-    cur = alfred_web_db.find({"exp_id": str(exp.id)})
-    for single_exp in cur:
-        all_activity.append(single_exp["start_time"])
-        if single_exp["exp_version"] not in versions.keys():
-            versions[single_exp["exp_version"]] = {
-                "total": 1,
-                "finished": 0,
-                "unfinished": 0,
-            }
-        else:
-            versions[single_exp["exp_version"]]["total"] += 1
-        if single_exp["exp_finished"]:
-            versions[single_exp["exp_version"]]["finished"] += 1
-        else:
-            versions[single_exp["exp_version"]]["unfinished"] += 1
-        finished.append(single_exp["start_time"])
+    # Number of datasets per version
+    for v in exp.available_versions:
+        f_ver = {"exp_version": v, **f_id}
+        t = "{}_total".format(v)
+        fin = "{}_fin".format(v)
+        unfin = "{}_unfin".format(v)
+        
+        n[t] = db.count_documents(f_ver)
+        n[fin] = db.count_documents({**f_fin, **f_ver})
+        n[unfin] = n[t] - n[fin]
     
-    start_times = list(filter(None, all_activity))
+    # start time
+    group = {
+        "_id": 1, 
+        "first": {"$min": "$start_time"}, 
+        "last": {"$max": "$start_time"}
+    }
+    pipe = [{"$match": f_id}, {"$group": group}]
+    times = list(db.aggregate(pipe))
 
-    if start_times:
-        first_activity = datetime.fromtimestamp(min(start_times))
-        last_activity = datetime.fromtimestamp(max(start_times))
+    activity = {}
+    if times:
+        activity["first"] = datetime.fromtimestamp(times[0]["first"])
+        activity["last"] = datetime.fromtimestamp(times[0]["last"])
     else:
-        first_activity = "none"
-        last_activity = "none"
-
-    # Time of first and last activity
-    # if finished:
-    #     first_activity = datetime.fromtimestamp(min(finished))\
-    #         .strftime('%Y-%m-%d, %H:%M')
-    #     last_activity = datetime.fromtimestamp(max(finished))\
-    #         .strftime('%Y-%m-%d, %H:%M')
-    # else:
-    #     first_activity = "none"
-    #     last_activity = "none"
+        activity["first"] = "none"
+        activity["last"] = "none"
+    
 
     # Form for script.py upload
     form = NewScriptForm()
 
     if not exp.settings:
-        exp.settings = set_experiment_settings(
-            title=exp.title,
-            author=current_user.username,
-            version=exp.version,
-            exp_id=str(exp.id),
-            path=exp.path,
-        )
+        exp.set_settings()
         exp.save()
 
     if form.validate_on_submit() and form.script.data:
@@ -228,6 +178,7 @@ def experiment(username, exp_title):
         # update version
         if exp.version != form.version.data:
             exp.version = form.version.data
+            exp.settings["experiment"]["version"] = form.version.data
             exp.available_versions.append(exp.version)
 
         # save experiment
@@ -260,10 +211,8 @@ def experiment(username, exp_title):
         form=form,
         status=status,
         toggle_button=toggle_button,
-        datasets=datasets,
-        first_activity=first_activity,
-        last_activity=last_activity,
-        versions=versions,
+        n=n,
+        activity=activity,
         password_protection=password_protection,
     )
 
@@ -272,7 +221,7 @@ def experiment(username, exp_title):
 @login_required
 def experiment_script(username, exp_title):
 
-    exp = WebExperiment.objects.get_or_404(title=exp_title, author=username)
+    exp = WebExperiment.objects.get_or_404(title=exp_title, author=username) # pylint: disable=no-member
 
     if exp.author != current_user.username:
         abort(403)
@@ -289,6 +238,7 @@ def experiment_script(username, exp_title):
         # update version
         if exp.version != form.version.data:
             exp.version = form.version.data
+            exp.settings["experiment"]["version"] = form.version.data
             exp.available_versions.append(exp.version)
 
         # save simple updates
@@ -324,6 +274,7 @@ def experiment_script(username, exp_title):
 @login_required
 def delete_experiment(username, experiment_title):
 
+    # pylint: disable=no-member
     experiment = WebExperiment.objects.get_or_404(
         title=experiment_title, author=username
     )
@@ -349,6 +300,7 @@ def delete_experiment(username, experiment_title):
 )
 @login_required
 def upload_resources(username, experiment_title, relative_path):
+    # pylint: disable=no-member
     experiment = WebExperiment.objects.get_or_404(
         title=experiment_title, author=username
     )
@@ -402,6 +354,7 @@ def upload_resources(username, experiment_title, relative_path):
 )
 @login_required
 def manage_resources(username, experiment_title):
+    # pylint: disable=no-member
     experiment = WebExperiment.objects.get_or_404(
         title=experiment_title, author=username
     )
@@ -452,19 +405,19 @@ def experiments():
 
 @web_experiments.route("/<string:username>/experiments")
 @login_required
-def user_experiments(username):
+def user_experiments(username): 
 
-    page = request.args.get("page", 1, type=int)
-    user = User.objects.get_or_404(username=username)
+    user = User.objects.get_or_404(username=username) # pylint: disable=no-member
 
     if user.username != current_user.username:
         abort(403)
 
-    experiments = WebExperiment.objects(author=user.username).order_by(
+    # pylint: disable=no-member
+    experiments = WebExperiment.objects(author_id=user.id).order_by(
         "-last_update"
-    )  # \
+    )
 
-    return render_template("user_experiments.html", experiments=experiments, user=user)
+    return render_template("user_experiments.html", experiments=experiments, user=user, secure_filename=secure_filename)
 
 
 @web_experiments.route(
@@ -473,6 +426,7 @@ def user_experiments(username):
 @login_required
 def delete_all_files(username, experiment_title):
 
+    # pylint: disable=no-member
     experiment = WebExperiment.objects.get_or_404(
         title=experiment_title, author=username
     )
@@ -510,13 +464,14 @@ def delete_all_files(username, experiment_title):
 )
 @login_required
 def new_directory(username: str, experiment_title: str, relative_path: str = None):
-    """
+    """Create a new directory inside the experiment directory.
+
     :param str experiment_title: Title of the experiment
     :param str path: Name of the path in which the new path shall be created
     """
-
     name = request.form["new_directory"]
 
+    # pylint: disable=no-member
     experiment = WebExperiment.objects.get_or_404(
         title=experiment_title, author=username
     )
@@ -570,6 +525,7 @@ def new_directory(username: str, experiment_title: str, relative_path: str = Non
 )
 @login_required
 def delete_directory(username, experiment_title, relative_path):
+    # pylint: disable=no-member
     experiment = WebExperiment.objects.get_or_404(
         title=experiment_title, author=username
     )
@@ -600,6 +556,7 @@ def delete_directory(username, experiment_title, relative_path):
 )
 @login_required
 def delete_file(username, experiment_title, relative_path):
+    # pylint: disable=no-member
     experiment = WebExperiment.objects.get_or_404(
         title=experiment_title, author=username
     )
@@ -624,6 +581,7 @@ def delete_file(username, experiment_title, relative_path):
 )
 @login_required
 def web_export(username, experiment_title):
+    # pylint: disable=no-member
     experiment = WebExperiment.objects.get_or_404(
         title=experiment_title, author=username
     )
@@ -652,8 +610,9 @@ def web_export(username, experiment_title):
     form.file_type.choices = [("csv", "csv")]
 
     if form.validate_on_submit():
+        db = alfred_db[current_user.alfred_col]
         if "all versions" in form.version.data:
-            results = alfred_web_db.count_documents({"exp_id": str(experiment.id)})
+            results = db.count_documents({"exp_id": str(experiment.id)})
             if results == 0:
                 flash("No data found for this experiment.", "warning")
                 return redirect(
@@ -664,12 +623,12 @@ def web_export(username, experiment_title):
                     )
                 )
 
-            cur = alfred_web_db.find({"exp_id": str(experiment.id)})
+            cur = db.find({"exp_id": str(experiment.id)})
         else:
             for version in form.version.data:
                 results = []
                 results.append(
-                    alfred_web_db.count_documents(
+                    db.count_documents(
                         {"exp_id": str(experiment.id), "exp_version": version}
                     )
                 )
@@ -683,7 +642,7 @@ def web_export(username, experiment_title):
                     )
                 )
 
-            cur = alfred_web_db.find(
+            cur = db.find(
                 {
                     "exp_id": str(experiment.id),
                     "exp_version": {"$in": form.version.data},
@@ -729,16 +688,16 @@ def web_export(username, experiment_title):
                 attachment_filename="export.csv",
                 cache_timeout=1,
             )
-        elif form.file_type.data == "excel":
-            f = export.to_excel(cur, none_value=none_value)
-            bytes_f = export.make_str_bytes(f)
-            return send_file(
-                bytes_f,
-                mimetype="application/excel",
-                cache_timeout=1,
-                as_attachment=True,
-                attachment_filename="export.xlsx",
-            )
+        # elif form.file_type.data == "excel":
+        #     f = export.to_excel(cur, none_value=none_value)
+        #     bytes_f = export.make_str_bytes(f)
+        #     return send_file(
+        #         bytes_f,
+        #         mimetype="application/excel",
+        #         cache_timeout=1,
+        #         as_attachment=True,
+        #         attachment_filename="export.xlsx",
+        #     )
 
     return render_template(
         "web_export.html",
@@ -754,6 +713,7 @@ def web_export(username, experiment_title):
 )
 @login_required
 def de_activate_experiment(username, experiment_title):
+    # pylint: disable=no-member
     experiment = WebExperiment.objects.get_or_404(
         title=experiment_title, author=username
     )
@@ -790,6 +750,7 @@ def de_activate_experiment(username, experiment_title):
 )
 @login_required
 def experiment_config(username, experiment_title):
+    # pylint: disable=no-member
     exp = WebExperiment.objects.get_or_404(title=experiment_title, author=username)
 
     if exp.author != current_user.username:
@@ -859,7 +820,7 @@ def experiment_config(username, experiment_title):
         exp.save()
         flash("Experiment configuration updated", "success")
 
-        return redirect(request.referrer)
+        return redirect(url_for("web_experiments.experiment_config", username=username, experiment_title=exp.title))
 
     form.title.data = exp.title
     form.description.data = exp.description
@@ -927,6 +888,7 @@ def experiment_config(username, experiment_title):
 @web_experiments.route("/<username>/<path:experiment_title>/log", methods=["GET"])
 @login_required
 def experiment_log(username, experiment_title):
+    # pylint: disable=no-member
     exp = WebExperiment.objects.get_or_404(title=experiment_title, author=username)
 
     if exp.author != current_user.username:

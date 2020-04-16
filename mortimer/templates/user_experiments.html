@@ -47,11 +47,7 @@
               class="nav-link"><span class="badge badge-success mr-2">active </span> {{ exp.title }}</a></th>
           <td class="small text-muted">{{ exp.last_update.strftime('%Y-%m-%d') }}</td>
           <td class="small text-muted">{{ exp.date_created.strftime('%Y-%m-%d') }}</td>
-          <!-- <td>
-                <form method="POST" action="{{ url_for('web_experiments.de_activate_experiment', experiment_title=exp.title, username=exp.author) }}">
-                  <input class="btn btn-success btn-sm" type="submit" value="active">
-                </form>
-                </td> -->
+
           <td class="small">
             <form method="POST"
               action="{{ url_for('web_experiments.de_activate_experiment', experiment_title=exp.title, username=exp.author) }}">
@@ -85,7 +81,7 @@
           {% endif %}
 
           <td class="small"><button type="button" class="btn btn-danger btn-sm" data-toggle="modal"
-              data-target="#deleteModal{{ exp.title }}"><i class='fas fa-trash mr-2'></i>delete</button></td>
+              data-target="#deleteModal{{ secure_filename(exp.title) }}"><i class='fas fa-trash mr-2'></i>delete</button></td>
         </tr>
 
         {% endfor %}
@@ -101,30 +97,15 @@
 
 
 
-<!-- </div>
-      </div> -->
-<!-- </div> -->
-
-
-
-{% for experiment in experiments %}
-<!--  <article class="media content-section">
-          <div class="media-body">
-            <div class="article-metadata">
-              <small class="text-muted">Last Update: <span class="badge badge-light">{{ experiment.last_update.strftime('%Y-%m-%d') }}</span>,  Created: <span class="badge badge-light">{{ experiment.date_created.strftime('%Y-%m-%d') }}</span></small>
-            </div>
-            <h3><a class="article-title" href="{{ url_for('web_experiments.experiment', exp_title=experiment.title, username=experiment.author) }}">{{ experiment.title }}</a><button type="button" class="btn btn-danger btn-sm ml-3 mt-1 float-right" data-toggle="modal" data-target="#deleteModal{{ experiment.title }}">Delete from Mortimer</button></h3>
-             <p class="article-content">{{ experiment.script }}</p>
-          </div>
-        </article> -->
+{% for exp in experiments %}
 
 <!-- Modal -->
-<div class="modal fade" id="deleteModal{{ experiment.title }}" tabindex="-1" role="dialog"
-  aria-labelledby="deleteModal{{ experiment.title }}" aria-hidden="true">
+<div class="modal fade" id="deleteModal{{ secure_filename(exp.title) }}" tabindex="-1" role="dialog"
+  aria-labelledby="deleteModal{{ secure_filename(exp.title) }}" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="deleteModal{{ experiment.title }}">Delete Experiment</h5>
+        <h5 class="modal-title" id="deleteModal{{ secure_filename(exp.title) }}">Delete Experiment</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
@@ -136,7 +117,7 @@
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
         <form method="POST"
-          action="{{ url_for('web_experiments.delete_experiment', experiment_title=experiment.title, username=experiment.author) }}">
+          action="{{ url_for('web_experiments.delete_experiment', experiment_title=exp.title, username=exp.author) }}">
           <input class="btn btn-danger" type="submit" value="Delete">
         </form>
       </div>

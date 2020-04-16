@@ -71,7 +71,7 @@ class Config:
     DROPZONE_ALLOWED_FILE_TYPE = (
         ".pdf, image/*, .txt, .xml, .pem, .mp3, .mp4, .ogg, .csv"
     )
-    DROPZONE_MAX_FILE_SIZE = 10
+    DROPZONE_MAX_FILE_SIZE = 100
     DROPZONE_MAX_FILES = 100
     DROPZONE_UPLOAD_ON_CLICK = True
     DROPZONE_UPLOAD_BTN_ID = "upload"
