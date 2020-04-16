@@ -9,6 +9,7 @@
 * Fixed a bug that caused JavaScript to crash on some pages.
 * Fixed a bug that caused an error during data encryption using the key introduced in v0.4.4
 * Fixed a bug that prevented the deletion of experiments with specific filenames 
+* Fixed the referrer after changing an experiments title
 
 ## Small changes
 
