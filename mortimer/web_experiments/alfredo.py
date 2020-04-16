@@ -1,21 +1,25 @@
 
 # -*- coding: utf-8 -*-
 
-import sys
 import importlib.util
-from flask import Blueprint, abort, request, session, url_for, redirect, make_response, flash, send_file, render_template, send_from_directory
-from flask_login import current_user
+import inspect
+import os
+import re
+import sys
+import traceback
 from threading import Lock
 from time import time
 from uuid import uuid4
-from mortimer.models import WebExperiment
-from mortimer.utils import create_fernet
+
+from alfred.alfredlog import getLogger, init_logging
 from bson.objectid import ObjectId
-from alfred.alfredlog import init_logging, getLogger
-import re
-import os
-import inspect
-import traceback
+from flask import (Blueprint, abort, current_app, flash, make_response,
+                   redirect, render_template, request, send_file,
+                   send_from_directory, session, url_for)
+from flask_login import current_user
+
+from mortimer.models import WebExperiment, User
+from mortimer.utils import create_fernet
 
 init_logging()
 logger = getLogger('alfred')
@@ -45,7 +49,7 @@ def number_of_func_params(func):
 
 
 def import_script(experiment_id):
-    experiment = WebExperiment.objects.get_or_404(id=experiment_id)
+    experiment = WebExperiment.objects.get_or_404(id=experiment_id) # pylint: disable=no-member
 
     # Fast path: see if the module has already been imported.
     try:
@@ -122,7 +126,8 @@ def index():
 
 @alfredo.route('/start/<expid>', methods=['GET', 'POST'])
 def start(expid):
-    experiment = WebExperiment.objects.get_or_404(id=ObjectId(expid))
+    experiment = WebExperiment.objects.get_or_404(id=ObjectId(expid)) # pylint: disable=no-member
+    exp_author = User.objects.get_or_404(id=experiment.author_id) # pylint: disable=no-member
 
     if not experiment.script_name:
         flash("You need to add a script.py file, before you can start an experiment.", "warning")
@@ -147,7 +152,7 @@ def start(expid):
 
     try:
         module = import_script(experiment.id)
-    except Exception as e:
+    except Exception:
         flash("Error during script import. For details, take a look at the log.", 'danger')
         logger.error(msg=traceback.format_exc(), exp_id=str(experiment.id), session_id=sid)
         if current_user.is_authenticated:
@@ -159,22 +164,44 @@ def start(expid):
         script = Script()
         script.set_generator(module.generate_experiment)
 
-        custom_settings = experiment.settings
-        custom_settings['mortimer_specific']['session_id'] = sid
+        exp_config = experiment.settings
+        exp_config['mortimer_specific']['session_id'] = sid
         
-        if current_user.encryption_key:
+        
+        if exp_author.encryption_key:
             f = create_fernet()
-            key = f.decrypt(current_user.encryption_key)
-            custom_settings["encryption_key"] = key
+            
+            # get the users own secret encryption key
+            key = f.decrypt(exp_author.encryption_key)
+            
+            # get the users own db credentials
+            appdb = current_app.config["MONGODB_ALFRED_SETTINGS"]
+            db_cred = {}
+            db_cred["host"] = appdb["host"]
+            db_cred["port"] = appdb["port"]
+            db_cred["db"] = appdb["db"]
+            db_cred["collection"] = exp_author.alfred_col
+            db_cred["user"] = exp_author.alfred_user
+            db_cred["pw"] = f.decrypt(exp_author.alfred_pw).decode()
+            db_cred["use_ssl"] = appdb["ssl"]
+            db_cred["ca_file_path"] = appdb["ssl_ca_certs"]
+            db_cred["activation_level"] = 1
+
+            from pprint import pprint
+            pprint(db_cred)
+
+            # place in experiment config
+            exp_config["encryption_key"] = key
+            exp_config["db_cred"] = db_cred
         else:
             flash("Please log out and back in again to generate your personal encryption key.", "warning")
 
         try:
             if number_of_func_params(module.generate_experiment) > 2:
-                script.experiment = script.generate_experiment(config=custom_settings,**values)
+                script.experiment = script.generate_experiment(config=exp_config,**values)
                 
             else:
-                script.experiment = script.generate_experiment(config=custom_settings)
+                script.experiment = script.generate_experiment(config=exp_config)
         except SyntaxError:
             if current_user.is_authenticated:
                 flash("The definition of experiment title, type, or version in script.py is deprecated. Please define these parameters in config.conf, when you are working locally. Mortimer will set these parameters for you automatically. In your script.py, just use 'exp = Experiment(config=config)'.", "danger")
@@ -182,7 +209,7 @@ def start(expid):
             else:
                 abort(500)
 
-    except Exception as e:
+    except Exception:
         logger.error(msg=traceback.format_exc(), exp_id=str(experiment.id), session_id=sid)
         if current_user.is_authenticated:
             flash("Error during experiment generation. For details, take a look at the log.", 'danger')
@@ -193,7 +220,7 @@ def start(expid):
     try:
         # start experiment
         script.experiment.start()
-    except Exception as e:
+    except Exception:
         logger.error(msg=traceback.format_exc(), exp_id=str(experiment.id), session_id=sid)
         if current_user.is_authenticated:
             flash("Error during experiment startup. For details, take a look at the log.", 'danger')
