@@ -4,6 +4,16 @@
 
 * We further increased data protection and data security through an improved handling of access to the alfred database from inside experiments.
 
+## Bugfixes
+
+* Fixed a bug that caused JavaScript to crash on some pages.
+* Fixed a bug that caused an error during data encryption using the key introduced in v0.4.4
+* Fixed a bug that prevented the deletion of experiments with specific filenames 
+
+## Small changes
+
+* Included line wrapping for the experiment log
+
 # Mortimer v0.4.4
 
 ## Encryption Keys
@@ -14,7 +24,7 @@
 
 ## Bugfixes
 
-* Fixed a bug that prevent the deletion of single files in the resources pane to work properly.
+* Fixed a bug that prevented the deletion of single files in the resources pane to work properly.
 
 # Mortimer v0.4.3
 
