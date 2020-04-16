@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from flask import current_app
+from alfred import settings as alfred_settings
 from mortimer import db, login_manager
 from mortimer.utils import create_fernet
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
@@ -74,6 +75,37 @@ class WebExperiment(db.Document):
     password = db.StringField()
     web = db.BooleanField()
     active = db.BooleanField(default=False)
+
+    def set_settings(self):
+        """Set experiment settings based on self and alfred.settings.
+        """
+        if not self.id:
+            raise AttributeError("The experiment needs to have an ID before settings can be set.")
+        
+        exp_specific_settings = alfred_settings.ExperimentSpecificSettings()
+
+        settings = {
+            'general': dict(alfred_settings.general),
+
+            'experiment': {
+                'title': self.title, 
+                'author': self.author, 
+                'version': self.version, 
+                'type': alfred_settings.experiment.type, 
+                'exp_id': str(self.id),
+                'qt_fullscreen': alfred_settings.experiment.qt_full_screen,
+                'web_layout': alfred_settings.experiment.web_layout            
+                },
+
+            'mortimer_specific': {'session_id': None, 'path': self.path},
+            'log': dict(alfred_settings.log),
+            'navigation': dict(exp_specific_settings.navigation),
+            'debug': dict(exp_specific_settings.debug), #pylint: disable=no-member
+            'hints': dict(exp_specific_settings.hints),
+            'messages': dict(exp_specific_settings.messages)
+            }
+        
+        self.settings = settings
 
     def __repr__(self):
         return "Experiment(Title: %s, Version: %s, Created: %s, Author: %s)" % (

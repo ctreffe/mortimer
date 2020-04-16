@@ -1,51 +1,22 @@
 
 # -*- coding: utf-8 -*-
 
-import os
-import subprocess
-import json
-import re
+import json, os, re, subprocess
 from datetime import datetime
-from flask import current_app
-from mortimer import mail
-from flask_mail import Message
-from flask import url_for, current_app, render_template
 from uuid import uuid4
-from jinja2 import Template
+
+from alfred import settings as alfred_settings
 from cryptography.fernet import Fernet
+from flask import current_app, render_template, url_for
+from flask_mail import Message
+from jinja2 import Template
+
+from mortimer import mail
+
 
 def create_fernet():
     app_fernet_key = current_app.config["FERNET_KEY"].encode()
     return Fernet(app_fernet_key)
-
-
-def set_experiment_settings(title, version, author, exp_id, path):
-    from alfred import settings
-    exp_specific_settings = settings.ExperimentSpecificSettings()
-
-    settings = {
-        'general': dict(settings.general),
-
-        'experiment': {
-            'title': title, 
-            'author': author, 
-            'version': version, 
-            'type': settings.experiment.type, 
-            'exp_id': exp_id,
-            'qt_fullscreen': settings.experiment.qt_full_screen,
-            'web_layout': settings.experiment.web_layout            
-            },
-
-        'mortimer_specific': {'session_id': None, 'path': path},
-        'log': dict(settings.log),
-        'navigation': dict(exp_specific_settings.navigation),
-        'debug': dict(exp_specific_settings.debug),
-        'hints': dict(exp_specific_settings.hints),
-        'messages': dict(exp_specific_settings.messages)
-        }
-
-    return settings
-
 
 def send_reset_email(user: str):
     token = user.get_reset_token()
@@ -78,14 +49,7 @@ def display_directory(directories: list, parent_directory: str,
 
     :param str parent_directory: **Full** path to the directory holding the
     directories in the list `directories`.
-
-    :param int call_id: Each time, the function is called on a new directory
-    level, the call ID gets increased. This information gets passed to the
-    helper function display_directory_controls(). This way we can handle the
-    case if two subdirectories in different top foldern have the same name.
     """
-
-    call_id = str(uuid4())
 
     experiment_title = experiment.title
     experiment_author = experiment.author
