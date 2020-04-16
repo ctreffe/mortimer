@@ -1,12 +1,13 @@
 
 # -*- coding: utf-8 -*-
+import string, random
 
-from flask import Blueprint
+from flask import Blueprint, current_app
 from flask import render_template, url_for, flash, redirect, request
 from mortimer import bcrypt
 from mortimer.forms import RegistrationForm, LoginForm, UpdateAccountForm, RequestResetForm, ResetPasswordForm
-from mortimer.models import User
-from mortimer.utils import send_reset_email
+from mortimer.models import User, WebExperiment
+from mortimer.utils import send_reset_email, create_fernet
 from mortimer.config import Config
 from flask_login import login_user, current_user, logout_user, login_required
 
@@ -26,6 +27,15 @@ def register():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode("utf-8")
         user = User(username=form.username.data, email=form.email.data, password=hashed_password)
         user.encryption_key = User.generate_encryption_key()
+        
+        # create user for alfred database and save credentials in user object
+        user_lower = user.username.lower().replace(" ", "_")
+        user.alfred_user = "alfredUser_{}".format(user_lower)
+        user.alfred_pw = User.generate_password() # password is encrypted
+        user.alfred_col = "col_{}".format(user_lower)
+        user.create_db_user()
+
+        # save user
         user.save()
         flash("Account created for %s." % form.username.data, "success")
         return redirect(url_for('users.login'))
@@ -47,7 +57,7 @@ def login():
     form = LoginForm()
 
     if form.validate_on_submit():
-        user = User.objects(email=form.email.data).first()
+        user = User.objects(email=form.email.data).first() # pylint: disable=no-member
 
         if user is not None and bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user, remember=form.remember.data)
@@ -78,10 +88,15 @@ def logout():
 @users.route("/account", methods=["GET", "POST"])
 @login_required     # this route can only be accessed by logged in users
 def account():
-
+    # pylint: disable=no-member
     form = UpdateAccountForm()
 
     if form.validate_on_submit():   # if all field are filled out correctly
+
+        for exp in WebExperiment.objects(author=current_user.username):
+            exp.author = form.username.data
+            exp.save()
+
         current_user.username = form.username.data
         current_user.email = form.email.data
         current_user.save()         # save updates to database
@@ -108,7 +123,7 @@ def request_password_reset():
     form = RequestResetForm()
 
     if form.validate_on_submit():
-        user = User.objects(email=form.email.data).first()
+        user = User.objects(email=form.email.data).first() # pylint: disable=no-member
         send_reset_email(user)
         flash("An email has been sent with instructions to reset your password", "info")
         return redirect(url_for('users.login'))

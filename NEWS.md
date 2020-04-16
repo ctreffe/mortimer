@@ -1,3 +1,9 @@
+# Mortimer v0.4.5
+
+## Security improvements
+
+* We further increased data protection and data security through an improved handling of access to the alfred database from inside experiments.
+
 # Mortimer v0.4.4
 
 ## Encryption Keys
