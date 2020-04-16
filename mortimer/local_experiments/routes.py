@@ -1,15 +1,15 @@
-
 # -*- coding: utf-8 -*-
-
-from mortimer import export
-from flask import Blueprint, render_template, url_for, flash, redirect, abort, send_file, request
-from mortimer.forms import ExperimentExportForm, LocalExperimentForm
-from mortimer.models import User, LocalExperiment
-from mortimer import alfred_local_db
-from mortimer.config import Config
-from flask_login import current_user, login_required
 from datetime import datetime
 from uuid import uuid4
+
+from flask import (Blueprint, abort, flash, redirect, render_template, request,
+                   send_file, url_for)
+from flask_login import current_user, login_required
+
+from mortimer import alfred_local_db, export
+from mortimer.config import Config
+from mortimer.forms import ExperimentExportForm, LocalExperimentForm
+from mortimer.models import LocalExperiment, User
 
 local_experiments = Blueprint("local_experiments", __name__)
 
@@ -27,13 +27,13 @@ def new_local_experiment():
                                      description=form.description.data, exp_id=form.exp_id.data)
 
         experiment.save()
-        flash("New local experiment added. You can now download the corresponding data.", "success")
+        flash("New local experiment added.", "success")
         return redirect(url_for('local_experiments.local_experiment', username=current_user.username, experiment_title=experiment.title))
 
     return render_template("create_local_experiment.html", form=form, legend="New Local Experiment", id=id)
 
 
-@local_experiments.route("/<username>/local/<path:experiment_title>", methods=["POST", "GET"])
+@local_experiments.route("/local/<username>/<path:experiment_title>", methods=["POST", "GET"])
 @login_required
 def local_experiment(username, experiment_title):
 
@@ -76,8 +76,8 @@ def local_experiment(username, experiment_title):
         first_activity = "none"
         last_activity = "none"
 
-    if not versions:
-        flash('Experiment not found in database.', 'danger')
+    # if not versions:
+    #     flash('Experiment not found in database.', 'danger')
 
     return render_template("local_experiment.html",
                            experiment=experiment, expid=str(experiment.id), datasets=datasets,
@@ -112,7 +112,7 @@ def user_experiments(username):
     return render_template("user_local_experiments.html", experiments=experiments, user=user)
 
 
-@local_experiments.route("/<username>/<path:experiment_title>/local_export", methods=["POST", "GET"])
+@local_experiments.route("/local/<username>/<path:experiment_title>/export", methods=["POST", "GET"])
 @login_required
 def local_export(username, experiment_title):
     experiment = LocalExperiment.objects.get_or_404(
@@ -123,11 +123,12 @@ def local_export(username, experiment_title):
 
     form = ExperimentExportForm()
     cur = alfred_local_db.find(
-        {"exp_author": current_user.email, "exp_title": experiment.title})
-
+        {"exp_id": str(experiment.exp_id)})
+    
     available_versions = ["all versions"]
     for exp in cur:
-        available_versions.append(exp["exp_version"])
+        if exp["exp_version"] not in available_versions:
+            available_versions.append(exp["exp_version"])
     form.version.choices = [(version, version)
                             for version in available_versions]
     form.file_type.choices = [("csv", "csv")]
@@ -146,13 +147,28 @@ def local_export(username, experiment_title):
         else:
             for version in form.version.data:
                 results = []
-            results.append(alfred_local_db.count_documents(
-                {"exp_id": experiment.exp_id, "exp_version": form.version.data}))
+                results.append(
+                    alfred_local_db.count_documents(
+                        {"exp_id": experiment.exp_id, "exp_version": version}
+                    )
+                )
             if max(results) == 0:
                 flash("No data found for this experiment.", "warning")
-                return redirect(url_for('web_experiments.web_export', username=experiment.author, experiment_title=experiment.title))
+                return redirect(
+                    url_for(
+                        "web_experiments.web_export",
+                        username=experiment.author,
+                        experiment_title=experiment.title,
+                    )
+                )
 
-            cur = alfred_local_db.find({"exp_id": experiment.exp_id, "exp_version": {"$in": form.version.data}})
+            cur = alfred_local_db.find(
+                {
+                    "exp_id": experiment.exp_id,
+                    "exp_version": {"$in": form.version.data},
+                }
+            )
+
 
         none_value = None
         # if form.replace_none.data:
