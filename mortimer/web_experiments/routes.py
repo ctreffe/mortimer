@@ -413,11 +413,11 @@ def user_experiments(username):
         abort(403)
 
     # pylint: disable=no-member
-    experiments = WebExperiment.objects(author=user.username).order_by(
+    experiments = WebExperiment.objects(author_id=user.id).order_by(
         "-last_update"
-    )  
+    )
 
-    return render_template("user_experiments.html", experiments=experiments, user=user)
+    return render_template("user_experiments.html", experiments=experiments, user=user, secure_filename=secure_filename)
 
 
 @web_experiments.route(
