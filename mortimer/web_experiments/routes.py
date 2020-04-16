@@ -820,7 +820,7 @@ def experiment_config(username, experiment_title):
         exp.save()
         flash("Experiment configuration updated", "success")
 
-        return redirect(request.referrer)
+        return redirect(url_for("web_experiments.experiment_config", username=username, experiment_title=exp.title))
 
     form.title.data = exp.title
     form.description.data = exp.description
