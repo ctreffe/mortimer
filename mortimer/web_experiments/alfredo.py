@@ -175,20 +175,17 @@ def start(expid):
             key = f.decrypt(exp_author.encryption_key)
             
             # get the users own db credentials
-            appdb = current_app.config["MONGODB_ALFRED_SETTINGS"]
+            appdb_config = current_app.config["MONGODB_ALFRED_SETTINGS"]
             db_cred = {}
-            db_cred["host"] = appdb["host"]
-            db_cred["port"] = appdb["port"]
-            db_cred["db"] = appdb["db"]
+            db_cred["host"] = appdb_config["host"]
+            db_cred["port"] = appdb_config["port"]
+            db_cred["db"] = appdb_config["db"]
             db_cred["collection"] = exp_author.alfred_col
             db_cred["user"] = exp_author.alfred_user
             db_cred["pw"] = f.decrypt(exp_author.alfred_pw).decode()
-            db_cred["use_ssl"] = appdb["ssl"]
-            db_cred["ca_file_path"] = appdb["ssl_ca_certs"]
+            db_cred["use_ssl"] = appdb_config["ssl"]
+            db_cred["ca_file_path"] = appdb_config["ssl_ca_certs"]
             db_cred["activation_level"] = 1
-
-            from pprint import pprint
-            pprint(db_cred)
 
             # place in experiment config
             exp_config["encryption_key"] = key
