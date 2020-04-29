@@ -60,6 +60,9 @@ class User(db.Document, UserMixin):
     def create_db_user(self):
         """Create a new user in the alfred database.
         """
+        f = create_fernet()
+        pw_dec = f.decrypt(self.alfred_pw).decode()
+
         alfred_db = current_app.config["MONGODB_ALFRED_SETTINGS"]["db"]
         user_lower = self.username.lower().replace(" ", "_")
         rolename = "alfredAccess_{}".format(user_lower)
@@ -81,7 +84,7 @@ class User(db.Document, UserMixin):
         client.alfred.command("createRole", rolename, privileges=priv, roles=[])
 
         client.alfred.command(
-            "createUser", self.alfred_user, pwd=self.alfred_pw, roles=[rolename]
+            "createUser", self.alfred_user, pwd=pw_dec, roles=[rolename]
         )
 
     @staticmethod
