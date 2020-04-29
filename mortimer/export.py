@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import print_function
 from builtins import str
 from builtins import range
 from builtins import object

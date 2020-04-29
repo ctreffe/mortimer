@@ -84,7 +84,7 @@ def create_app(config_class=Config):
     @app.context_processor
     def version_processor():
         mv = __version__
-        from alfred import __version__ as av
+        from alfred3 import __version__ as av
         return {"v_mortimer": mv, "v_alfred": av}
 
     # bind extensions to app instance

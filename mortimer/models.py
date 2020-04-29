@@ -8,7 +8,7 @@ from cryptography.fernet import Fernet
 from flask import current_app
 from flask_login import UserMixin
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
-from alfred import settings as alfred_settings
+from alfred3 import settings as alfred_settings
 
 from mortimer import db, login_manager
 from mortimer.utils import create_fernet

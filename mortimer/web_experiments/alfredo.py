@@ -11,7 +11,7 @@ from threading import Lock
 from time import time
 from uuid import uuid4
 
-from alfred.alfredlog import getLogger, init_logging
+from alfred3.alfredlog import getLogger, init_logging
 from bson.objectid import ObjectId
 from flask import (Blueprint, abort, current_app, flash, make_response,
                    redirect, render_template, request, send_file,
