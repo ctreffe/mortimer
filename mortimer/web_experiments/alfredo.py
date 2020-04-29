@@ -22,7 +22,7 @@ from mortimer.models import WebExperiment, User
 from mortimer.utils import create_fernet
 
 init_logging()
-logger = getLogger('alfred')
+logger = getLogger('alfred3')
 
 
 class Script:
