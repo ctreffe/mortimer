@@ -1,7 +1,7 @@
 import os
 import time
 from flask import Blueprint, render_template, current_app, send_file, after_this_request, redirect, request, url_for
-from flask_login import login_required
+from flask_login import login_required, current_user
 from uuid import uuid4
 from mortimer.forms import NewScriptForm, FuturizeScriptForm
 from mortimer.utils import perform_futurization, replace_all_patterns
@@ -13,8 +13,10 @@ main = Blueprint("main", __name__)
 
 @main.route("/")
 @main.route("/home")
-@login_required
 def home():
+    if not current_user.is_authenticated:
+        return redirect(url_for("users.login"))
+
     id = str(uuid4())
     return render_template("home.html", id=id)
 
@@ -83,7 +85,7 @@ def download_futurized_script(name):
 
     # clean up: delete file after it was downloaded
     @after_this_request
-    def remove_script(response):
+    def remove_script(response): # pylint: disable=unused-variable
         os.remove(path)
         os.remove(path + ".bak")
 
