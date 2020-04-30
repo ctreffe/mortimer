@@ -25,6 +25,7 @@ class User(db.Document, UserMixin):
     username = db.StringField(required=True, unique=True, max_length=20)
     email = db.EmailField(required=True, unique=True)
     role = db.StringField(required=True, default="user")
+
     encryption_key = db.BinaryField()
     password = db.StringField(required=True)
     experiments = db.ListField(db.ObjectIdField())
@@ -49,8 +50,8 @@ class User(db.Document, UserMixin):
     
     @staticmethod
     def generate_password() -> bytes:
-        """Generate a random password and encrypt it with the apps secret fernet key.
-        """
+        """Generate a random password and encrypt it with the apps secret fernet key."""
+        
         f = create_fernet()
         letters = string.ascii_lowercase
         pw_raw = "".join(random.choice(letters) for i in range(20))
@@ -58,8 +59,8 @@ class User(db.Document, UserMixin):
         return pw_enc
 
     def create_db_user(self):
-        """Create a new user in the alfred database.
-        """
+        """Create a new user in the alfred database."""
+
         f = create_fernet()
         pw_dec = f.decrypt(self.alfred_pw).decode()
 
