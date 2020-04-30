@@ -33,3 +33,4 @@ test_copy2.py
 .vscode/launch.json
 .vscode/
 development_mortimer.conf
+.envrc
