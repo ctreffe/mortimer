@@ -64,23 +64,14 @@ class User(db.Document, UserMixin):
         f = create_fernet()
         pw_dec = f.decrypt(self.alfred_pw).decode()
 
-        alfred_db = current_app.config["MONGODB_ALFRED_SETTINGS"]["db"]
+        alfred_db = current_app.config["ALFRED_DB"]
         user_lower = self.username.lower().replace(" ", "_")
         rolename = "alfredAccess_{}".format(user_lower)
         res = {"db": alfred_db, "collection": self.alfred_col}
         act = ["find", "insert", "update"]
         priv = [{"resource": res, "actions": act}]
 
-        cred = current_app.config["MONGODB_SETTINGS"]
-
-        client = MongoClient(
-            host=cred["host"],
-            port=cred["port"],
-            username=cred["username"],
-            password=cred["password"],
-            ssl=cred["ssl"],
-            ssl_ca_certs=cred["ssl_ca_certs"]
-        )
+        client = db.connection
 
         client.alfred.command("createRole", rolename, privileges=priv, roles=[])
 

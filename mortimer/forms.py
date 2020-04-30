@@ -10,6 +10,7 @@ from wtforms.validators import DataRequired, Length, Email, EqualTo, \
     ValidationError
 from mortimer.models import User, WebExperiment, LocalExperiment
 from mortimer.config import Config
+from flask import current_app
 import re
 
 
@@ -38,7 +39,7 @@ class RegistrationForm(FlaskForm):
                 "That email is taken. Please choose a different one.")
 
     def validate_parole(self, parole):
-        if parole.data != Config.PAROLE:
+        if parole.data != current_app.config["PAROLE"]:
             raise ValidationError(
                 "Incorrect parole. You can write to alfred@psych.uni-goettingen.de to get the correct parole.")
 

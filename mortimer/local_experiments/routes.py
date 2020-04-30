@@ -6,7 +6,7 @@ from flask import (Blueprint, abort, flash, redirect, render_template, request,
                    send_file, url_for)
 from flask_login import current_user, login_required
 
-from mortimer import alfred_local_db, export
+from mortimer import export
 from mortimer.config import Config
 from mortimer.forms import ExperimentExportForm, LocalExperimentForm
 from mortimer.models import LocalExperiment, User

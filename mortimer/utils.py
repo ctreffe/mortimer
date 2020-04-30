@@ -8,43 +8,87 @@ from uuid import uuid4
 from alfred3 import settings as alfred_settings
 from cryptography.fernet import Fernet
 from flask import current_app, render_template, url_for
+from flask_login import current_user
 from flask_mail import Message
 from jinja2 import Template
+import pymongo
+import copy
 
 from mortimer import mail
 
+def sanitize_db_cred():
+    dbauth = copy.copy(current_app.config["MONGODB_SETTINGS"])
+    
+    dbauth.pop("db", None)
+    auth_source = dbauth.pop("authentication_source", None)
+    dbauth["authSource"] = auth_source
+
+    return dbauth
+
+
+def get_alfred_db():
+    """Return the alfred database."""
+
+    from pprint import pprint
+    pprint(current_app.config)
+
+    dbauth = sanitize_db_cred()
+    db = pymongo.MongoClient(**dbauth)["alfred"]
+    
+    return db
+
+def get_user_collection():
+    """Return a users alfred collection.
+
+    For this function to work, the DB User specified in mortimers configuration needs to have the right access privileges for the given database.
+
+    :return: Collection object.
+    :rtype: pymongo.collection.Collection
+    """
+    db = get_alfred_db()
+
+    colname = current_user.alfred_col
+
+    return db[colname]
 
 def create_fernet():
-    app_fernet_key = current_app.config["FERNET_KEY"].encode()
+    """Create a fernet instance for encryption, using mortimers secret key."""
+
+    app_fernet_key = current_app.config["SECRET_KEY"].encode()
     return Fernet(app_fernet_key)
 
-def send_reset_email(user: str):
+def send_reset_email(user):
+    """Send a password reset email to the given user."""
+
     token = user.get_reset_token()
     msg = Message("Password Reset Request",
                   sender="alfred@psych.uni-goettingen.de",
                   recipients=[user.email])
-    msg.body = Template(''' Dear Mortimer user,
 
-a request to reset your password was made for your email address.
-
-To reset your password, visit the following link:
-{{ URL }}
-
-If you did not make this request, you can simply ignore this email and no changes will be made.
-
-Kind regards,
-The Mortimer & Alfred Team
--- 
-Alfred Support
-
-Georg-August-Universität Göttingen
-Wirtschafts- und Sozialpsychologie
-
-E-Mail: alfred@psych.uni-goettingen.de
-Web: psych.uni-goettingen.de/ecosop
-                        ''', lstrip_blocks=True).render(URL=url_for('users.reset_password', token=token, _external=True))
-
+    msg.body = render_template("email/reset_pw.html", URL=url_for("users.reset_password"), token=token, _external=True)
     mail.send(msg)
+    #     msg.body = Template('''Dear Mortimer user,
+
+    # a request to reset your password was made for your email address.
+
+    # To reset your password, visit the following link:
+    # {{ URL }}
+
+    # If you did not make this request, you can simply ignore this email and no changes will be made.
+
+    # Kind regards,
+    # The Mortimer & Alfred Team
+    # -- 
+    # Alfred Support
+
+    # Georg-August-Universität Göttingen
+    # Wirtschafts- und Sozialpsychologie
+
+    # E-Mail: alfred@psych.uni-goettingen.de
+    # Web: psych.uni-goettingen.de/ecosop
+    #                         ''', lstrip_blocks=True).render(URL=url_for('users.reset_password', token=token, _external=True))
+
+        # mail.send(msg)
 
 
 def display_directory(directories: list, parent_directory: str,

@@ -1,37 +1,18 @@
 
 # -*- coding: utf-8 -*-
 
+import pymongo
+import os
 from flask import Flask
-from flask_mongoengine import MongoEngine
 from flask_bcrypt import Bcrypt
+from flask_dropzone import Dropzone
 from flask_login import LoginManager
 from flask_mail import Mail
-from flask_dropzone import Dropzone
-import pymongo
-
-__version__ = '0.4.5'
-
-# the EnvironSetter sets enviroment variables for the current session
-# It is not included in the GitHub repository, because it contains sensitive
-# information. We use it for easy testing. You can either write your own
-# EnvironSetter, or do one of the following:
-# 1) Set your environment variables directly
-# 2) Set your environment variables in another file, e.g. wsgi.py (we do this on our production sever)
-# 3) Set your login data directly in the config.py
-try:
-    from mortimer.set_environ_vars import EnvironSetter
-
-    # set environment variables
-    setter = EnvironSetter()
-    setter.set_environment_variables()
-
-except ImportError:
-    print("Environment variables are not set automatically.\
-     This is no problem, if you specified them manually or set the relevant data directly in your config.py.")
-
+from flask_mongoengine import MongoEngine
 
 from mortimer.config import Config
 
+from ._version import __version__
 
 # register extensions
 bcrypt = Bcrypt()                               # for hashing passwords
@@ -43,21 +24,6 @@ dropzone = Dropzone()                           # for multiple file upload
 
 # databases
 db = MongoEngine()   # mortimer database
-
-# database for querying alfred collections
-db_config = Config.MONGODB_ALFRED_SETTINGS
-client = pymongo.MongoClient(host=db_config["host"],
-                             port=db_config["port"],
-                             username=db_config["username"],
-                             password=db_config["password"],
-                             authSource=db_config["authentication_source"],
-                             ssl=Config.mongodb_ssl,
-                             ssl_ca_certs=Config.ssl_ca_path
-                             )
-
-alfred_db = client[db_config["db"]]           # checkin database
-alfred_local_db = alfred_db.local   # local collection
-
 
 # application factory
 def create_app(config_class=Config):
@@ -82,7 +48,7 @@ def create_app(config_class=Config):
 
     # global variables for use in templates
     @app.context_processor
-    def version_processor():
+    def version_processor(): # pylint: disable=unused-variable
         mv = __version__
         from alfred3 import __version__ as av
         return {"v_mortimer": mv, "v_alfred": av}
