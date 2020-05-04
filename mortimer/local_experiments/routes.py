@@ -7,12 +7,13 @@ from flask import (Blueprint, abort, flash, redirect, render_template, request,
 from flask_login import current_user, login_required
 
 from mortimer import export
-from mortimer.config import Config
 from mortimer.forms import ExperimentExportForm, LocalExperimentForm
 from mortimer.models import LocalExperiment, User
+from mortimer.utils import get_alfred_db
 
 local_experiments = Blueprint("local_experiments", __name__)
 
+# pylint: disable=no-member
 
 @local_experiments.route("/new_local_experiment", methods=["POST", "GET"])
 @login_required
@@ -43,6 +44,10 @@ def local_experiment(username, experiment_title):
     if experiment.author != current_user.username:
         abort(403)
 
+    
+    db = get_alfred_db()
+    alfred_local_db = db["local"]
+    
     datasets = {}
 
     datasets["all_datasets"] = alfred_local_db.count_documents({"exp_id": experiment.exp_id})
@@ -122,6 +127,9 @@ def local_export(username, experiment_title):
         abort(403)
 
     form = ExperimentExportForm()
+    
+    db = get_alfred_db()
+    alfred_local_db = db["local"]
     cur = alfred_local_db.find(
         {"exp_id": str(experiment.exp_id)})
     

@@ -1,74 +1,93 @@
 # -*- coding: utf-8 -*-
-"""Provide cofiguration settings for mortimer.
-Apply configuration to app.
+"""Provide basic configuration for mortimer.
 
-Configuration is imported from the following locations:
-1. The apps own default config.py
-2. "/etc/mortimer.conf"
-3. A "mortimer.conf" in the current users home directory
-4. A "mortimer.conf" in a path provided via an environement variable MORTIMER_CONFIG
-
-The config files are read in that order. Settings from later files override previous settings,
+The `BaseConfig` class can be used as a parent in order to create different sets of default configuration.
 """
 
 import os
-from configparser import ConfigParser
-from pathlib import Path
 
-parser = ConfigParser()
+def configure_app(app):
+    """Apply configuration to app.
 
-# read in default config first
-parent = Path(__file__).resolve().parent
-with open(os.path.join(parent, "mortimer.conf")) as f:
-    parser.read_file(f)
+    Configuration is imported from the following locations:
+    1. The apps own default config.py
+    2. "/etc/mortimer.conf"
+    3. A "mortimer.conf" in the current users home directory
+    4. A "mortimer.conf" in a path provided via an environement variable MORTIMER_CONFIG
 
-# now look in other locations and read them
-locations = ["/etc", os.path.expanduser("~"), os.getenv("MORTIMER_CONFIG")]
-for l in locations:
-    try:
-        f = os.path.join(l, "mortimer.conf")
-        parser.read(f)
-    except (FileNotFoundError, TypeError):
-        pass
+    The config files are read in that order. Settings from later files override previous settings.
 
-# add to Config object for flask
-class Config:
+    The implementation is extensible, i.e.: It is possible to include multiple configuration objects in `config.py` and utilise a switch to tell mortimer, which one to use. The switch key is provided in an environment variable `MORTIMER_CONFIG`. It needs to be paired with the object's name in this functions dict `switch`.
+
+    Args:
+        app: The app, an instance of ` flask.Flask`.
+    """
+
+    switch = {
+        "default": "mortimer.config.BaseConfig"
+    }
+
+    config_name = os.getenv("FLASK_CONFIGURATION", "default")
+
+    # First: Get config from source control
+    app.config.from_object(switch[config_name])
+
+    # Then: Read user-defined config files
+    locations = ["/etc", os.path.expanduser("~"), os.getenv("MORTIMER_CONFIG")]
+    for l in locations:
+        try:
+            f = os.path.join(l, "mortimer.conf")
+            app.config.from_pyfile(f)
+        except (FileNotFoundError, TypeError):
+            pass
+
+
+class BaseConfig:
     
     # Must be URL-safe base64-encoded 32-byte key for fernet encryption
-    SECRET_KEY = parser.get("mortimer", "secret_key")
+    SECRET_KEY = None
 
     # Passphrase for account creation
-    PAROLE = parser.get("mortimer", "parole")
+    PAROLE = None
+
+    # MONGODB_HOST = "localhost"
+    # MONGODB_PORT = 27017
+    # MONGODB_DB = "mortimer"
+    # MONGODB_USERNAME = None
+    # MONGODB_PASSWORD = None
+    # MONGODB_AUTHENTICATION_SOURCE = "admin"
+    # MONGODB_SSL = False
+    # MONGODB_SSL_CA_CERTS = None
 
     # MongoDB Settings
     MONGODB_SETTINGS = {}
-    MONGODB_SETTINGS["host"] = parser.get("mongodb", "host")
-    MONGODB_SETTINGS["port"] = parser.getint("mongodb", "port")
-    MONGODB_SETTINGS["db"] = parser.get("mongodb", "mortimer_db")
-    MONGODB_SETTINGS["username"] = parser.get("mongodb", "username")
-    MONGODB_SETTINGS["password"] = parser.get("mongodb", "password")
-    MONGODB_SETTINGS["authentication_source"] = parser.get("mongodb", "auth_source")
-    MONGODB_SETTINGS["ssl"] = parser.getboolean("mongodb", "ssl")
-    MONGODB_SETTINGS["ssl_ca_certs"] = parser.get("mongodb", "ssl_ca_certs", fallback=None)
+    MONGODB_SETTINGS["host"] = "localhost"
+    MONGODB_SETTINGS["port"] = 27017
+    MONGODB_SETTINGS["db"] = "mortimer"
+    MONGODB_SETTINGS["username"] = None
+    MONGODB_SETTINGS["password"] = None
+    MONGODB_SETTINGS["authentication_source"] = "admin"
+    MONGODB_SETTINGS["ssl"] = False
+    MONGODB_SETTINGS["ssl_ca_certs"] = None
     
     # Name of alfred database
-    ALFRED_DB = parser.get("mongodb", "alfred_db")
+    ALFRED_DB = "alfred"
 
     # Mail settings
-    MAIL_USE = parser.get("mail", "mail_use")
-    MAIL_SERVER = parser.get("mail", "server")
-    MAIL_PORT = parser.get("mail", "port")
-    MAIL_USE_TLS = parser.get("mail", "use_tls")
-    MAIL_USERNAME = parser.get("mail", "username")
-    MAIL_PASSWORD = parser.get("mail", "password")
+    MAIL_USE = False
+    MAIL_SERVER = None
+    MAIL_PORT = None
+    MAIL_USE_TLS = None
+    MAIL_USERNAME = None
+    MAIL_PASSWORD = None
 
     # Flask-Dropzone settings:
-    DROPZONE_ALLOWED_FILE_CUSTOM = parser.getboolean("dropzone", "allowed_file_custom")
-    DROPZONE_ALLOWED_FILE_TYPE = parser.get("dropzone", "allowed_file_type")
-    DROPZONE_MAX_FILE_SIZE = parser.getint("dropzone", "max_file_size")
-    DROPZONE_MAX_FILES = parser.getint("dropzone", "max_files")
-    DROPZONE_UPLOAD_ON_CLICK = parser.getboolean("dropzone", "upload_on_click")
-    DROPZONE_UPLOAD_BTN_ID = parser.get("dropzone", "upload_btn_id")
-    DROPZONE_UPLOAD_MULTIPLE = parser.getboolean("dropzone", "upload_multiple")
-    DROPZONE_PARRALEL_UPLOAD = parser.getint("dropzone", "parallel_upload")
-    DROPZONE_TIMEOUT = parser.getint("dropzone", "timeout")
+    DROPZONE_ALLOWED_FILE_CUSTOM = True
+    DROPZONE_ALLOWED_FILE_TYPE = ".pdf, image/*, .txt, .xml, .pem, .mp3, .mp4, .ogg, .csv"
+    DROPZONE_MAX_FILE_SIZE = 20
+    DROPZONE_MAX_FILES = 5
+    DROPZONE_UPLOAD_ON_CLICK = True
+    DROPZONE_UPLOAD_BTN_ID = "upload"
+    DROPZONE_UPLOAD_MULTIPLE = True
+    DROPZONE_PARRALEL_UPLOAD = True
+    DROPZONE_TIMEOUT = 300000 # 5 minutes

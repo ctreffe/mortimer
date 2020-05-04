@@ -8,7 +8,6 @@ from mortimer import bcrypt
 from mortimer.forms import RegistrationForm, LoginForm, UpdateAccountForm, RequestResetForm, ResetPasswordForm
 from mortimer.models import User, WebExperiment
 from mortimer.utils import send_reset_email, create_fernet
-from mortimer.config import Config
 from flask_login import login_user, current_user, logout_user, login_required
 
 
@@ -116,7 +115,7 @@ def request_password_reset():
         flash("You are currently logged in.", "info")
         return redirect(url_for('main.home'))
 
-    if not Config.MAIL_USE:
+    if not current_app.config["MAIL_USE"]:
         flash("Automatic password reset is disabled. Please contact the administrator.", "warning")
         return redirect(url_for('main.home'))
 

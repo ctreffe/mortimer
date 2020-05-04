@@ -10,7 +10,7 @@ from flask_login import LoginManager
 from flask_mail import Mail
 from flask_mongoengine import MongoEngine
 
-from mortimer.config import Config
+from mortimer.config import configure_app
 
 from ._version import __version__
 
@@ -26,9 +26,11 @@ dropzone = Dropzone()                           # for multiple file upload
 db = MongoEngine()   # mortimer database
 
 # application factory
-def create_app(config_class=Config):
+def create_app():
     app = Flask(__name__)
-    app.config.from_object(Config)
+
+    # apply configuration
+    configure_app(app)
 
     # import blueprints
     from mortimer.users.routes import users

@@ -29,9 +29,6 @@ def sanitize_db_cred():
 def get_alfred_db():
     """Return the alfred database."""
 
-    from pprint import pprint
-    pprint(current_app.config)
-
     dbauth = sanitize_db_cred()
     db = pymongo.MongoClient(**dbauth)["alfred"]
     

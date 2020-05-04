@@ -9,10 +9,10 @@ from wtforms import StringField, SubmitField, BooleanField, PasswordField, \
 from wtforms.validators import DataRequired, Length, Email, EqualTo, \
     ValidationError
 from mortimer.models import User, WebExperiment, LocalExperiment
-from mortimer.config import Config
 from flask import current_app
 import re
 
+# pylint: disable=no-member
 
 class RegistrationForm(FlaskForm):
     username = StringField("Username", validators=[

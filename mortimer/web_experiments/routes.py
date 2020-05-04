@@ -9,7 +9,6 @@ from flask_login import current_user, login_required
 from werkzeug.utils import secure_filename
 
 from mortimer import export
-from mortimer.config import Config
 from mortimer.forms import (ExperimentConfigurationForm, ExperimentExportForm,
                             ExperimentScriptForm, NewScriptForm,
                             WebExperimentForm)
@@ -610,7 +609,7 @@ def web_export(username, experiment_title):
     form.file_type.choices = [("csv", "csv")]
 
     if form.validate_on_submit():
-        db = alfred_db[current_user.alfred_col]
+        db = get_user_collection()
         if "all versions" in form.version.data:
             results = db.count_documents({"exp_id": str(experiment.id)})
             if results == 0:
