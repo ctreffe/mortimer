@@ -30,7 +30,7 @@ class Script:
     def __init__(self, experiment=None):
         self.experiment = experiment
 
-    def generate_experiment(self):
+    def generate_experiment(self): # pylint: disable=method-hidden
         pass
 
     def set_generator(self, generator):
