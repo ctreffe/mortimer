@@ -34,3 +34,4 @@ test_copy2.py
 .vscode/
 development_mortimer.conf
 .envrc
+mortimer.conf
