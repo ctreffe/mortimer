@@ -35,5 +35,5 @@ test_copy2.py
 development_mortimer.conf
 .envrc
 mortimer.conf
-tests/run_locally/
+tests/run_locally/*
 src/mortimer.egg-info
