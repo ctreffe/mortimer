@@ -14,13 +14,14 @@ def configure_app(app):
     2. "/etc/mortimer.conf"
     3. A "mortimer.conf" in the current users home directory
     4. A "mortimer.conf" in a path provided via an environement variable MORTIMER_CONFIG
+    5. A "mortimer.conf" in the current instance path
 
     The config files are read in that order. Settings from later files override previous settings.
 
     The implementation is extensible, i.e.: It is possible to include multiple configuration objects in `config.py` and utilise a switch to tell mortimer, which one to use. The switch key is provided in an environment variable `MORTIMER_CONFIG`. It needs to be paired with the object's name in this functions dict `switch`.
 
     Args:
-        app: The app, an instance of ` flask.Flask`.
+        app: The app, an instance of `flask.Flask`.
     """
 
     switch = {
@@ -40,6 +41,13 @@ def configure_app(app):
             app.config.from_pyfile(f)
         except (FileNotFoundError, TypeError):
             pass
+    
+    # Last: Read config form instance folder config
+    instance_config = os.path.join(app.instance_path, 'mortimer.conf')
+    try:
+        app.config.from_pyfile(instance_config)
+    except FileNotFoundError:
+        pass
 
 
 class BaseConfig:

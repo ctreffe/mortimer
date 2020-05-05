@@ -37,7 +37,7 @@ def impressum():
 def futurize_script(script_name=None):
 
     # clean up operation: delete files from the temp directory, if they are older than 15 minutes
-    temp_path = os.path.join(current_app.root_path, "tmp", "futurize_scripts")
+    temp_path = os.path.join(current_app.instance_path, "tmp", "futurize_scripts")
     if not os.path.isdir(temp_path):
         os.makedirs(temp_path)
     s_since_epoch = time.time()
@@ -75,20 +75,3 @@ def futurize_script(script_name=None):
         return render_template('futurize_script.html', form=form, new_script=new_script)
 
     return render_template("futurize_script.html", form=form, script_name=script_name)
-
-
-@main.route("/donwload_futurized_script/<name>", methods=["GET"])
-@login_required
-def download_futurized_script(name):
-
-    path = os.path.join(current_app.root_path, "temp", name + ".py")
-
-    # clean up: delete file after it was downloaded
-    @after_this_request
-    def remove_script(response): # pylint: disable=unused-variable
-        os.remove(path)
-        os.remove(path + ".bak")
-
-        return response
-
-    return send_file(path, as_attachment=True, attachment_filename="futurized_script.py")

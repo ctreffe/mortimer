@@ -361,7 +361,12 @@ class ScriptFile(ScriptString):
         self.script = ''
 
     def load(self):
-        path = os.path.join(current_app.root_path, 'tmp', self.name)
+        tmp_path = os.path.join(current_app.instance_path, 'tmp')
+        path = os.path.join(tmp_path, self.name)
+        try:
+            os.makedirs(tmp_path)
+        except FileExistsError:
+            pass
         self.file.save(path)
 
         with open(path, 'r', encoding='utf-8') as f:
