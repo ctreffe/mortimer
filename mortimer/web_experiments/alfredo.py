@@ -30,7 +30,7 @@ class Script:
     def __init__(self, experiment=None):
         self.experiment = experiment
 
-    def generate_experiment(self):
+    def generate_experiment(self): # pylint: disable=method-hidden
         pass
 
     def set_generator(self, generator):
@@ -175,16 +175,16 @@ def start(expid):
             key = f.decrypt(exp_author.encryption_key)
             
             # get the users own db credentials
-            appdb_config = current_app.config["MONGODB_ALFRED_SETTINGS"]
+            appdb_config = current_app.config["MONGODB_SETTINGS"]
             db_cred = {}
             db_cred["host"] = appdb_config["host"]
             db_cred["port"] = appdb_config["port"]
-            db_cred["db"] = appdb_config["db"]
+            db_cred["db"] = current_app.config["ALFRED_DB"]
             db_cred["collection"] = exp_author.alfred_col
             db_cred["user"] = exp_author.alfred_user
             db_cred["pw"] = f.decrypt(exp_author.alfred_pw).decode()
-            db_cred["use_ssl"] = appdb_config["ssl"]
-            db_cred["ca_file_path"] = appdb_config["ssl_ca_certs"]
+            db_cred["use_ssl"] = appdb_config.get("ssl")
+            db_cred["ca_file_path"] = appdb_config.get("ssl_ca_certs")
             db_cred["activation_level"] = 1
 
             # place in experiment config

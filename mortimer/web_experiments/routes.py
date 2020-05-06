@@ -8,14 +8,13 @@ from flask import (Blueprint, abort, current_app, flash, redirect,
 from flask_login import current_user, login_required
 from werkzeug.utils import secure_filename
 
-from mortimer import alfred_db, export
-from mortimer.config import Config
+from mortimer import export
 from mortimer.forms import (ExperimentConfigurationForm, ExperimentExportForm,
                             ExperimentScriptForm, NewScriptForm,
                             WebExperimentForm)
 from mortimer.models import User, WebExperiment
 from mortimer.utils import (ScriptFile, ScriptString, _DictObj,
-                            display_directory)
+                            display_directory, get_user_collection)
 
 web_experiments = Blueprint("web_experiments", __name__)
 
@@ -111,7 +110,7 @@ def experiment(username, exp_title):
 
 
     # Query Database
-    db = alfred_db[current_user.alfred_col]
+    db = get_user_collection()
 
     f_id = {"exp_id": str(exp.id)}
     f_fin = {"exp_finished": True}
@@ -610,7 +609,7 @@ def web_export(username, experiment_title):
     form.file_type.choices = [("csv", "csv")]
 
     if form.validate_on_submit():
-        db = alfred_db[current_user.alfred_col]
+        db = get_user_collection()
         if "all versions" in form.version.data:
             results = db.count_documents({"exp_id": str(experiment.id)})
             if results == 0:

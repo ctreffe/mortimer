@@ -1,77 +1,93 @@
 # -*- coding: utf-8 -*-
+"""Provide basic configuration for mortimer.
+
+The `BaseConfig` class can be used as a parent in order to create different sets of default configuration.
+"""
 
 import os
 
-# For security reasons (this code is public), we use a lot of environmentt variables here.
-# You don't have to do the same for your installation of mortimer.
-# On your secured server, you can simply input the needed information right here.
+def configure_app(app):
+    """Apply configuration to app.
+
+    Configuration is imported from the following locations:
+    1. The apps own default config.py
+    2. "/etc/mortimer.conf"
+    3. A "mortimer.conf" in the current users home directory
+    4. A "mortimer.conf" in a path provided via an environement variable MORTIMER_CONFIG
+
+    The config files are read in that order. Settings from later files override previous settings.
+
+    The implementation is extensible, i.e.: It is possible to include multiple configuration objects in `config.py` and utilise a switch to tell mortimer, which one to use. The switch key is provided in an environment variable `MORTIMER_CONFIG`. It needs to be paired with the object's name in this functions dict `switch`.
+
+    Args:
+        app: The app, an instance of ` flask.Flask`.
+    """
+
+    switch = {
+        "default": "mortimer.config.BaseConfig"
+    }
+
+    config_name = os.getenv("FLASK_CONFIGURATION", "default")
+
+    # First: Get config from source control
+    app.config.from_object(switch[config_name])
+
+    # Then: Read user-defined config files
+    locations = ["/etc", os.path.expanduser("~"), os.getenv("MORTIMER_CONFIG")]
+    for l in locations:
+        try:
+            f = os.path.join(l, "mortimer.conf")
+            app.config.from_pyfile(f)
+        except (FileNotFoundError, TypeError):
+            pass
 
 
-class Config:
-    # If the ssl settings and the ca-file are not set manually, but via environment variables
-    # this if-else-clause ensures, that the correct settings are being used.
-    if os.environ.get("MONGODB_SSL") == "True":
-        mongodb_ssl = True
-        ssl_ca_certs = os.environ.get("MONGODB_SSL_CAFILE")
-        ssl_ca_path = os.path.join(
-            os.path.dirname(os.path.realpath(__file__)), ssl_ca_certs
-        )
-    else:
-        mongodb_ssl = False
-        ssl_ca_certs = None
-        ssl_ca_path = None
-
-    # secret key of app (e.g. for encrypted session data)
-    SECRET_KEY = os.environ.get("SECRET_KEY")
+class BaseConfig:
     
-    # URL-safe base64-encoded 32-byte key for fernet encryption 
-    FERNET_KEY = os.environ.get("FERNET_KEY")
+    # Must be URL-safe base64-encoded 32-byte key for fernet encryption
+    SECRET_KEY = None
 
-    PAROLE = os.environ.get("PAROLE")  # Parole/Passphrase for registration
-    EXP_PER_PAGE = 10  # number of experiments displayed per page
+    # Passphrase for account creation
+    PAROLE = None
 
-    # Mortimer database login settings
-    MONGODB_SETTINGS = {
-        "host": os.environ.get("MONGODB_HOST"),
-        "port": int(os.environ.get("MONGODB_PORT")),
-        "db": os.environ.get("MONGODB_MORTIMER_DB"),
-        "username": os.environ.get("MONGODB_MORTIMER_USER"),
-        "password": os.environ.get("MONGODB_MORTIMER_PW"),
-        "authentication_source": os.environ.get("MONGODB_MORTIMER_AUTHDB"),
-        "ssl": mongodb_ssl,  # True / False
-        "ssl_ca_certs": ssl_ca_certs
-        # "ssl": False,
-        # "ssl_ca_certs": "mongodb_ca_file.pem"  # filepath must be relative to the directory that contains config.py and __init__.py
-    }
+    # MONGODB_HOST = "localhost"
+    # MONGODB_PORT = 27017
+    # MONGODB_DB = "mortimer"
+    # MONGODB_USERNAME = None
+    # MONGODB_PASSWORD = None
+    # MONGODB_AUTHENTICATION_SOURCE = "admin"
+    # MONGODB_SSL = False
+    # MONGODB_SSL_CA_CERTS = None
 
-    # Alfred database login settings
-    MONGODB_ALFRED_SETTINGS = {
-        "host": os.environ.get("MONGODB_HOST"),
-        "port": int(os.environ.get("MONGODB_PORT")),
-        "db": os.environ.get("MONGODB_ALFRED_DB"),
-        "username": os.environ.get("MONGODB_ALFRED_USER"),
-        "password": os.environ.get("MONGODB_ALFRED_PW"),
-        "authentication_source": os.environ.get("MONGODB_ALFRED_AUTHDB"),
-        "ssl": mongodb_ssl,
-        "ssl_ca_certs": ssl_ca_certs
-        # "ssl": False,
-        # "ssl_ca_certs": "mongodb_ca_file.pem"  # filepath must be relative to the directory that contains config.py and __init__.py
-    }
+    # MongoDB Settings
+    MONGODB_SETTINGS = {}
+    MONGODB_SETTINGS["host"] = "localhost"
+    MONGODB_SETTINGS["port"] = 27017
+    MONGODB_SETTINGS["db"] = "mortimer"
+    MONGODB_SETTINGS["username"] = None
+    MONGODB_SETTINGS["password"] = None
+    MONGODB_SETTINGS["authentication_source"] = "admin"
+    MONGODB_SETTINGS["ssl"] = False
+    MONGODB_SETTINGS["ssl_ca_certs"] = None
+    
+    # Name of alfred database
+    ALFRED_DB = "alfred"
 
     # Mail settings
-    MAIL_USE = True  # enable or disable password reset emails
-    MAIL_SERVER = os.environ.get("MAIL_SERVER")
-    MAIL_PORT = os.environ.get("MAIL_PORT")
-    MAIL_USE_TLS = True
-    MAIL_USERNAME = os.environ.get("MAIL_USERNAME")
-    MAIL_PASSWORD = os.environ.get("MAIL_PASSWORD")
+    MAIL_USE = False
+    MAIL_SERVER = None
+    MAIL_PORT = None
+    MAIL_USE_TLS = None
+    MAIL_USERNAME = None
+    MAIL_PASSWORD = None
 
     # Flask-Dropzone settings:
     DROPZONE_ALLOWED_FILE_CUSTOM = True
-    DROPZONE_ALLOWED_FILE_TYPE = (
-        ".pdf, image/*, .txt, .xml, .pem, .mp3, .mp4, .ogg, .csv"
-    )
-    DROPZONE_MAX_FILE_SIZE = 100
-    DROPZONE_MAX_FILES = 100
+    DROPZONE_ALLOWED_FILE_TYPE = ".pdf, image/*, .txt, .xml, .pem, .mp3, .mp4, .ogg, .csv"
+    DROPZONE_MAX_FILE_SIZE = 20
+    DROPZONE_MAX_FILES = 5
     DROPZONE_UPLOAD_ON_CLICK = True
     DROPZONE_UPLOAD_BTN_ID = "upload"
+    DROPZONE_UPLOAD_MULTIPLE = True
+    DROPZONE_PARRALEL_UPLOAD = True
+    DROPZONE_TIMEOUT = 300000 # 5 minutes
