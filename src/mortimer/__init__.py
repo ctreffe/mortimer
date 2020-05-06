@@ -1,8 +1,5 @@
 
 # -*- coding: utf-8 -*-
-
-import pymongo
-import os
 from flask import Flask
 from flask_bcrypt import Bcrypt
 from flask_dropzone import Dropzone
@@ -26,8 +23,8 @@ dropzone = Dropzone()                           # for multiple file upload
 db = MongoEngine()   # mortimer database
 
 # application factory
-def create_app():
-    app = Flask(__name__)
+def create_app(instance_path=None):
+    app = Flask(__name__, instance_path=instance_path)
 
     # apply configuration
     configure_app(app)

@@ -37,7 +37,7 @@ def new_experiment():
 
         exp.available_versions.append(form.version.data)
         exp.directory_name = str(uuid4())
-        exp.path = os.path.join(current_app.root_path, "exp", exp.directory_name)
+        exp.path = os.path.join(current_app.instance_path, "exp", exp.directory_name)
 
         # create experiment directory
         try:
