@@ -14,7 +14,7 @@ def configure_app(app):
     2. "/etc/mortimer.conf"
     3. A "mortimer.conf" in the current users home directory
     4. A "mortimer.conf" in a path provided via an environement variable MORTIMER_CONFIG
-    5. A "mortimer.conf" in the current instance path
+    5. A "mortimer.conf" in the instance path
 
     The config files are read in that order. Settings from later files override previous settings.
 
