@@ -28,6 +28,8 @@ setuptools.setup(
             "static/js/*",
             "templates/*",
             "templates/elements/*",
+            "templates/errors/*",
+            "templates/additional/*"
         ]
     },
     package_dir={"": "src"},
