@@ -18,7 +18,9 @@ def configure_app(app):
 
     The config files are read in that order. Settings from later files override previous settings.
 
-    The implementation is extensible, i.e.: It is possible to include multiple configuration objects in `config.py` and utilise a switch to tell mortimer, which one to use. The switch key is provided in an environment variable `MORTIMER_CONFIG`. It needs to be paired with the object's name in this functions dict `switch`.
+    The implementation is extensible: It is possible to include multiple configuration objects in `config.py` and utilise a switch to tell mortimer, which one to use. The switch key is provided in an environment variable `MORTIMER_CONFIG`. It needs to be paired with the object's name in this functions dict `switch`. Currently available:
+
+    * "default" (the default)
 
     Args:
         app: The app, an instance of `flask.Flask`.
