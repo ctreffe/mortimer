@@ -50,7 +50,7 @@ def create_app(instance_path=None):
     def version_processor(): # pylint: disable=unused-variable
         mv = __version__
         from alfred3 import __version__ as av
-        return {"v_mortimer": mv, "v_alfred": av}
+        return {"mortimer": mv, "alfred": av}
 
     # bind extensions to app instance
     db.init_app(app)
