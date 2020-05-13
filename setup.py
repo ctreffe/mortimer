@@ -18,11 +18,11 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/ctreffe/mortimer",
-    packages=setuptools.find_packages(),
+    packages=setuptools.find_packages("src"),
     package_data={
         "mortimer": [
             "static/*",
-            "static/futurizing_alfred_scripts/*"
+            "static/futurizing_alfred_scripts/*",
             "static/css/*",
             "static/img/*",
             "static/js/*",
