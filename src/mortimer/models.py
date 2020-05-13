@@ -34,6 +34,10 @@ class User(db.Document, UserMixin):
     alfred_pw = db.BinaryField()
     alfred_col = db.StringField()
 
+    local_db_user = db.StringField()
+    local_db_pw = db.BinaryField()
+    local_col = db.StringField()
+
     def get_reset_token(self, expires_sec=1800):
         # methode for creating a token for password reset
         s = Serializer(current_app.config["SECRET_KEY"], expires_sec)
@@ -57,6 +61,33 @@ class User(db.Document, UserMixin):
         pw_raw = "".join(random.choice(letters) for i in range(20))
         pw_enc = f.encrypt(pw_raw.encode())
         return pw_enc
+    
+    def prepare_local_db_user(self):
+        user_lower = self.username.lower().replace(" ", "_")
+        self.local_db_user = "localUser_{}".format(user_lower)
+        self.local_col  = "local_{}".format(user_lower)
+        self.local_db_pw = self.generate_password()
+        self.create_local_db_user()
+    
+    def create_local_db_user(self):
+
+        f = create_fernet()
+        pw_dec = f.decrypt(self.local_db_pw).decode()
+
+        alfred_db = current_app.config["ALFRED_DB"]
+        client = db.connection
+
+        # local exp role
+        rolename = "localAccess{}".format(self.local_db_user)
+        res = {"db": alfred_db, "collection": self.local_col}
+        act = ["find", "insert", "update"]
+        priv = [{"resource": res, "actions": act}]
+        
+        client.alfred.command("createRole", rolename, privileges=priv, roles=[])
+
+        client.alfred.command(
+            "createUser", self.local_db_user, pwd=pw_dec, roles=[rolename]
+        )
 
     def create_db_user(self):
         """Create a new user in the alfred database."""
@@ -164,8 +195,8 @@ class WebExperiment(db.Document):
 class LocalExperiment(db.Document):
     author = db.StringField(required=True)
     title = db.StringField(required=True, unique_with="author")
-    version = db.StringField(unique_with="title")
-    exp_id = db.StringField(required=True)
+    version = db.StringField()
+    exp_id = db.StringField(required=True, unique_with="author")
     available_versions = db.ListField(db.StringField())
     date_created = db.DateTimeField(default=datetime.utcnow, required=True)
     last_update = db.DateTimeField(default=datetime.utcnow, required=True)

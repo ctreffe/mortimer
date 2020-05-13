@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+* Mortimer now automatically generates database credentials for locally run alfred experiments for all users. They can be viewed on the "Account" page. You can use these credentials in your config.conf to write your experiment data to a special collection in the Alfred database. **Make sure to specify ``auth_source = alfred`` in your config.conf aswell.
+
+
+## Mortimer v0.4.5
+
 ### Changed
 
 * Mortimer is now available from PyPi. It can be installed with pip:
@@ -17,14 +24,12 @@ pip install mortimer
 
 * Mortimer now uses a different configuration setup. See README.md for details.
 
-* From now on, we will generally be using the changelog format recommended by [Keep a Changelog](https://keepachangelog.com/en/)
+* In the future, we will be using the changelog format recommended by [Keep a Changelog](https://keepachangelog.com/en/)
     + In the course of this change, we changed the name of the former `NEWS.md` to `CHANGELOG.md`.
 
 ### Fixed
 
 * Fixed a registration bug.
-
-## Mortimer v0.4.5
 
 ### Security improvements
 

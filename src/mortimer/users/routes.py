@@ -34,6 +34,9 @@ def register():
         user.alfred_col = "col_{}".format(user_lower)
         user.create_db_user()
 
+        # create user for local experiments
+        user.prepare_local_db_user()
+
         # save user
         user.save()
         flash("Account created for %s." % form.username.data, "success")
@@ -105,7 +108,14 @@ def account():
         form.username.data = current_user.username
         form.email.data = current_user.email
 
-    return render_template("account.html", title="Account", form=form, user = current_user)
+    if not current_user.local_db_user:
+        current_user.prepare_local_db_user()
+        current_user.save()
+    
+    f = create_fernet()
+    local_pw = f.decrypt(current_user.local_db_pw).decode()
+
+    return render_template("account.html", title="Account", form=form, user=current_user, pw=local_pw)
 
 
 @users.route("/reset_password", methods=["GET", "POST"])

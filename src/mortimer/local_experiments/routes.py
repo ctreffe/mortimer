@@ -46,7 +46,7 @@ def local_experiment(username, experiment_title):
 
     
     db = get_alfred_db()
-    alfred_local_db = db["local"]
+    alfred_local_db = db[current_user.local_col]
     
     datasets = {}
 
@@ -129,7 +129,7 @@ def local_export(username, experiment_title):
     form = ExperimentExportForm()
     
     db = get_alfred_db()
-    alfred_local_db = db["local"]
+    alfred_local_db = db[current_user.local_col]
     cur = alfred_local_db.find(
         {"exp_id": str(experiment.exp_id)})
     
