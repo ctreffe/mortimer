@@ -38,3 +38,5 @@ mortimer.conf
 tests/run_locally/*
 tests/run_locally/run.py
 src/mortimer.egg-info
+build/
+dist/
