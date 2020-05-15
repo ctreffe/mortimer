@@ -606,7 +606,7 @@ def web_export(username, experiment_title):
         (version, version)
         for version in ["all versions"] + experiment.available_versions
     ]
-    form.file_type.choices = [("csv", "csv")]
+    form.file_type.choices = [("csv", "csv"), ("excel_csv", "excel_csv"), ("json", "json")]
 
     if form.validate_on_submit():
         db = get_user_collection()
