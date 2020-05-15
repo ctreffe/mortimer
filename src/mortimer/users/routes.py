@@ -114,8 +114,16 @@ def account():
     
     f = create_fernet()
     local_pw = f.decrypt(current_user.local_db_pw).decode()
+    user_key = f.decrypt(current_user.encryption_key).decode()
 
-    return render_template("account.html", title="Account", form=form, user=current_user, pw=local_pw)
+    info = {
+        "username": ("Username for local DB", current_user.local_db_user),
+        "password": ("Password for local DB", local_pw),
+        "col": ("Collection for local DB", current_user.local_col),
+        "key": ("Encryption Key", user_key)
+    }
+
+    return render_template("account.html", title="Account", form=form, user=current_user, info=info)
 
 
 @users.route("/reset_password", methods=["GET", "POST"])
