@@ -707,6 +707,37 @@ def web_export(username, experiment_title):
     )
 
 
+@web_experiments.route("/<username>/<path:experiment_title>/data", methods=["GET"])
+@login_required
+def data(username, experiment_title):
+    experiment = WebExperiment.objects.get_or_404(title=experiment_title, author=username)
+    if experiment.author != current_user.username:
+        abort(403)
+    
+    db = get_user_collection()
+
+    results = db.count_documents({"exp_id": str(experiment.id)})
+    if results == 0:
+        flash("No data found for this experiment.", "warning")
+        return redirect(
+            url_for(
+                "web_experiments.data",
+                username=experiment.author,
+                experiment_title=experiment.title,
+            )
+        )
+
+    cur = db.find({"exp_id": str(experiment.id)})
+    csv = export.to_csv(cur)
+
+    csv_list = []
+    for line in csv.getvalue().splitlines():
+        csv_list.append(line.split(sep=","))
+
+    return render_template("data.html", experiment=experiment, author=username, csv_list=csv_list)
+
+
+
 @web_experiments.route(
     "/de_activate/<username>/<path:experiment_title>", methods=["POST"]
 )

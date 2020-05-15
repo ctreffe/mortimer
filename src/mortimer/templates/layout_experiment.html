@@ -20,6 +20,10 @@
     <li class="nav-item"><a
             href="{{ url_for('web_experiments.manage_resources', experiment_title=experiment.title, username=experiment.author) }}"
             class="nav-link active" id="nav-resources"><i class="fas fa-folder mr-2"></i>Resources</a></li>
+<li class="nav-item nav-link">|</li>
+    <li class="nav-item"><a
+            href="{{ url_for('web_experiments.data', experiment_title=experiment.title, username=experiment.author) }}"
+            class="nav-link active" id="nav-resources"><i class="fas fa-table"></i> Data</a></li>
     <li class="nav-item nav-link">|</li>
     <li class="nav-item"><a
             href="{{ url_for('web_experiments.web_export', experiment_title=experiment.title, username=experiment.author) }}"
