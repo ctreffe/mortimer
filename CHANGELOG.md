@@ -9,7 +9,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-* Mortimer now automatically generates database credentials for locally run alfred experiments for all users. They can be viewed on the "Account" page. You can use these credentials in your config.conf to write your experiment data to a special collection in the Alfred database. **Make sure to specify ``auth_source = alfred`` in your config.conf aswell.
+* Added automatic DB credential generation. Mortimer now automatically generates database credentials for locally run alfred experiments for all users. They can be viewed on the "Account" page. You can use these credentials in your config.conf to write your experiment data to a special collection in the Alfred database. **Make sure to specify ``auth_source = alfred`` in your config.conf**, otherwise you will receive an authentication error upon trying to save to the database.
+
+* Added encryption key display. Mortimer now displays the user's encryption key on the "Account" page. This is the key used for encryption via `alfred3.Experiment.encrypt` and `alfred3.Experiment.decrypt`.
+
+* Added a "Data" tab to the experiment view, allowing users to preview collected data.
+
+* Added two data export formats: `excel_csv` (export to excel-friendly .csv format with `;`-delimiter) and `json`.
+
+* Added log filterin. On the "log" tab of the experiment view, you can now select the log levels that you want to display. Your settings are saved and applied on an account level.
 
 
 ## Mortimer v0.4.5
