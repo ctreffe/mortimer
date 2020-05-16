@@ -11,7 +11,7 @@ from werkzeug.utils import secure_filename
 from mortimer import export
 from mortimer.forms import (ExperimentConfigurationForm, ExperimentExportForm,
                             ExperimentScriptForm, NewScriptForm,
-                            WebExperimentForm)
+                            WebExperimentForm, FilterLogForm)
 from mortimer.models import User, WebExperiment
 from mortimer.utils import (ScriptFile, ScriptString, _DictObj,
                             display_directory, get_user_collection)
@@ -915,7 +915,7 @@ def experiment_config(username, experiment_title):
     )
 
 
-@web_experiments.route("/<username>/<path:experiment_title>/log", methods=["GET"])
+@web_experiments.route("/<username>/<path:experiment_title>/log", methods=["GET", "POST"])
 @login_required
 def experiment_log(username, experiment_title):
     # pylint: disable=no-member
@@ -924,6 +924,25 @@ def experiment_log(username, experiment_title):
     if exp.author != current_user.username:
         abort(403)
 
+    form = FilterLogForm()
+    if form.validate_on_submit():
+        logfilter = {
+            "debug": form.debug.data,
+            "info": form.info.data,
+            "warning": form.warning.data,
+            "error": form.error.data,
+            "critical": form.critical.data
+        }
+        print("\n\n\n")
+        print(logfilter)
+        current_user.settings["logfilter"] = logfilter
+        print(current_user.settings)
+        current_user.save()
+        print("\n\n\n")
+
+        return redirect(url_for("web_experiments.experiment_log", experiment_title=exp.title, username=exp.author))
+
+        # return redirect
     p = re.compile(
         r"(?P<date>20.+?) - (?P<module>.+?) - (?P<log_level>.+?) - ((experiment id=)(?P<exp_id>.+?), )?(session id=(?P<session_id>.+?) - )?(?P<message>(.|\s)*?(?=(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}|\Z)))"
     )
@@ -951,6 +970,8 @@ def experiment_log(username, experiment_title):
             date = match.group("date")
             module = match.group("module")
             log_level = match.group("log_level")
+            if not current_user.settings.get("logfilter", {}).get(log_level.lower(), True):
+                continue
             exp_id = match.group("exp_id")
             session_id = match.group("session_id")
             message = (
@@ -975,7 +996,13 @@ def experiment_log(username, experiment_title):
                 type=flash_type[log_level], entry_info=entry_info, message=message
             )
             log_entries.appendleft(flash_entry)
+    
+    form.debug.data = current_user.settings.get("logfilter", {}).get("debug", True)
+    form.info.data = current_user.settings.get("logfilter", {}).get("info", True)
+    form.warning.data = current_user.settings.get("logfilter", {}).get("warning", True)
+    form.error.data = current_user.settings.get("logfilter", {}).get("error", True)
+    form.critical.data = current_user.settings.get("logfilter", {}).get("critical", True)
 
     return render_template(
-        "experiment_log.html", experiment=exp, username=exp.author, log=log_entries
+        "experiment_log.html", experiment=exp, username=exp.author, log=log_entries, form=form
     )

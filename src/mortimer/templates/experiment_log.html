@@ -4,6 +4,47 @@
 
 <h3>Experiment Log</h3>
 
+<hr>
+
+<form method="POST" action="{{ url_for('web_experiments.experiment_log', experiment_title=experiment.title, username=experiment.author) }}" class="needs-validation" novalidate>
+    {{ form.hidden_tag() }}
+    
+    <div class="form-row">
+
+        <div class="col-auto">
+
+    <div class="form-check form-check-inline pr-3">
+        {{ form.debug(class="form-check form-check-inline") }}
+        {{ form.debug.label(class="form-check-label btn btn-sm btn-secondary") }}
+      </div>
+      <div class="form-check form-check-inline pr-3">
+        {{ form.info(class="form-check form-check-inline") }}
+        {{ form.info.label(class="form-check-label btn btn-sm btn-info") }}
+      </div>
+      <div class="form-check form-check-inline pr-3">
+        {{ form.warning(class="form-check form-check-inline") }}
+        {{ form.warning.label(class="form-check-label btn btn-sm btn-warning") }}
+      </div>
+      <div class="form-check form-check-inline pr-3">
+        {{ form.error(class="form-check form-check-inline") }}
+        {{ form.error.label(class="form-check-label btn btn-sm btn-danger") }}
+        </div>
+        <div class="form-check form-check-inline pr-3">
+            {{ form.critical(class="form-check form-check-inline") }}
+            {{ form.critical.label(class="form-check-label btn btn-sm btn-danger") }}
+            </div>
+        </div>
+        <div class="col-1"></div>
+        <div class="col-auto">
+            {{ form.submit(class="btn btn-sm btn-primary", id="submit")}}
+    </div>
+    
+    </div>
+
+</form>
+
+<hr>
+
 {% for entry in log %}
 {{ entry|safe }}
 {% endfor %}

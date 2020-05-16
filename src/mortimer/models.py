@@ -38,6 +38,17 @@ class User(db.Document, UserMixin):
     local_db_pw = db.BinaryField()
     local_col = db.StringField()
 
+    settings = db.DictField(default={
+        "logfilter": {
+            "debug": False, 
+            "info": True, 
+            "warning": True, 
+            "error": True, 
+            "critical": True
+            }
+        }
+        )
+
     def get_reset_token(self, expires_sec=1800):
         # methode for creating a token for password reset
         s = Serializer(current_app.config["SECRET_KEY"], expires_sec)

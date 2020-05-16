@@ -220,6 +220,14 @@ class ExperimentExportForm(FlaskForm):
 
     submit = SubmitField("Download")
 
+class FilterLogForm(FlaskForm):
+    debug = BooleanField(label = "debug")
+    info = BooleanField(label="info")
+    warning = BooleanField(label = "warning")
+    error = BooleanField(label = "error")
+    critical = BooleanField(label = "critical")
+    submit = SubmitField(label="Apply Filter")
+
 class ExperimentConfigurationForm(FlaskForm):
     # general
     title = StringField("Title", validators=[DataRequired()])

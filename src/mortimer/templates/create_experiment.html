@@ -27,7 +27,6 @@
                 {{ form.title.label(class="form-control-label") }}*
                 {% if form.title.errors %}
                 {{ form.title(class="form-control form-control-lg is-invalid") }}
-                <!-- , placeholder=form.title.label.text -->
 
                 <div class="invalid-feedback">
                     {% for error in form.title.errors %}
