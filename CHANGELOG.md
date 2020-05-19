@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Added two data export formats: `excel_csv` (export to excel-friendly .csv format with `;`-delimiter) and `json`.
 
-* Added log filterin. On the "log" tab of the experiment view, you can now select the log levels that you want to display. Your settings are saved and applied on an account level.
+* Added log filtering. On the "log" tab of the experiment view, you can now select the log levels that you want to display. Your settings are saved and applied on an account level.
 
 
 ## Mortimer v0.4.5
