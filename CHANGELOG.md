@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-* Added automatic DB credential generation. Mortimer now automatically generates database credentials for locally run alfred experiments for all users. They can be viewed on the "Account" page. You can use these credentials in your config.conf to write your experiment data to a special collection in the Alfred database. **Make sure to specify ``auth_source = alfred`` in your config.conf**, otherwise you will receive an authentication error upon trying to save to the database.
+* Added automatic DB credential generation. Mortimer now automatically generates database credentials for locally run alfred experiments for all users. They can be viewed on the "Account" page. You can use these credentials in your config.conf to write your experiment data to a collection in the Alfred database specifically reserved for your local experiments. **Make sure to specify ``auth_source = alfred`` in your config.conf**, otherwise you will receive an authentication error upon trying to save to the database.
 
 * Added encryption key display. Mortimer now displays the user's encryption key on the "Account" page. This is the key used for encryption via `alfred3.Experiment.encrypt` and `alfred3.Experiment.decrypt`.
 
