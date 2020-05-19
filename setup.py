@@ -13,7 +13,7 @@ setuptools.setup(
     name="mortimer",
     version=version["__version__"],
     author="Christian Treffenstädt, Paul Wiemann, Johannes Brachem",
-    author_email="treffenstaedt@psych.uni-goettingen.de",
+    author_email="alfred@psych.uni-goettingen.de",
     description="A web-appication for the administration of alfred experiments.",
     long_description=long_description,
     long_description_content_type="text/markdown",
