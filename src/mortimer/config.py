@@ -6,6 +6,7 @@ The `BaseConfig` class can be used as a parent in order to create different sets
 
 import os
 
+
 def configure_app(app):
     """Apply configuration to app.
 
@@ -26,9 +27,7 @@ def configure_app(app):
         app: The app, an instance of `flask.Flask`.
     """
 
-    switch = {
-        "default": "mortimer.config.BaseConfig"
-    }
+    switch = {"default": "mortimer.config.BaseConfig"}
 
     config_name = os.getenv("FLASK_CONFIGURATION", "default")
 
@@ -43,9 +42,9 @@ def configure_app(app):
             app.config.from_pyfile(f)
         except (FileNotFoundError, TypeError):
             pass
-    
+
     # Last: Read config form instance folder config
-    instance_config = os.path.join(app.instance_path, 'mortimer.conf')
+    instance_config = os.path.join(app.instance_path, "mortimer.conf")
     try:
         app.config.from_pyfile(instance_config)
     except FileNotFoundError:
@@ -53,7 +52,7 @@ def configure_app(app):
 
 
 class BaseConfig:
-    
+
     # Must be URL-safe base64-encoded 32-byte key for fernet encryption
     SECRET_KEY = None
 
@@ -79,7 +78,7 @@ class BaseConfig:
     MONGODB_SETTINGS["authentication_source"] = "admin"
     MONGODB_SETTINGS["ssl"] = False
     MONGODB_SETTINGS["ssl_ca_certs"] = None
-    
+
     # Name of alfred database
     ALFRED_DB = "alfred"
 
@@ -93,11 +92,13 @@ class BaseConfig:
 
     # Flask-Dropzone settings:
     DROPZONE_ALLOWED_FILE_CUSTOM = True
-    DROPZONE_ALLOWED_FILE_TYPE = ".pdf, image/*, .txt, .xml, .pem, .mp3, .mp4, .ogg, .csv, .py"
+    DROPZONE_ALLOWED_FILE_TYPE = (
+        ".pdf, image/*, .txt, .xml, .pem, .mp3, .mp4, .ogg, .csv, .py"
+    )
     DROPZONE_MAX_FILE_SIZE = 20
     DROPZONE_MAX_FILES = 5
     DROPZONE_UPLOAD_ON_CLICK = True
     DROPZONE_UPLOAD_BTN_ID = "upload"
     DROPZONE_UPLOAD_MULTIPLE = True
     DROPZONE_PARRALEL_UPLOAD = True
-    DROPZONE_TIMEOUT = 300000 # 5 minutes
+    DROPZONE_TIMEOUT = 300000  # 5 minutes
