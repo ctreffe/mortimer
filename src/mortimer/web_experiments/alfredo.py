@@ -154,7 +154,7 @@ def start(expid):
         module = import_script(experiment.id)
     except Exception:
         flash("Error during script import. For details, take a look at the log.", 'danger')
-        logger.error(msg=traceback.format_exc(), exp_id=str(experiment.id), session_id=sid)
+        logger.critical(msg=traceback.format_exc(), exp_id=str(experiment.id), session_id=sid)
         if current_user.is_authenticated:
             return redirect(url_for('web_experiments.experiment', username=experiment.author, exp_title=experiment.title))
         else:
@@ -207,7 +207,7 @@ def start(expid):
                 abort(500)
 
     except Exception:
-        logger.error(msg=traceback.format_exc(), exp_id=str(experiment.id), session_id=sid)
+        logger.critical(msg=traceback.format_exc(), exp_id=str(experiment.id), session_id=sid)
         if current_user.is_authenticated:
             flash("Error during experiment generation. For details, take a look at the log.", 'danger')
             return redirect(url_for('web_experiments.experiment', username=experiment.author, exp_title=experiment.title))
@@ -218,7 +218,7 @@ def start(expid):
         # start experiment
         script.experiment.start()
     except Exception:
-        logger.error(msg=traceback.format_exc(), exp_id=str(experiment.id), session_id=sid)
+        logger.critical(msg=traceback.format_exc(), exp_id=str(experiment.id), session_id=sid)
         if current_user.is_authenticated:
             flash("Error during experiment startup. For details, take a look at the log.", 'danger')
             return redirect(url_for('web_experiments.experiment', username=experiment.author, exp_title=experiment.title))
@@ -291,7 +291,7 @@ def experiment():
             resp.cache_control.no_cache = True
             return resp
     except Exception:
-        logger.error(msg=traceback.format_exc(), exp_id=str(script.experiment.exp_id), session_id=sid)
+        logger.critical(msg=traceback.format_exc(), exp_id=str(script.experiment.exp_id), session_id=sid)
         return render_template('errors/500_alfred.html')
 
 
