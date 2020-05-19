@@ -15,7 +15,7 @@
       <thead>
         <tr class="table-active">
 
-        {% for col in csv_list[0] %}
+        {% for col in data_list[0] %}
         <th scope="col" class="small">{{ col }}</th>
         {% endfor %}
         </tr>
@@ -23,7 +23,7 @@
 
       <tbody>
 
-      {% for col in csv_list[1:] %}
+      {% for col in data_list[1:] %}
         <tr>
         {% for cell in col %}
             <td class="small text-muted">{{ cell }}</td>

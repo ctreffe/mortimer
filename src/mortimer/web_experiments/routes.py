@@ -710,7 +710,7 @@ def web_export(username, experiment_title):
 @web_experiments.route("/<username>/<path:experiment_title>/data", methods=["GET"])
 @login_required
 def data(username, experiment_title):
-    experiment = WebExperiment.objects.get_or_404(title=experiment_title, author=username)
+    experiment = WebExperiment.objects.get_or_404(title=experiment_title, author=username) # pylint: disable=no-member
     if experiment.author != current_user.username:
         abort(403)
     
@@ -728,13 +728,9 @@ def data(username, experiment_title):
         )
 
     cur = db.find({"exp_id": str(experiment.id)})
-    csv = export.to_csv(cur)
-
-    csv_list = []
-    for line in csv.getvalue().splitlines():
-        csv_list.append(line.split(sep=","))
-
-    return render_template("data.html", experiment=experiment, author=username, csv_list=csv_list)
+    data_list = export.cursor_to_rows(cursor=cur)
+   
+    return render_template("data.html", experiment=experiment, author=username, data_list=data_list)
 
 
 
@@ -933,12 +929,8 @@ def experiment_log(username, experiment_title):
             "error": form.error.data,
             "critical": form.critical.data
         }
-        print("\n\n\n")
-        print(logfilter)
         current_user.settings["logfilter"] = logfilter
-        print(current_user.settings)
         current_user.save()
-        print("\n\n\n")
 
         return redirect(url_for("web_experiments.experiment_log", experiment_title=exp.title, username=exp.author))
 
