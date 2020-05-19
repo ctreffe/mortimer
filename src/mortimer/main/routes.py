@@ -52,7 +52,6 @@ def futurize_script(script_name=None):
     form = FuturizeScriptForm()
 
     if form.validate_on_submit():
-        print(form.script.data)
         filename = str(uuid4()) + ".py"
         filepath = os.path.join(temp_path, filename)
         filepath_bak = os.path.join(temp_path, filename + '.bak')
