@@ -1,5 +1,9 @@
 {% extends "layout.html" %}
 
+{% block custom_css %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
+{% endblock custom_css %}
+
 {% block navigation %}
 
 <ul class="nav navbar-nav mr-auto">
@@ -16,84 +20,84 @@
 
 {% block content %}
 
-<!-- <div class="media content-section"> -->
 
-<!-- <div class="row">
-        <div class="col-xs-12"> -->
-<div class="content-section">
+<table id="exp-overview" class="display">
 
-  <div class="table-responsive">
+  <thead>
+    <tr>
+      <th class="small">Status</th>
+      <th class="small">Title</th>
+      <th class="small">Last Update</th>
+      <th class="small">Created</th>
+      <th class="small">Toggle</th>
+      <th class="small">Start</th>
+      <th class="small">Delete</th>
+    </tr>
+  </thead>
 
-    <table class="table table-hover">
+  <tbody>
 
-      <thead>
-        <tr class="table-active">
-          <th scope="col" class="small">Title</th>
-          <th scope="col" class="small">Last Update</th>
-          <th scope="col" class="small">Created</th>
-          <th scope="col" class="small">Toggle</th>
-          <th scope="col" class="small">Start</th>
-          <th scope="col" class="small">Delete</th>
-        </tr>
-      </thead>
+    {% for exp in experiments %}
+    <tr>
 
-      <tbody>
+      <td>
+        {% if exp.active %}
+        <span class="badge badge-success mr-2">active </span>
+        {% else %}
+        <span class="badge badge-warning mr-2">inactive </span>
+        {% endif %}
+      </td>
 
-        {% for exp in experiments %}
-        <tr>
+      <th class="strong">
+        {% if exp.active %}
+        <a href="{{ url_for('web_experiments.experiment', exp_title=exp.title, username=exp.author) }}"
+          class="nav-link"> {{ exp.title }}</a>
+        {% else %}
+        <a href="{{ url_for('web_experiments.experiment', exp_title=exp.title, username=exp.author) }}"
+          class="nav-link"> {{ exp.title }}</a>
+        {% endif %}
+      </th>
+
+      <td class="small text-muted">{{ exp.last_update.strftime('%Y-%m-%d') }}</td>
+      <td class="small text-muted">{{ exp.date_created.strftime('%Y-%m-%d') }}</td>
+
+      <td class="small">
+        <form method="POST"
+          action="{{ url_for('web_experiments.de_activate_experiment', experiment_title=exp.title, username=exp.author) }}">
 
           {% if exp.active %}
-          <th><a href="{{ url_for('web_experiments.experiment', exp_title=exp.title, username=exp.author) }}"
-              class="nav-link"><span class="badge badge-success mr-2">active </span> {{ exp.title }}</a></th>
-          <td class="small text-muted">{{ exp.last_update.strftime('%Y-%m-%d') }}</td>
-          <td class="small text-muted">{{ exp.date_created.strftime('%Y-%m-%d') }}</td>
-
-          <td class="small">
-            <form method="POST"
-              action="{{ url_for('web_experiments.de_activate_experiment', experiment_title=exp.title, username=exp.author) }}">
-              <button class="btn btn-sm btn-secondary" type="submit"><i
-                  class='fas fa-stop-circle mr-2'></i>deactivate</button>
-
-            </form>
-          </td>
-
-          <td class="small"><a class="btn btn-success btn-sm" target="_blank" rel="noopener noreferrer"
-              href="{{ url_for('alfredo.start', expid=exp.id) }}"><i class="fas fa-play mr-2"></i>Start</a></td>
+          <button class="btn btn-sm btn-secondary" type="submit"><i
+              class='fas fa-stop-circle mr-2'></i>deactivate</button>
           {% else %}
-          <th><a href="{{ url_for('web_experiments.experiment', exp_title=exp.title, username=exp.author) }}"
-              class="nav-link"><span class="badge badge-warning mr-2">inactive</span>{{ exp.title }}</a></th>
-          <td class="small text-muted">{{ exp.last_update.strftime('%Y-%m-%d') }}</td>
-          <td class="small text-muted">{{ exp.date_created.strftime('%Y-%m-%d') }}</td>
-          <!-- <td>
-                <form method="POST" action="{{ url_for('web_experiments.de_activate_experiment', experiment_title=exp.title, username=exp.author) }}">
-                  <input class="btn btn-warning btn-sm" type="submit" value="inactive">
-                </form>
-                </td> -->
-          <td class="small">
-            <form method="POST"
-              action="{{ url_for('web_experiments.de_activate_experiment', experiment_title=exp.title, username=exp.author) }}">
-              <button class="btn btn-sm btn-primary" type="submit"><i
-                  class='fas fa-play-circle mr-2'></i>activate</button>
-
-            </form>
-          </td>
-          <td class="small">-</td>
+          <button class="btn btn-sm btn-primary" type="submit"><i class='fas fa-play-circle mr-2'></i>activate</button>
           {% endif %}
 
-          <td class="small"><button type="button" class="btn btn-danger btn-sm" data-toggle="modal"
-              data-target="#deleteModal{{ secure_filename(exp.title) }}"><i class='fas fa-trash mr-2'></i>delete</button></td>
-        </tr>
+        </form>
+      </td>
 
-        {% endfor %}
+      <td class="small">
+        {% if exp.active %}
+        <a class="btn btn-success btn-sm" target="_blank" rel="noopener noreferrer"
+          href="{{ url_for('alfredo.start', expid=exp.id) }}"><i class="fas fa-play mr-2"></i>Start</a>
+        {% else %}
+        -
+        {% endif %}
+
+      </td>
+
+      <td class="small"><button type="button" class="btn btn-danger btn-sm" data-toggle="modal"
+          data-target="#deleteModal{{ secure_filename(exp.title) }}"><i class='fas fa-trash mr-2'></i>delete</button>
+      </td>
+
+    </tr>
+
+    {% endfor %}
 
 
 
-      </tbody>
+  </tbody>
 
-    </table>
-  </div>
-
-</div>
+</table>
 
 
 
@@ -126,8 +130,34 @@
 </div>
 {% endfor %}
 
-
-
-
-
 {% endblock content %}
+
+{% block custom_js %}
+
+<script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+
+<script>
+  $(document).ready(function () {
+    $('#exp-overview').DataTable({
+      // "scrollX": true,
+      "scrollY": "70vh",
+      "lengthMenu": [
+        [10, 25, 50, 100, 200, -1],
+        [10, 25, 50, 100, 200, "All"]
+      ],
+      "pageLength": 50,
+      "columnDefs": [{
+          className: "dt-nowrap",
+          targets: "_all"
+        },
+        {
+          "width": "5%",
+          "targets": [0]
+        }
+      ],
+
+    });
+  });
+</script>
+
+{% endblock custom_js %}
