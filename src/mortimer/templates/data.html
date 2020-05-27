@@ -1,30 +1,73 @@
 {% extends "layout_experiment.html" %}
 
+{% block custom_css %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
+{% endblock custom_css %}
+
 {% block content %}
 
-<div class="table-responsive horizontal-scrollbar">
 
-  <table class="table table-hover">
 
-    <thead>
-      <tr class="table-active">
+<table id="exp-data" class="display">
 
-        {% for col in data_list[0] %}
-        <th scope="col" class="small">{{ col }}</th>
-        {% endfor %}
-      </tr>
-    </thead>
+  <thead>
+    <tr>
 
-    <tbody>
-
-      {% for col in data_list[1:] %}
-      <tr>
-        {% for cell in col %}
-        <td class="small text-muted">{{ cell }}</td>
-        {% endfor %}
-      </tr>
-
+      {% for col in data_list[0] %}
+      <th scope="col" class="small">{{ col }}</th>
       {% endfor %}
-</div>
+    </tr>
+  </thead>
+
+  <tbody>
+
+    {% for col in data_list[1:] %}
+    <tr>
+      {% for cell in col %}
+      <td class="small text-muted">
+        <div data-toggle="tooltip" title="{{ cell }}" class="datatab-cell">
+          {{ cell }}
+        </div>
+
+      </td>
+      {% endfor %}
+    </tr>
+
+    {% endfor %}
+
+  </tbody>
+</table>
 
 {% endblock content %}
+
+{% block custom_js %}
+
+<script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+
+<script>
+  $(document).ready(function () {
+    $('#exp-data').DataTable({
+      "scrollX": true,
+      "scrollY": "70vh",
+      "lengthMenu": [
+        [10, 25, 50, 100, 200, -1],
+        [10, 25, 50, 100, 200, "All"]
+      ],
+      "pageLength": 50,
+      "columnDefs": [{
+        className: "dt-nowrap",
+        targets: "_all"
+      }],
+    });
+  });
+
+  $(function () {
+    $('[data-toggle="tooltip"]').tooltip()
+  });
+
+  $('.datatab-cell').tooltip(options);
+</script>
+
+
+
+{% endblock custom_js %}

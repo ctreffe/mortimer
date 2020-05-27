@@ -1,3 +1,9 @@
+.datatab-cell {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .wrapper {
   display: flex;
   width: 100%;
@@ -131,10 +137,4 @@ a[data-toggle="collapse"] {
   top: 50%;
   right: 20px;
   transform: translateY(-50%);
-}
-
-
-.horizontal-scrollbar {
-  width: 100%;
-  overflow-x: scroll;
 }
