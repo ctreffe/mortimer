@@ -95,7 +95,7 @@ def account():
 
     if form.validate_on_submit():   # if all field are filled out correctly
 
-        if current_user.username =! form.username.data:
+        if current_user.username != form.username.data:
             for exp in WebExperiment.objects(author=current_user.username):
                 exp.author = form.username.data
                 exp.save()
