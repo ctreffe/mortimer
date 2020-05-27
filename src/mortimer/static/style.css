@@ -132,3 +132,9 @@ a[data-toggle="collapse"] {
   right: 20px;
   transform: translateY(-50%);
 }
+
+
+.horizontal-scrollbar {
+  width: 100%;
+  overflow-x: scroll;
+}

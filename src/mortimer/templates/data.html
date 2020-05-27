@@ -2,35 +2,29 @@
 
 {% block content %}
 
-<!-- <div class="media content-section"> -->
+<div class="table-responsive horizontal-scrollbar">
 
-<!-- <div class="row">
-        <div class="col-xs-12"> -->
-<div>
+  <table class="table table-hover">
 
-  <div class="table-responsive">
-
-    <table class="table table-hover">
-
-      <thead>
-        <tr class="table-active">
+    <thead>
+      <tr class="table-active">
 
         {% for col in data_list[0] %}
         <th scope="col" class="small">{{ col }}</th>
         {% endfor %}
-        </tr>
-      </thead>
+      </tr>
+    </thead>
 
-      <tbody>
+    <tbody>
 
       {% for col in data_list[1:] %}
-        <tr>
+      <tr>
         {% for cell in col %}
-            <td class="small text-muted">{{ cell }}</td>
+        <td class="small text-muted">{{ cell }}</td>
         {% endfor %}
-        </tr>
-          
-      {% endfor %}
+      </tr>
 
+      {% endfor %}
+</div>
 
 {% endblock content %}
