@@ -140,6 +140,10 @@ def display_directory(directories: list, parent_directory: str,
                                    file_display: str,
                                    subdirectory_display: str) ->str:
 
+        # ignore __pycache__ directory
+        if directory == "__pycache__":
+            return ""
+
         call_id = str(uuid4())
 
         upload_url = url_for('web_experiments.upload_resources',
@@ -188,7 +192,8 @@ def display_directory(directories: list, parent_directory: str,
                 # skip pycache directory
                 if filename == "__pychache__":
                     continue
-                subdirectory_list.append(filename)
+                else:
+                    subdirectory_list.append(filename)
             else:
                 file_list.append(filename)
 
