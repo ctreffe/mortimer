@@ -1,20 +1,43 @@
 # -*- coding: utf-8 -*-
-import collections, os, re, shutil, sys
+import collections
+import os
+import re
+import shutil
+import sys
 from datetime import datetime
 from uuid import uuid4
 
-from flask import (Blueprint, abort, current_app, flash, redirect,
-                   render_template, request, send_file, url_for)
+from flask import (
+    Blueprint,
+    abort,
+    current_app,
+    flash,
+    redirect,
+    render_template,
+    request,
+    send_file,
+    url_for,
+)
 from flask_login import current_user, login_required
 from werkzeug.utils import secure_filename
 
 from mortimer import export
-from mortimer.forms import (ExperimentConfigurationForm, ExperimentExportForm,
-                            ExperimentScriptForm, NewScriptForm,
-                            WebExperimentForm, FilterLogForm)
+from mortimer.forms import (
+    ExperimentConfigurationForm,
+    ExperimentExportForm,
+    ExperimentScriptForm,
+    FilterLogForm,
+    NewScriptForm,
+    WebExperimentForm,
+)
 from mortimer.models import User, WebExperiment
-from mortimer.utils import (ScriptFile, ScriptString, _DictObj,
-                            display_directory, get_user_collection)
+from mortimer.utils import (
+    ScriptFile,
+    ScriptString,
+    _DictObj,
+    display_directory,
+    get_user_collection,
+)
 
 web_experiments = Blueprint("web_experiments", __name__)
 
@@ -69,7 +92,7 @@ def new_experiment():
         exp.save()
 
         # append an entry for the current experiment to the current user
-        current_user.experiments.append(exp.id) # pylint: disable=no-member
+        current_user.experiments.append(exp.id)  # pylint: disable=no-member
         current_user.save()
 
         flash("Your Experiment has been created.", "success")
@@ -79,18 +102,17 @@ def new_experiment():
         )
 
     return render_template(
-        "create_experiment.html",
-        title="New Experiment",
-        form=form,
-        legend="New Experiment",
-    ) 
+        "create_experiment.html", title="New Experiment", form=form, legend="New Experiment",
+    )
 
 
 @web_experiments.route("/<username>/<path:exp_title>", methods=["POST", "GET"])
 @login_required
 def experiment(username, exp_title):
 
-    exp = WebExperiment.objects.get_or_404(title=exp_title, author=username) # pylint: disable=no-member
+    exp = WebExperiment.objects.get_or_404(  # pylint: disable=no-member
+        title=exp_title, author=username
+    )
     if exp.author != current_user.username:
         abort(403)
 
@@ -107,7 +129,6 @@ def experiment(username, exp_title):
         password_protection = "disabled"
     else:
         password_protection = "enabled"
-
 
     # Query Database
     db = get_user_collection()
@@ -126,7 +147,7 @@ def experiment(username, exp_title):
     n["fin"] = db.count_documents({**f_id, **f_fin})
     n["unfin"] = n["total"] - n["fin"]
     n["current_ver"] = db.count_documents({**f_id, **f_ver})
-    n["fin_current_ver"]  = db.count_documents({**f_fin, **f_id, **f_ver})
+    n["fin_current_ver"] = db.count_documents({**f_fin, **f_id, **f_ver})
     n["unfin_current_ver"] = n["current_ver"] - n["fin_current_ver"]
 
     # Number of datasets per version
@@ -135,17 +156,13 @@ def experiment(username, exp_title):
         t = "{}_total".format(v)
         fin = "{}_fin".format(v)
         unfin = "{}_unfin".format(v)
-        
+
         n[t] = db.count_documents(f_ver)
         n[fin] = db.count_documents({**f_fin, **f_ver})
         n[unfin] = n[t] - n[fin]
-    
+
     # start time
-    group = {
-        "_id": 1, 
-        "first": {"$min": "$start_time"}, 
-        "last": {"$max": "$start_time"}
-    }
+    group = {"_id": 1, "first": {"$min": "$start_time"}, "last": {"$max": "$start_time"}}
     pipe = [{"$match": f_id}, {"$group": group}]
     times = list(db.aggregate(pipe))
 
@@ -156,7 +173,6 @@ def experiment(username, exp_title):
     else:
         activity["first"] = "none"
         activity["last"] = "none"
-    
 
     # Form for script.py upload
     form = NewScriptForm()
@@ -186,17 +202,13 @@ def experiment(username, exp_title):
         # redirect to experiment page
         flash("New script.py was uploaded successfully", "success")
         return redirect(
-            url_for(
-                "web_experiments.experiment", username=exp.author, exp_title=exp.title
-            )
+            url_for("web_experiments.experiment", username=exp.author, exp_title=exp.title)
         )
 
     elif form.validate_on_submit():
         flash("No script.py was provided, so nothing happened.", "info")
         return redirect(
-            url_for(
-                "web_experiments.experiment", username=exp.author, exp_title=exp.title
-            )
+            url_for("web_experiments.experiment", username=exp.author, exp_title=exp.title)
         )
 
     # pre-populate form
@@ -220,7 +232,9 @@ def experiment(username, exp_title):
 @login_required
 def experiment_script(username, exp_title):
 
-    exp = WebExperiment.objects.get_or_404(title=exp_title, author=username) # pylint: disable=no-member
+    exp = WebExperiment.objects.get_or_404(  # pylint: disable=no-member
+        title=exp_title, author=username
+    )
 
     if exp.author != current_user.username:
         abort(403)
@@ -249,9 +263,7 @@ def experiment_script(username, exp_title):
         # return to experiment page
         flash("Your experiment has been updated", "success")
         return redirect(
-            url_for(
-                "web_experiments.experiment", exp_title=exp.title, username=exp.author
-            )
+            url_for("web_experiments.experiment", exp_title=exp.title, username=exp.author)
         )
 
     # pre-populate form
@@ -274,9 +286,7 @@ def experiment_script(username, exp_title):
 def delete_experiment(username, experiment_title):
 
     # pylint: disable=no-member
-    experiment = WebExperiment.objects.get_or_404(
-        title=experiment_title, author=username
-    )
+    experiment = WebExperiment.objects.get_or_404(title=experiment_title, author=username)
 
     if experiment.author != current_user.username:
         abort(403)
@@ -288,9 +298,7 @@ def delete_experiment(username, experiment_title):
     experiment.delete()
     flash("Experiment deleted.", "info")
 
-    return redirect(
-        url_for("web_experiments.user_experiments", username=current_user.username)
-    )
+    return redirect(url_for("web_experiments.user_experiments", username=current_user.username))
 
 
 @web_experiments.route(
@@ -300,9 +308,7 @@ def delete_experiment(username, experiment_title):
 @login_required
 def upload_resources(username, experiment_title, relative_path):
     # pylint: disable=no-member
-    experiment = WebExperiment.objects.get_or_404(
-        title=experiment_title, author=username
-    )
+    experiment = WebExperiment.objects.get_or_404(title=experiment_title, author=username)
     if experiment.author != current_user.username:
         abort(403)
 
@@ -324,7 +330,11 @@ def upload_resources(username, experiment_title, relative_path):
             new_filenames = []
 
             if key.startswith("file"):
-                file_fn = secure_filename(f.filename)
+                # exemption from sanitization for __init__.py to allow submodules
+                if f.filename == "__init__.py":
+                    file_fn = f.filename
+                else:
+                    file_fn = secure_filename(f.filename)
                 f.save(os.path.join(path, file_fn))
 
                 old_filenames.append(f.filename)
@@ -354,9 +364,7 @@ def upload_resources(username, experiment_title, relative_path):
 @login_required
 def manage_resources(username, experiment_title):
     # pylint: disable=no-member
-    experiment = WebExperiment.objects.get_or_404(
-        title=experiment_title, author=username
-    )
+    experiment = WebExperiment.objects.get_or_404(title=experiment_title, author=username)
     if experiment.author != current_user.username:
         abort(403)
 
@@ -383,10 +391,7 @@ def manage_resources(username, experiment_title):
     )
 
     return render_template(
-        "manage_resources.html",
-        legend="Manage Resources",
-        experiment=experiment,
-        display=display,
+        "manage_resources.html", legend="Manage Resources", experiment=experiment, display=display,
     )
 
 
@@ -404,19 +409,22 @@ def experiments():
 
 @web_experiments.route("/<string:username>/experiments")
 @login_required
-def user_experiments(username): 
+def user_experiments(username):
 
-    user = User.objects.get_or_404(username=username) # pylint: disable=no-member
+    user = User.objects.get_or_404(username=username)  # pylint: disable=no-member
 
     if user.username != current_user.username:
         abort(403)
 
     # pylint: disable=no-member
-    experiments = WebExperiment.objects(author_id=user.id).order_by(
-        "-last_update"
-    )
+    experiments = WebExperiment.objects(author_id=user.id).order_by("-last_update")
 
-    return render_template("user_experiments.html", experiments=experiments, user=user, secure_filename=secure_filename)
+    return render_template(
+        "user_experiments.html",
+        experiments=experiments,
+        user=user,
+        secure_filename=secure_filename,
+    )
 
 
 @web_experiments.route(
@@ -426,9 +434,7 @@ def user_experiments(username):
 def delete_all_files(username, experiment_title):
 
     # pylint: disable=no-member
-    experiment = WebExperiment.objects.get_or_404(
-        title=experiment_title, author=username
-    )
+    experiment = WebExperiment.objects.get_or_404(title=experiment_title, author=username)
     if experiment.author != current_user.username:
         abort(403)
 
@@ -436,9 +442,7 @@ def delete_all_files(username, experiment_title):
         path = os.path.join(experiment.path, dir)
         shutil.rmtree(path)  # remove directory
 
-    experiment.user_directories = (
-        []
-    )  # empty the file list in the experiment document in mongoDB
+    experiment.user_directories = []  # empty the file list in the experiment document in mongoDB
     experiment.save()
 
     flash("All files and directories deleted.", "info")
@@ -458,8 +462,7 @@ def delete_all_files(username, experiment_title):
     defaults={"relative_path": None},
 )
 @web_experiments.route(
-    "/<username>/<path:experiment_title>/new_directory/<path:relative_path>",
-    methods=["POST"],
+    "/<username>/<path:experiment_title>/new_directory/<path:relative_path>", methods=["POST"],
 )
 @login_required
 def new_directory(username: str, experiment_title: str, relative_path: str = None):
@@ -471,9 +474,7 @@ def new_directory(username: str, experiment_title: str, relative_path: str = Non
     name = request.form["new_directory"]
 
     # pylint: disable=no-member
-    experiment = WebExperiment.objects.get_or_404(
-        title=experiment_title, author=username
-    )
+    experiment = WebExperiment.objects.get_or_404(title=experiment_title, author=username)
 
     if experiment.author != current_user.username:
         abort(403)
@@ -519,15 +520,12 @@ def new_directory(username: str, experiment_title: str, relative_path: str = Non
 
 
 @web_experiments.route(
-    "/<username>/<path:experiment_title>/<path:relative_path>/delete_directory",
-    methods=["POST"],
+    "/<username>/<path:experiment_title>/<path:relative_path>/delete_directory", methods=["POST"],
 )
 @login_required
 def delete_directory(username, experiment_title, relative_path):
     # pylint: disable=no-member
-    experiment = WebExperiment.objects.get_or_404(
-        title=experiment_title, author=username
-    )
+    experiment = WebExperiment.objects.get_or_404(title=experiment_title, author=username)
 
     if experiment.author != current_user.username:
         abort(403)
@@ -550,15 +548,12 @@ def delete_directory(username, experiment_title, relative_path):
 
 
 @web_experiments.route(
-    "/<username>/<path:experiment_title>/<path:relative_path>/delete_file",
-    methods=["POST"],
+    "/<username>/<path:experiment_title>/<path:relative_path>/delete_file", methods=["POST"],
 )
 @login_required
 def delete_file(username, experiment_title, relative_path):
     # pylint: disable=no-member
-    experiment = WebExperiment.objects.get_or_404(
-        title=experiment_title, author=username
-    )
+    experiment = WebExperiment.objects.get_or_404(title=experiment_title, author=username)
 
     if experiment.author != current_user.username:
         abort(403)
@@ -575,15 +570,11 @@ def delete_file(username, experiment_title, relative_path):
     )
 
 
-@web_experiments.route(
-    "/<username>/<path:experiment_title>/web_export", methods=["POST", "GET"]
-)
+@web_experiments.route("/<username>/<path:experiment_title>/web_export", methods=["POST", "GET"])
 @login_required
 def web_export(username, experiment_title):
     # pylint: disable=no-member
-    experiment = WebExperiment.objects.get_or_404(
-        title=experiment_title, author=username
-    )
+    experiment = WebExperiment.objects.get_or_404(title=experiment_title, author=username)
 
     if experiment.author != current_user.username:
         abort(403)
@@ -603,8 +594,7 @@ def web_export(username, experiment_title):
 
     form = ExperimentExportForm()
     form.version.choices = [
-        (version, version)
-        for version in ["all versions"] + experiment.available_versions
+        (version, version) for version in ["all versions"] + experiment.available_versions
     ]
     form.file_type.choices = [("csv", "csv"), ("excel_csv", "excel_csv"), ("json", "json")]
 
@@ -627,9 +617,7 @@ def web_export(username, experiment_title):
             for version in form.version.data:
                 results = []
                 results.append(
-                    db.count_documents(
-                        {"exp_id": str(experiment.id), "exp_version": version}
-                    )
+                    db.count_documents({"exp_id": str(experiment.id), "exp_version": version})
                 )
             if max(results) == 0:
                 flash("No data found for this experiment.", "warning")
@@ -642,10 +630,7 @@ def web_export(username, experiment_title):
                 )
 
             cur = db.find(
-                {
-                    "exp_id": str(experiment.id),
-                    "exp_version": {"$in": form.version.data},
-                }
+                {"exp_id": str(experiment.id), "exp_version": {"$in": form.version.data},}
             )
 
         none_value = None
@@ -699,21 +684,19 @@ def web_export(username, experiment_title):
         #     )
 
     return render_template(
-        "web_export.html",
-        form=form,
-        experiment=experiment,
-        legend="Export data",
-        type="web",
+        "web_export.html", form=form, experiment=experiment, legend="Export data", type="web",
     )
 
 
 @web_experiments.route("/<username>/<path:experiment_title>/data", methods=["GET"])
 @login_required
 def data(username, experiment_title):
-    experiment = WebExperiment.objects.get_or_404(title=experiment_title, author=username) # pylint: disable=no-member
+    experiment = WebExperiment.objects.get_or_404(  # pylint: disable=no-member
+        title=experiment_title, author=username
+    )
     if experiment.author != current_user.username:
         abort(403)
-    
+
     db = get_user_collection()
 
     results = db.count_documents({"exp_id": str(experiment.id)})
@@ -729,20 +712,17 @@ def data(username, experiment_title):
 
     cur = db.find({"exp_id": str(experiment.id)})
     data_list = export.cursor_to_rows(cursor=cur)
-   
-    return render_template("data.html", experiment=experiment, author=username, data_list=data_list)
+
+    return render_template(
+        "data.html", experiment=experiment, author=username, data_list=data_list
+    )
 
 
-
-@web_experiments.route(
-    "/de_activate/<username>/<path:experiment_title>", methods=["POST"]
-)
+@web_experiments.route("/de_activate/<username>/<path:experiment_title>", methods=["POST"])
 @login_required
 def de_activate_experiment(username, experiment_title):
     # pylint: disable=no-member
-    experiment = WebExperiment.objects.get_or_404(
-        title=experiment_title, author=username
-    )
+    experiment = WebExperiment.objects.get_or_404(title=experiment_title, author=username)
 
     if experiment.author != current_user.username:
         abort(403)
@@ -771,9 +751,7 @@ def de_activate_experiment(username, experiment_title):
     return redirect(request.referrer)
 
 
-@web_experiments.route(
-    "/<username>/<path:experiment_title>/config", methods=["POST", "GET"]
-)
+@web_experiments.route("/<username>/<path:experiment_title>/config", methods=["POST", "GET"])
 @login_required
 def experiment_config(username, experiment_title):
     # pylint: disable=no-member
@@ -802,21 +780,11 @@ def experiment_config(username, experiment_title):
         exp.settings["navigation"]["backward"] = form.backward.data
         exp.settings["navigation"]["finish"] = form.finish.data
 
-        exp.settings["hints"][
-            "no_inputtextentryelement"
-        ] = form.no_inputTextEntryElement.data
-        exp.settings["hints"][
-            "no_inputtextareaelement"
-        ] = form.no_inputTextAreaElement.data
-        exp.settings["hints"][
-            "no_inputregentryelement"
-        ] = form.no_inputRegEntryElement.data
-        exp.settings["hints"][
-            "no_inputnumberentryelement"
-        ] = form.no_inputNumberEntryElement.data
-        exp.settings["hints"][
-            "no_inputpasswordelement"
-        ] = form.no_inputPasswordElement.data
+        exp.settings["hints"]["no_inputtextentryelement"] = form.no_inputTextEntryElement.data
+        exp.settings["hints"]["no_inputtextareaelement"] = form.no_inputTextAreaElement.data
+        exp.settings["hints"]["no_inputregentryelement"] = form.no_inputRegEntryElement.data
+        exp.settings["hints"]["no_inputnumberentryelement"] = form.no_inputNumberEntryElement.data
+        exp.settings["hints"]["no_inputpasswordelement"] = form.no_inputPasswordElement.data
         exp.settings["hints"]["no_inputlikertmatrix"] = form.no_inputLikertMatrix.data
         exp.settings["hints"]["no_inputlikertelement"] = form.no_inputLikertElement.data
         exp.settings["hints"][
@@ -828,25 +796,23 @@ def experiment_config(username, experiment_title):
         exp.settings["hints"][
             "no_inputweblikertimageelement"
         ] = form.no_inputWebLikertImageElement.data
-        exp.settings["hints"][
-            "no_inputlikertlistelement"
-        ] = form.no_inputLikertListElement.data
+        exp.settings["hints"]["no_inputlikertlistelement"] = form.no_inputLikertListElement.data
 
         exp.settings["hints"]["corrective_regentry"] = form.corrective_RegEntry.data
-        exp.settings["hints"][
-            "corrective_numberentry"
-        ] = form.corrective_NumberEntry.data
+        exp.settings["hints"]["corrective_numberentry"] = form.corrective_NumberEntry.data
         exp.settings["hints"]["corrective_password"] = form.corrective_Password.data
 
-        exp.settings["messages"][
-            "minimum_display_time"
-        ] = form.minimum_display_time.data
+        exp.settings["messages"]["minimum_display_time"] = form.minimum_display_time.data
 
         exp.last_update = datetime.utcnow
         exp.save()
         flash("Experiment configuration updated", "success")
 
-        return redirect(url_for("web_experiments.experiment_config", username=username, experiment_title=exp.title))
+        return redirect(
+            url_for(
+                "web_experiments.experiment_config", username=username, experiment_title=exp.title
+            )
+        )
 
     form.title.data = exp.title
     form.description.data = exp.description
@@ -859,21 +825,11 @@ def experiment_config(username, experiment_title):
         form.backward.data = exp.settings["navigation"]["backward"]
         form.finish.data = exp.settings["navigation"]["finish"]
 
-        form.no_inputTextEntryElement.data = exp.settings["hints"][
-            "no_inputtextentryelement"
-        ]
-        form.no_inputTextAreaElement.data = exp.settings["hints"][
-            "no_inputtextareaelement"
-        ]
-        form.no_inputRegEntryElement.data = exp.settings["hints"][
-            "no_inputregentryelement"
-        ]
-        form.no_inputNumberEntryElement.data = exp.settings["hints"][
-            "no_inputnumberentryelement"
-        ]
-        form.no_inputPasswordElement.data = exp.settings["hints"][
-            "no_inputpasswordelement"
-        ]
+        form.no_inputTextEntryElement.data = exp.settings["hints"]["no_inputtextentryelement"]
+        form.no_inputTextAreaElement.data = exp.settings["hints"]["no_inputtextareaelement"]
+        form.no_inputRegEntryElement.data = exp.settings["hints"]["no_inputregentryelement"]
+        form.no_inputNumberEntryElement.data = exp.settings["hints"]["no_inputnumberentryelement"]
+        form.no_inputPasswordElement.data = exp.settings["hints"]["no_inputpasswordelement"]
         form.no_inputLikertMatrix.data = exp.settings["hints"]["no_inputlikertmatrix"]
         form.no_inputLikertElement.data = exp.settings["hints"]["no_inputlikertelement"]
         form.no_inputSingleChoiceElement.data = exp.settings["hints"][
@@ -885,19 +841,13 @@ def experiment_config(username, experiment_title):
         form.no_inputWebLikertImageElement.data = exp.settings["hints"][
             "no_inputweblikertimageelement"
         ]
-        form.no_inputLikertListElement.data = exp.settings["hints"][
-            "no_inputlikertlistelement"
-        ]
+        form.no_inputLikertListElement.data = exp.settings["hints"]["no_inputlikertlistelement"]
 
         form.corrective_RegEntry.data = exp.settings["hints"]["corrective_regentry"]
-        form.corrective_NumberEntry.data = exp.settings["hints"][
-            "corrective_numberentry"
-        ]
+        form.corrective_NumberEntry.data = exp.settings["hints"]["corrective_numberentry"]
         form.corrective_Password.data = exp.settings["hints"]["corrective_password"]
 
-        form.minimum_display_time.data = exp.settings["messages"][
-            "minimum_display_time"
-        ]
+        form.minimum_display_time.data = exp.settings["messages"]["minimum_display_time"]
     except KeyError as e:
         flash(
             "Something about the settings for this experiment seems to be wrong. Error: {error}".format(
@@ -927,12 +877,16 @@ def experiment_log(username, experiment_title):
             "info": form.info.data,
             "warning": form.warning.data,
             "error": form.error.data,
-            "critical": form.critical.data
+            "critical": form.critical.data,
         }
         current_user.settings["logfilter"] = logfilter
         current_user.save()
 
-        return redirect(url_for("web_experiments.experiment_log", experiment_title=exp.title, username=exp.author))
+        return redirect(
+            url_for(
+                "web_experiments.experiment_log", experiment_title=exp.title, username=exp.author
+            )
+        )
 
         # return redirect
     p = re.compile(
@@ -966,12 +920,7 @@ def experiment_log(username, experiment_title):
                 continue
             exp_id = match.group("exp_id")
             session_id = match.group("session_id")
-            message = (
-                match.group("message")
-                .replace("<", "&lt;")
-                .replace(">", "&gt;")
-                .rstrip()
-            )
+            message = match.group("message").replace("<", "&lt;").replace(">", "&gt;").rstrip()
 
             message = pattern_ip.sub("host=[--removed--]", message)
             message = pattern_path.sub('File "...', message)
@@ -988,7 +937,7 @@ def experiment_log(username, experiment_title):
                 type=flash_type[log_level], entry_info=entry_info, message=message
             )
             log_entries.appendleft(flash_entry)
-    
+
     form.debug.data = current_user.settings.get("logfilter", {}).get("debug", True)
     form.info.data = current_user.settings.get("logfilter", {}).get("info", True)
     form.warning.data = current_user.settings.get("logfilter", {}).get("warning", True)
