@@ -185,6 +185,9 @@ def display_directory(directories: list, parent_directory: str,
 
         for filename in sorted(os.listdir(full_path)):
             if os.path.isdir(os.path.join(full_path, filename)):
+                # skip pycache directory
+                if filename == "__pychache__":
+                    continue
                 subdirectory_list.append(filename)
             else:
                 file_list.append(filename)
