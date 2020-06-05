@@ -2,23 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/),
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## Mortimer v0.5.1
+
+### Changed
+
+* We now use the JavaScript plugin DataTable for the data tab and the experiment overview.
+* You can now upload your own modules to subfolders of the experiment directory and import them in your `script.py` . Remember to add an `__init__.py` to the subdirectory.
+* Small UI change to the account page.
+
+## Mortimer v0.5.0
+
 ### Added
 
-* Added automatic DB credential generation. Mortimer now automatically generates database credentials for locally run alfred experiments for all users. They can be viewed on the "Account" page. You can use these credentials in your config.conf to write your experiment data to a collection in the Alfred database specifically reserved for your local experiments. **Make sure to specify ``auth_source = alfred`` in your config.conf**, otherwise you will receive an authentication error upon trying to save to the database.
+* Added automatic DB credential generation. Mortimer now automatically generates database credentials for locally run alfred experiments for all users. They can be viewed on the "Account" page. You can use these credentials in your config.conf to write your experiment data to a collection in the Alfred database specifically reserved for your local experiments. **Make sure to specify ` ` auth_source = alfred ` ` in your config.conf**, otherwise you will receive an authentication error upon trying to save to the database.
 
-* Added encryption key display. Mortimer now displays the user's encryption key on the "Account" page. This is the key used for encryption via `alfred3.Experiment.encrypt` and `alfred3.Experiment.decrypt`.
+* Added encryption key display. Mortimer now displays the user's encryption key on the "Account" page. This is the key used for encryption via `alfred3.Experiment.encrypt` and `alfred3.Experiment.decrypt` .
 
 * Added a "Data" tab to the experiment view, allowing users to preview collected data.
 
-* Added two data export formats: `excel_csv` (export to excel-friendly .csv format with `;`-delimiter) and `json`.
+* Added two data export formats: `excel_csv` (export to excel-friendly .csv format with `;` -delimiter) and `json` .
 
 * Added log filtering. On the "log" tab of the experiment view, you can now select the log levels that you want to display. Your settings are saved and applied on an account level.
-
 
 ## Mortimer v0.4.5
 
@@ -33,7 +42,7 @@ pip install mortimer
 * Mortimer now uses a different configuration setup. See README.md for details.
 
 * In the future, we will be using the changelog format recommended by [Keep a Changelog](https://keepachangelog.com/en/)
-    + In the course of this change, we changed the name of the former `NEWS.md` to `CHANGELOG.md`.
+    - In the course of this change, we changed the name of the former `NEWS.md` to `CHANGELOG.md` .
 
 ### Fixed
 
@@ -58,7 +67,7 @@ pip install mortimer
 
 ### Encryption Keys
 
-* Every user now has a unique fernet encryption key, generated via `cryptography.fernet.Fernet.generate_key()`. The key is passed as an entry in the `config` dictionary (key: `encryption_key`) to the `generate_experiment()` function in `alfredo.py`. 
+* Every user now has a unique fernet encryption key, generated via `cryptography.fernet.Fernet.generate_key()` . The key is passed as an entry in the `config` dictionary (key: `encryption_key` ) to the `generate_experiment()` function in `alfredo.py` . 
 * The key itself is saved to the mortimer database in encrypted form.
 * Usage: See [here](https://github.com/ctreffe/alfred/releases/tag/v1.0.6)
 
@@ -113,4 +122,3 @@ pip install mortimer
 * **Configuration**. You can now configure your experiment from within Mortimer.
 * **Experiment Log**. You can now view your experiment's log file from within Mortimer.
 * **Futurize Scripts**. You can futurize an old script to help you port it to Alfred v1.0.
-
