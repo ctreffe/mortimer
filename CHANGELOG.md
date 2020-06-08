@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+### Fixed
+
+* Included a hotfix for a performance issues with our use of the DataTables Javascript plugin. Until we include server-side processing for the table, the data tab will only show a preview of 50 observations.
+
 ## Mortimer v0.5.1
 
 ### Changed
