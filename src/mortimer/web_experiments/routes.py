@@ -714,6 +714,7 @@ def data(username, experiment_title):
     data_list = export.cursor_to_rows(cursor=cur)
 
     # hotfix for performance-issues: show only the first fifty entries.
+    flash("Only showing 50 observations.", "info")
     shorter_data_list = data_list[0:50]
 
     return render_template(
