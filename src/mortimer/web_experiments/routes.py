@@ -713,8 +713,11 @@ def data(username, experiment_title):
     cur = db.find({"exp_id": str(experiment.id)})
     data_list = export.cursor_to_rows(cursor=cur)
 
+    # hotfix for performance-issues: show only the first fifty entries.
+    shorter_data_list = data_list[0:50]
+
     return render_template(
-        "data.html", experiment=experiment, author=username, data_list=data_list
+        "data.html", experiment=experiment, author=username, data_list=shorter_data_list
     )
 
 
