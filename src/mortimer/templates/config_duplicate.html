@@ -1,0 +1,513 @@
+{% extends "layout_experiment.html" %}
+
+{% block content %}
+
+<form method="POST" class="needs-validation" action="" novalidate>
+    {{ form.hidden_tag() }}
+    <fieldset class="form-group">
+
+        <h4 class="border-bottom"><i class="fas fa-cog mr-2"></i>General</h4>
+        <div class="form-group row">
+            <div class="col-xl-2 col-form-label">
+                {{ form.title.label(class="form-control-label") }}
+            </div>
+            <div class="col-xl-10">
+                {% if form.title.errors %}
+
+                {{ form.title(class="form-control form-control-sm is-invalid") }}
+
+                <div class="invalid-feedback">
+                    {% for error in form.title.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                {% else %}
+                {{ form.title(class="form-control form-control-sm") }}
+                {% endif %}
+            </div>
+        </div>
+
+
+        <div class="form-group row">
+            <div class="col-xl-2 col-form-label">
+                {{ form.description.label(class="form-control-label") }}
+            </div>
+            <div class="col-xl-10">
+                {% if form.description.errors %}
+
+                {{ form.description(class="form-control form-control-sm is-invalid") }}
+
+                <div class="invalid-feedback">
+                    {% for error in form.description.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                {% else %}
+                {{ form.description(class="form-control form-control-sm") }}
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-xl-2 col-form-label">
+                {{ form.password.label(class="form-control-label") }}
+            </div>
+            <div class="col-xl-10">
+                {% if form.password.errors %}
+
+                {{ form.password(class="form-control form-control-sm is-invalid") }}
+
+                <div class="invalid-feedback">
+                    {% for error in form.password.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                {% else %}
+                {{ form.password(class="form-control form-control-sm") }}
+                {% endif %}
+                <small id="passwordHelpBlock" class="form-text text-muted">
+                    Here, you can protect access to your experiment with a password. Just leave this field empty if you
+                    want the experiment to be public.
+                </small>
+            </div>
+        </div>
+
+        <!-- THE CODE BELOW ENABLES A TICK BOX FOR SWITCHING DEBUG MODE ON AND OFF. HAS NO EFFECT SO FAR. -->
+
+        <!-- <div class="form-group row">
+            <div class="col-xl-2">
+                {{ form.debug.label(class="form-control-label") }}
+            </div>
+            <div class="col-xl-10">
+
+                {% if form.debug.errors %}
+                
+                {{ form.debug(class="form-control form-control-sm is-invalid", placeholder=experiment.debug) }}
+
+                <div class="invalid-feedback">
+                    {% for error in form.debug.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                {% else %}
+                <div class="form-check">
+                {{ form.debug(class="form-check-input", placeholder=experiment.debug) }}
+                <div class="form-check-label">On</div>
+                </div>
+                {% endif %}    
+            </div>
+        </div> -->
+
+        <h4 class="pt-4 pb-2 border-bottom"><i class="fas fa-forward mr-2"></i>Navigation</h4>
+
+        <div class="form-group row">
+            <div class="col-xl-2 col-form-label">
+                {{ form.forward.label(class="form-control-label") }}
+            </div>
+            <div class="col-xl-10">
+                {% if form.forward.errors %}
+
+                {{ form.forward(class="form-control form-control-sm is-invalid") }}
+
+                <div class="invalid-feedback">
+                    {% for error in form.forward.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                {% else %}
+                {{ form.forward(class="form-control form-control-sm") }}
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-xl-2 col-form-label">
+                {{ form.backward.label(class="form-control-label") }}
+            </div>
+            <div class="col-xl-10">
+                {% if form.backward.errors %}
+
+                {{ form.backward(class="form-control form-control-sm is-invalid") }}
+
+                <div class="invalid-feedback">
+                    {% for error in form.backward.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                {% else %}
+                {{ form.backward(class="form-control form-control-sm") }}
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-xl-2 col-form-label">
+                {{ form.finish.label(class="form-control-label") }}
+            </div>
+            <div class="col-xl-10">
+                {% if form.finish.errors %}
+
+                {{ form.finish(class="form-control form-control-sm is-invalid") }}
+
+                <div class="invalid-feedback">
+                    {% for error in form.finish.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                {% else %}
+                {{ form.finish(class="form-control form-control-sm") }}
+                {% endif %}
+            </div>
+        </div>
+
+        <h4 class="pt-4 pb-2 border-bottom"><i class="fas fa-file-alt mr-2"></i>No Input Hints</h4>
+        <small id="noInputHelp" class="form-text text-muted pb-3">
+            This text will be displayed if a participant does not fill out a required element.
+        </small>
+
+        <div class="form-group row">
+            <div class="col-xl-2 col-form-label">
+                {{ form.no_inputTextEntryElement.label(class="form-control-label") }}
+            </div>
+            <div class="col-xl-10">
+                {% if form.no_inputTextEntryElement.errors %}
+
+                {{ form.no_inputTextEntryElement(class="form-control form-control-sm is-invalid") }}
+
+                <div class="invalid-feedback">
+                    {% for error in form.no_inputTextEntryElement.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                {% else %}
+                {{ form.no_inputTextEntryElement(class="form-control form-control-sm") }}
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-xl-2 col-form-label">
+                {{ form.no_inputTextAreaElement.label(class="form-control-label") }}
+            </div>
+            <div class="col-xl-10">
+                {% if form.no_inputTextAreaElement.errors %}
+
+                {{ form.no_inputTextAreaElement(class="form-control form-control-sm is-invalid") }}
+
+                <div class="invalid-feedback">
+                    {% for error in form.no_inputTextAreaElement.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                {% else %}
+                {{ form.no_inputTextAreaElement(class="form-control form-control-sm") }}
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-xl-2 col-form-label">
+                {{ form.no_inputRegEntryElement.label(class="form-control-label") }}
+            </div>
+            <div class="col-xl-10">
+                {% if form.no_inputRegEntryElement.errors %}
+
+                {{ form.no_inputRegEntryElement(class="form-control form-control-sm is-invalid") }}
+
+                <div class="invalid-feedback">
+                    {% for error in form.no_inputRegEntryElement.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                {% else %}
+                {{ form.no_inputRegEntryElement(class="form-control form-control-sm") }}
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-xl-2 col-form-label">
+                {{ form.no_inputNumberEntryElement.label(class="form-control-label") }}
+            </div>
+            <div class="col-xl-10">
+                {% if form.no_inputNumberEntryElement.errors %}
+
+                {{ form.no_inputNumberEntryElement(class="form-control form-control-sm is-invalid") }}
+
+                <div class="invalid-feedback">
+                    {% for error in form.no_inputNumberEntryElement.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                {% else %}
+                {{ form.no_inputNumberEntryElement(class="form-control form-control-sm") }}
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-xl-2 col-form-label">
+                {{ form.no_inputPasswordElement.label(class="form-control-label") }}
+            </div>
+            <div class="col-xl-10">
+                {% if form.no_inputPasswordElement.errors %}
+
+                {{ form.no_inputPasswordElement(class="form-control form-control-sm is-invalid") }}
+
+                <div class="invalid-feedback">
+                    {% for error in form.no_inputPasswordElement.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                {% else %}
+                {{ form.no_inputPasswordElement(class="form-control form-control-sm") }}
+                {% endif %}
+
+            </div>
+
+        </div>
+
+        <div class="form-group row">
+            <div class="col-xl-2 col-form-label">
+                {{ form.no_inputLikertMatrix.label(class="form-control-label") }}
+            </div>
+            <div class="col-xl-10">
+                {% if form.no_inputLikertMatrix.errors %}
+
+                {{ form.no_inputLikertMatrix(class="form-control form-control-sm is-invalid") }}
+
+                <div class="invalid-feedback">
+                    {% for error in form.no_inputLikertMatrix.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                {% else %}
+                {{ form.no_inputLikertMatrix(class="form-control form-control-sm") }}
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-xl-2 col-form-label">
+                {{ form.no_inputLikertElement.label(class="form-control-label") }}
+            </div>
+            <div class="col-xl-10">
+                {% if form.no_inputLikertElement.errors %}
+
+                {{ form.no_inputLikertElement(class="form-control form-control-sm is-invalid") }}
+
+                <div class="invalid-feedback">
+                    {% for error in form.no_inputLikertElement.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                {% else %}
+                {{ form.no_inputLikertElement(class="form-control form-control-sm") }}
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-xl-2 col-form-label">
+                {{ form.no_inputSingleChoiceElement.label(class="form-control-label") }}
+            </div>
+            <div class="col-xl-10">
+                {% if form.no_inputSingleChoiceElement.errors %}
+
+                {{ form.no_inputSingleChoiceElement(class="form-control form-control-sm is-invalid") }}
+
+                <div class="invalid-feedback">
+                    {% for error in form.no_inputSingleChoiceElement.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                {% else %}
+                {{ form.no_inputSingleChoiceElement(class="form-control form-control-sm") }}
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-xl-2 col-form-label">
+                {{ form.no_inputMultipleChoiceElement.label(class="form-control-label") }}
+            </div>
+            <div class="col-xl-10">
+                {% if form.no_inputMultipleChoiceElement.errors %}
+
+                {{ form.no_inputMultipleChoiceElement(class="form-control form-control-sm is-invalid") }}
+
+                <div class="invalid-feedback">
+                    {% for error in form.no_inputMultipleChoiceElement.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                {% else %}
+                {{ form.no_inputMultipleChoiceElement(class="form-control form-control-sm") }}
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-xl-2 col-form-label">
+                {{ form.no_inputWebLikertImageElement.label(class="form-control-label") }}
+            </div>
+            <div class="col-xl-10">
+                {% if form.no_inputWebLikertImageElement.errors %}
+
+                {{ form.no_inputWebLikertImageElement(class="form-control form-control-sm is-invalid") }}
+
+                <div class="invalid-feedback">
+                    {% for error in form.no_inputWebLikertImageElement.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                {% else %}
+                {{ form.no_inputWebLikertImageElement(class="form-control form-control-sm") }}
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-xl-2 col-form-label">
+                {{ form.no_inputLikertListElement.label(class="form-control-label") }}
+            </div>
+            <div class="col-xl-10">
+                {% if form.no_inputLikertListElement.errors %}
+
+                {{ form.no_inputLikertListElement(class="form-control form-control-sm is-invalid") }}
+
+                <div class="invalid-feedback">
+                    {% for error in form.no_inputLikertListElement.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                {% else %}
+                {{ form.no_inputLikertListElement(class="form-control form-control-sm") }}
+                {% endif %}
+            </div>
+        </div>
+
+        <h4 class="pt-4 pb-2 border-bottom"><i class="fas fa-check-circle mr-2"></i>Corrective Hints</h4>
+        <small id="correctiveHintHelp" class="form-text text-muted pb-3">
+            This text will be displayed if a participant gives input to an element that does not match the specified
+            requirements.
+        </small>
+
+        <div class="form-group row">
+            <div class="col-xl-2 col-form-label">
+                {{ form.corrective_RegEntry.label(class="form-control-label") }}
+            </div>
+            <div class="col-xl-10">
+                {% if form.corrective_RegEntry.errors %}
+
+                {{ form.corrective_RegEntry(class="form-control form-control-sm is-invalid") }}
+
+                <div class="invalid-feedback">
+                    {% for error in form.corrective_RegEntry.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                {% else %}
+                {{ form.corrective_RegEntry(class="form-control form-control-sm") }}
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-xl-2 col-form-label">
+                {{ form.corrective_NumberEntry.label(class="form-control-label") }}
+            </div>
+            <div class="col-xl-10">
+                {% if form.corrective_NumberEntry.errors %}
+
+                {{ form.corrective_NumberEntry(class="form-control form-control-sm is-invalid") }}
+
+                <div class="invalid-feedback">
+                    {% for error in form.corrective_NumberEntry.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                {% else %}
+                {{ form.corrective_NumberEntry(class="form-control form-control-sm") }}
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="form-group row">
+            <div class="col-xl-2 col-form-label">
+                {{ form.corrective_Password.label(class="form-control-label") }}
+            </div>
+            <div class="col-xl-10">
+                {% if form.corrective_Password.errors %}
+
+                {{ form.corrective_Password(class="form-control form-control-sm is-invalid") }}
+
+                <div class="invalid-feedback">
+                    {% for error in form.corrective_Password.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                {% else %}
+                {{ form.corrective_Password(class="form-control form-control-sm") }}
+                {% endif %}
+            </div>
+        </div>
+
+
+        <h4 class="pt-4 pb-2 border-bottom"><i class="fas fa-comment mr-2"></i>Messages</h4>
+
+        <div class="form-group row">
+            <div class="col-xl-2 col-form-label">
+                {{ form.minimum_display_time.label(class="form-control-label") }}
+            </div>
+            <div class="col-xl-10">
+                {% if form.minimum_display_time.errors %}
+
+                {{ form.minimum_display_time(class="form-control form-control-sm is-invalid") }}
+
+                <div class="invalid-feedback">
+                    {% for error in form.minimum_display_time.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                {% else %}
+                {{ form.minimum_display_time(class="form-control form-control-sm") }}
+                {% endif %}
+                <small id="minimumDisplayTimeHelp" class="form-text text-muted">
+                    This text will be displayed if a participant clicks the "forward" button before the specified
+                    minimum display time of the current page is reached. ${mdt} is a placeholder for the minimum display
+                    time.
+                </small>
+            </div>
+        </div>
+
+        <div class="form-group">
+            {{ form.submit(class="btn btn-primary")}}
+        </div>
+    </fieldset>
+
+</form>
+
+{% endblock %}

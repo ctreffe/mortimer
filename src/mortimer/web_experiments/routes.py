@@ -4,6 +4,8 @@ import os
 import re
 import shutil
 import sys
+import logging
+from pathlib import Path
 from datetime import datetime
 from uuid import uuid4
 
@@ -21,9 +23,12 @@ from flask import (
 from flask_login import current_user, login_required
 from werkzeug.utils import secure_filename
 
+from alfred3 import alfredlog
+
 from mortimer import export
 from mortimer.forms import (
-    ExperimentConfigurationForm,
+    ExperimentConfigurationForm,  # Deprecated
+    ExperimentConfigForm,
     ExperimentExportForm,
     ExperimentScriptForm,
     FilterLogForm,
@@ -37,6 +42,7 @@ from mortimer.utils import (
     _DictObj,
     display_directory,
     get_user_collection,
+    create_fernet,
 )
 
 web_experiments = Blueprint("web_experiments", __name__)
@@ -714,8 +720,17 @@ def data(username, experiment_title):
     data_list = export.cursor_to_rows(cursor=cur)
 
     # hotfix for performance-issues: show only the first fifty entries.
-    flash("Only showing 50 observations.", "info")
-    shorter_data_list = data_list[0:50]
+    # TODO: Implement AJAX for DataTables display
+    cols = 30
+    rows = 50
+    shorter_data_list = [x[:cols] for x in data_list[:rows]]
+    flash(
+        (
+            f"For performance reasons, we currently only show the first {rows} "
+            f"observations of the first {cols} variables."
+        ),
+        "info",
+    )
 
     return render_template(
         "data.html", experiment=experiment, author=username, data_list=shorter_data_list
@@ -744,6 +759,7 @@ def de_activate_experiment(username, experiment_title):
                     exp_title=experiment.title,
                 )
             )
+
         experiment.active = True
         experiment.save()
         flash("Experiment activated.", "success")
@@ -764,7 +780,8 @@ def experiment_config(username, experiment_title):
     if exp.author != current_user.username:
         abort(403)
 
-    form = ExperimentConfigurationForm()
+    form = ExperimentConfigForm()
+    f = create_fernet()
 
     if form.validate_on_submit():
         exp.title = form.title.data
@@ -775,41 +792,12 @@ def experiment_config(username, experiment_title):
             exp.public = True
         exp.password = form.password.data
 
-        exp.settings["general"]["debug"] = form.debug.data
-
-        exp.settings["experiment"]["title"] = form.title.data
-        exp.settings["experiment"]["author"] = current_user.username
-
-        exp.settings["navigation"]["forward"] = form.forward.data
-        exp.settings["navigation"]["backward"] = form.backward.data
-        exp.settings["navigation"]["finish"] = form.finish.data
-
-        exp.settings["hints"]["no_inputtextentryelement"] = form.no_inputTextEntryElement.data
-        exp.settings["hints"]["no_inputtextareaelement"] = form.no_inputTextAreaElement.data
-        exp.settings["hints"]["no_inputregentryelement"] = form.no_inputRegEntryElement.data
-        exp.settings["hints"]["no_inputnumberentryelement"] = form.no_inputNumberEntryElement.data
-        exp.settings["hints"]["no_inputpasswordelement"] = form.no_inputPasswordElement.data
-        exp.settings["hints"]["no_inputlikertmatrix"] = form.no_inputLikertMatrix.data
-        exp.settings["hints"]["no_inputlikertelement"] = form.no_inputLikertElement.data
-        exp.settings["hints"][
-            "no_inputsinglechoiceelement"
-        ] = form.no_inputSingleChoiceElement.data
-        exp.settings["hints"][
-            "no_inputmultiplechoiceelement"
-        ] = form.no_inputMultipleChoiceElement.data
-        exp.settings["hints"][
-            "no_inputweblikertimageelement"
-        ] = form.no_inputWebLikertImageElement.data
-        exp.settings["hints"]["no_inputlikertlistelement"] = form.no_inputLikertListElement.data
-
-        exp.settings["hints"]["corrective_regentry"] = form.corrective_RegEntry.data
-        exp.settings["hints"]["corrective_numberentry"] = form.corrective_NumberEntry.data
-        exp.settings["hints"]["corrective_password"] = form.corrective_Password.data
-
-        exp.settings["messages"]["minimum_display_time"] = form.minimum_display_time.data
+        exp.exp_config = form.exp_config.data
+        exp.exp_secrets = f.encrypt(form.exp_secrets.data.encode())
 
         exp.last_update = datetime.utcnow
         exp.save()
+
         flash("Experiment configuration updated", "success")
 
         return redirect(
@@ -821,53 +809,26 @@ def experiment_config(username, experiment_title):
     form.title.data = exp.title
     form.description.data = exp.description
     form.password.data = exp.password
-
+    form.exp_config.data = exp.exp_config
     try:
-        form.debug.data = exp.settings["general"]["debug"]
+        form.exp_secrets.data = f.decrypt(exp.exp_secrets).decode()
+    except TypeError:
+        form.exp_secrets.data = ""
+        import traceback
 
-        form.forward.data = exp.settings["navigation"]["forward"]
-        form.backward.data = exp.settings["navigation"]["backward"]
-        form.finish.data = exp.settings["navigation"]["finish"]
-
-        form.no_inputTextEntryElement.data = exp.settings["hints"]["no_inputtextentryelement"]
-        form.no_inputTextAreaElement.data = exp.settings["hints"]["no_inputtextareaelement"]
-        form.no_inputRegEntryElement.data = exp.settings["hints"]["no_inputregentryelement"]
-        form.no_inputNumberEntryElement.data = exp.settings["hints"]["no_inputnumberentryelement"]
-        form.no_inputPasswordElement.data = exp.settings["hints"]["no_inputpasswordelement"]
-        form.no_inputLikertMatrix.data = exp.settings["hints"]["no_inputlikertmatrix"]
-        form.no_inputLikertElement.data = exp.settings["hints"]["no_inputlikertelement"]
-        form.no_inputSingleChoiceElement.data = exp.settings["hints"][
-            "no_inputsinglechoiceelement"
-        ]
-        form.no_inputMultipleChoiceElement.data = exp.settings["hints"][
-            "no_inputmultiplechoiceelement"
-        ]
-        form.no_inputWebLikertImageElement.data = exp.settings["hints"][
-            "no_inputweblikertimageelement"
-        ]
-        form.no_inputLikertListElement.data = exp.settings["hints"]["no_inputlikertlistelement"]
-
-        form.corrective_RegEntry.data = exp.settings["hints"]["corrective_regentry"]
-        form.corrective_NumberEntry.data = exp.settings["hints"]["corrective_numberentry"]
-        form.corrective_Password.data = exp.settings["hints"]["corrective_password"]
-
-        form.minimum_display_time.data = exp.settings["messages"]["minimum_display_time"]
-    except KeyError as e:
-        flash(
-            "Something about the settings for this experiment seems to be wrong. Error: {error}".format(
-                error=e
-            ),
-            "warning",
-        )
-
-    return render_template(
-        "experiment_config.html", form=form, experiment=exp, username=exp.author
-    )
+    return render_template("experiment_config.html", form=form, experiment=exp)
 
 
-@web_experiments.route("/<username>/<path:experiment_title>/log", methods=["GET", "POST"])
+@web_experiments.route(
+    "/<username>/<path:experiment_title>/log/",
+    methods=["GET", "POST"],
+    defaults={"end": 199, "start": "default"},
+)
+@web_experiments.route(
+    "/<username>/<path:experiment_title>/log/<start>/<end>", methods=["GET", "POST"]
+)
 @login_required
-def experiment_log(username, experiment_title):
+def experiment_log(username, experiment_title, end, start):
     # pylint: disable=no-member
     exp = WebExperiment.objects.get_or_404(title=experiment_title, author=username)
 
@@ -875,6 +836,57 @@ def experiment_log(username, experiment_title):
         abort(403)
 
     form = FilterLogForm()
+
+    logfile = Path(exp.path) / "exp.log"
+    # parse with start and end values (crude pagination)
+    date_pattern = re.compile(r"(?P<date>\d{4}-\d{2}-\d{2} )")
+    with open(logfile, "r", encoding="utf-8") as f:
+        log = []
+        traceback_lines = 0
+        i = 0
+        for i, line in enumerate(reversed(f.readlines()), start=1):
+
+            # for newest first sorting
+            if start == "default":
+                start_check = 1
+            else:
+                start_check = start
+
+            if end == "-99":
+                log.append(line)
+                continue
+            elif not int(start_check) <= (i + traceback_lines) <= int(end):
+                continue
+
+            if not date_pattern.match(line):
+                traceback_lines += 1
+                log.append(line)
+            else:
+                log.append(line)
+        n_entries = i - traceback_lines
+
+    # parse options for choice selection fields
+    # we need this format: [(<choice1_id>, "choice1_description"), ...]
+    n_entries_to_display = 300
+    choices = []
+    choice_numbers = [[1, n_entries_to_display - 1]]
+    items = n_entries // n_entries_to_display
+
+    for i in range(items):
+        _, this_end = choice_numbers[i]
+        next_start = this_end + 1
+        next_end = next_start + n_entries_to_display - 1
+
+        choice_numbers.append([next_start, next_end])  # entry: (0, 199)
+
+    for i, c in enumerate(choice_numbers):
+        choice_string = f"{c[0]} - {c[1]}"  # "0 - 199"
+        choices.append((str(i), choice_string))
+
+    choices += [("newest", f"newest {n_entries_to_display}"), ("all", "all")]
+
+    form.display_range.choices = choices
+
     if form.validate_on_submit():
         logfilter = {
             "debug": form.debug.data,
@@ -884,24 +896,35 @@ def experiment_log(username, experiment_title):
             "critical": form.critical.data,
         }
         current_user.settings["logfilter"] = logfilter
+
+        if form.display_range.data == "all":
+            choice_start = "0"
+            choice_end = "-99"
+        elif form.display_range.data == "newest":
+            choice_start = "default"
+            choice_end = 199
+        else:
+            choice_start = choice_numbers[int(form.display_range.data)][0]
+            choice_end = choice_numbers[int(form.display_range.data)][1]
+
         current_user.save()
+
+        # flash(f"{form.display_range.choices}", "danger")
 
         return redirect(
             url_for(
-                "web_experiments.experiment_log", experiment_title=exp.title, username=exp.author
+                "web_experiments.experiment_log",
+                experiment_title=exp.title,
+                username=exp.author,
+                start=choice_start,
+                end=choice_end,
             )
         )
 
         # return redirect
     p = re.compile(
-        r"(?P<date>20.+?) - (?P<module>.+?) - (?P<log_level>.+?) - ((experiment id=)(?P<exp_id>.+?), )?(session id=(?P<session_id>.+?) - )?(?P<message>(.|\s)*?(?=(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}|\Z)))"
+        r"(?P<date>20.+?) - (?P<module>.+?) - (?P<log_level>.+?) - ((experiment id=)(?P<exp_id>.+?) - )?(session id=(?P<session_id>.+?) - )?(?P<message>(.|\s)*?(?=(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}|\Z)))"
     )
-    mortimer_path = os.path.abspath(os.path.dirname(sys.argv[0]))
-    log_path = os.path.join(mortimer_path, "log")
-    log_file = os.path.join(log_path, "alfred.log")
-
-    with open(log_file, "r", encoding="utf-8") as f:
-        log = f.read()
 
     log_entries = collections.deque()
     flash_type = {
@@ -915,33 +938,34 @@ def experiment_log(username, experiment_title):
     pattern_ip = re.compile(r"(host=\[(?P<ip>.+?)\])")
     pattern_path = re.compile(r"(File \"(?P<path>.+))(?=/.+.py)")
 
-    for match in p.finditer(log):
-        if match.group("exp_id") == str(exp.id):
-            date = match.group("date")
-            module = match.group("module")
-            log_level = match.group("log_level")
-            if not current_user.settings.get("logfilter", {}).get(log_level.lower(), True):
-                continue
-            exp_id = match.group("exp_id")
-            session_id = match.group("session_id")
-            message = match.group("message").replace("<", "&lt;").replace(">", "&gt;").rstrip()
+    for match in p.finditer(" ".join(reversed(log))):
+        # print(match.group("message"))
+        date = match.group("date")
+        module = match.group("module")
+        log_level = match.group("log_level")
+        if not current_user.settings.get("logfilter", {}).get(log_level.lower(), True):
+            continue
+        exp_id = match.group("exp_id")
+        session_id = match.group("session_id")
+        message = match.group("message").replace("<", "&lt;").replace(">", "&gt;").rstrip()
 
-            message = pattern_ip.sub("host=[--removed--]", message)
-            message = pattern_path.sub('File "...', message)
+        message = pattern_ip.sub("host=[--removed--]", message)
+        message = pattern_path.sub('File "...', message)
 
-            entry_info = '<span class="badge badge-light">{date}</span> - <span class="badge badge-{type}">{log_level}</span> - <b>exp id</b> = {exp_id} - <b>session id</b> = {session_id} - {module}'.format(
-                date=date,
-                type=flash_type[log_level],
-                log_level=log_level,
-                exp_id=exp_id,
-                session_id=session_id,
-                module=module,
-            )
-            flash_entry = '<div class="alert alert-{type}" role="alert">{entry_info}<hr><pre>{message}</pre></div>'.format(
-                type=flash_type[log_level], entry_info=entry_info, message=message
-            )
-            log_entries.appendleft(flash_entry)
+        entry_info = (
+            f'<span class="badge badge-light">{date}</span>'
+            f' - <span class="badge badge-{flash_type[log_level]}">{log_level}</span>'
+            f" - <b>exp id</b> = {exp_id} - <b>session id</b> = {session_id}"
+            f' - <span class="badge badge-secondary">{module}</span>'
+        )
 
+        flash_entry = (
+            f'<div class="alert alert-{flash_type[log_level]}">'
+            f"{entry_info}<hr><pre>{message}</pre></div>"
+        )
+        log_entries.appendleft(flash_entry)
+
+    # fill rest of form
     form.debug.data = current_user.settings.get("logfilter", {}).get("debug", True)
     form.info.data = current_user.settings.get("logfilter", {}).get("info", True)
     form.warning.data = current_user.settings.get("logfilter", {}).get("warning", True)
@@ -949,5 +973,11 @@ def experiment_log(username, experiment_title):
     form.critical.data = current_user.settings.get("logfilter", {}).get("critical", True)
 
     return render_template(
-        "experiment_log.html", experiment=exp, username=exp.author, log=log_entries, form=form
+        "experiment_log.html",
+        experiment=exp,
+        username=exp.author,
+        log=log_entries,
+        form=form,
+        range=(start, end, n_entries_to_display),
     )
+
