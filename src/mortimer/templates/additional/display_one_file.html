@@ -1,17 +1,14 @@
 <!-- Test -->
 <div class="row m-1">
-    <div class="col-md-10 float-left">
-        <span class="ml-2">- {{f}}</span>
-    </div>
-    <div class="col-md-2 text-right">
-        <button type="button" class="btn btn-outline-danger btn-sm" data-toggle="modal"
-            data-target="#deleteModal_{{ fileid }}">Delete</button>
+    <div class="col float-left">
+        <span class="ml-2">- {{f}} <button type="button" class="btn btn-sm btn-danger ml-1 mt-2 mb-2"
+                data-toggle="modal" data-target="#deleteModal_{{ fileid }}"><i class='fas fa-trash'></i></button></span>
     </div>
 </div>
 
 <!-- Modal for delete confirmation -->
-<div class="modal fade" id="deleteModal_{{ fileid }}" tabindex="-1" role="dialog" aria-labelledby="deleteModal_{{ fileid }}Label"
-    aria-hidden="true">
+<div class="modal fade" id="deleteModal_{{ fileid }}" tabindex="-1" role="dialog"
+    aria-labelledby="deleteModal_{{ fileid }}Label" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
