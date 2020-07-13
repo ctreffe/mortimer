@@ -270,6 +270,7 @@ class WebExperiment(db.Document):
         config["author"] = self.author
         config["exp_id"] = str(self.id)
         config["session_id"] = session_id
+        config["version"] = self.version
 
         return {"metadata": config, "general": {"runs_on_mortimer": "true"}}
 
