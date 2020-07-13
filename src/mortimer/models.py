@@ -177,8 +177,8 @@ class WebExperiment(db.Document):
     title = db.StringField(required=True, unique_with="author")
     version = db.StringField(required=True)
     available_versions = db.ListField(db.StringField())
-    date_created = db.DateTimeField(default=datetime.utcnow, required=True)
-    last_update = db.DateTimeField(default=datetime.utcnow, required=True)
+    date_created = db.DateTimeField(default=datetime.now, required=True)
+    last_update = db.DateTimeField(default=datetime.now, required=True)
     description = db.StringField()
 
     title_from_script = db.StringField()  # Deprecated

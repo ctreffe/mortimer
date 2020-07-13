@@ -6,46 +6,52 @@
 
   {% if experiment.active == True %}
 
-  <div class="input-group mb-3">
-    <div class="input-group-prepend">
-      <form method="POST"
-        action="{{ url_for('web_experiments.de_activate_experiment', experiment_title=experiment.title, username=experiment.author) }}">
-        <button class="btn btn-warning" type="submit"><i
-            class='fas fa-stop-circle mr-2'></i>{{ toggle_button }}</button>
+  <div class="row">
+    <div class="col">
+      <div class="input-group mb-3">
+        <div class="input-group-prepend">
+          <form method="POST"
+            action="{{ url_for('web_experiments.de_activate_experiment', experiment_title=experiment.title, username=experiment.author) }}">
+            <button class="btn btn-warning" type="submit"><i
+                class='fas fa-stop-circle mr-2'></i>{{ toggle_button }}</button>
 
-      </form>
-    </div>
-    <input type="text" class="form-control" aria-describedby="basic-addon2" id="link-to-exp"
-      value="{{ url_for('alfredo.start', expid=expid, _external=True) }}">
-    <div class="input-group-append">
-      <button class="btn btn-outline-secondary" type="button" data-clipboard-target="#link-to-exp">
-        <img src="../static/clippy.svg" alt="Copy to clipboard" width="20"> Copy Link
-      </button>
-      <a class="btn btn-success" target="_blank" rel="noopener noreferrer"
-        href="{{ url_for('alfredo.start', expid=expid) }}"><i class="fas fa-play mr-2"></i>Start</a>
+          </form>
+        </div>
+        <input type="text" class="form-control" aria-describedby="basic-addon2" id="link-to-exp"
+          value="{{ url_for('alfredo.start', expid=expid, _external=True) }}">
+        <div class="input-group-append">
+          <button class="btn btn-outline-secondary" type="button" data-clipboard-target="#link-to-exp">
+            <img src="../static/clippy.svg" alt="Copy to clipboard" width="20"> Copy Link
+          </button>
+          <a class="btn btn-success" target="_blank" rel="noopener noreferrer"
+            href="{{ url_for('alfredo.start', expid=expid) }}"><i class="fas fa-play mr-2"></i>Start</a>
+        </div>
+      </div>
+
+      {% else %}
+
+      <div class="input-group mb-3">
+        <div class="input-group-prepend">
+          <form method="POST"
+            action="{{ url_for('web_experiments.de_activate_experiment', experiment_title=experiment.title, username=experiment.author) }}">
+            <button class="btn btn-primary" type="submit"><i
+                class='fas fa-play-circle mr-2'></i>{{ toggle_button }}</button>
+          </form>
+        </div>
+        <input type="text" class="form-control" aria-describedby="basic-addon2" id="link-to-exp"
+          placeholder="(inactive)">
+        <div class="input-group-append">
+          <button class="btn btn-outline-secondary" type="button" data-clipboard-target="#link-to-exp">
+            <img src="{{ url_for('static', filename='clippy.svg')}}" alt="Copy to clipboard" width="20"> Copy Link
+          </button>
+          <a class="btn btn-success" href="#"><i class="fas fa-play mr-2"></i>Start</a>
+        </div>
+      </div>
+
+      {% endif %}
     </div>
   </div>
 
-  {% else %}
-
-  <div class="input-group mb-3">
-    <div class="input-group-prepend">
-      <form method="POST"
-        action="{{ url_for('web_experiments.de_activate_experiment', experiment_title=experiment.title, username=experiment.author) }}">
-        <button class="btn btn-primary" type="submit"><i
-            class='fas fa-play-circle mr-2'></i>{{ toggle_button }}</button>
-      </form>
-    </div>
-    <input type="text" class="form-control" aria-describedby="basic-addon2" id="link-to-exp" placeholder="(inactive)">
-    <div class="input-group-append">
-      <button class="btn btn-outline-secondary" type="button" data-clipboard-target="#link-to-exp">
-        <img src="{{ url_for('static', filename='clippy.svg')}}" alt="Copy to clipboard" width="20"> Copy Link
-      </button>
-      <a class="btn btn-success" href="#"><i class="fas fa-play mr-2"></i>Start</a>
-    </div>
-  </div>
-
-  {% endif %}
 
 </div>
 
@@ -53,46 +59,27 @@
 
   <div class="col mb-4">
     <div class="card h-100 text-center border-primary">
-      <div class="card-header border-primary">
-        Complete datasets
+      <div class="card-header bg-primary text-white">
+        <b>Datasets</b>
       </div>
-      <div class="card-body text-primary">
-        <h1 class="card-text">{{ n["fin"] }}</h1>
-      </div>
-      <div class="card-footer text-muted border-primary">
-        Total datasets: <span class="badge badge-light">{{ n["total"] }}</span>
-      </div>
-    </div>
-  </div>
 
-  <div class="col mb-4">
-    <div class="card h-100 text-center border-success">
-      <div class="card-header border-success">
-        Last Update
-      </div>
       <div class="card-body">
-        <h2 class="card-text text-success">{{ experiment.last_update.strftime('%Y-%m-%d') }}</h2>
-        <span class="text-muted">{{ experiment.last_update.strftime('%H:%M') }}</span>
+        <h1 class="card-text"><b>{{ n["fin"] }}</b> / <span class="text-muted">{{ n["total"] }}</span>
+        </h1>
       </div>
-      <div class="card-footer text-muted border-success">
-        Created on <span class="badge badge-light">{{ experiment.date_created.strftime('%Y-%m-%d, %H:%M') }}</span>
-      </div>
+
+      <div class="card-footer border-primary"><span class="card-text"><b>Finished</b></span> / <span
+          class="card-text text-muted">Total</span></div>
+
     </div>
   </div>
 
   <div class="col mb-4">
     <div class="card h-100 text-center border-info">
-      <div class="card-header border-info">
-        Last activity
+      <div class="card-header bg-info text-white">
+        <b>Last Subject activity</b>
       </div>
       <div class="card-body border-info">
-        <h2 class="card-text text-info">
-          {% if activity["last"] != 'none' %}
-          {{ activity["last"].strftime('%Y-%m-%d') }}
-          {% else %}
-          - none -
-          {% endif %}
-        </h2>
         <span class="text-muted">
           {% if activity["last"] != 'none' %}
           {{ activity["last"].strftime('%H:%M') }}
@@ -100,6 +87,14 @@
           - none -
           {% endif %}
         </span>
+        <h3 class="card-text text-info">
+          {% if activity["last"] != 'none' %}
+          {{ activity["last"].strftime('%Y-%m-%d') }}
+          {% else %}
+          - none -
+          {% endif %}
+        </h3>
+
       </div>
       <div class="card-footer text-muted border-info">
         First activity on <span class="badge badge-light">
@@ -114,8 +109,23 @@
   </div>
 
   <div class="col mb-4">
+    <div class="card h-100 text-center border-success">
+      <div class="card-header bg-success text-white">
+        <b>Last Experiment Update</b>
+      </div>
+      <div class="card-body">
+        <span class="text-muted">{{ experiment.last_update.strftime('%H:%M') }}</span>
+        <h3 class="card-text text-success">{{ experiment.last_update.strftime('%Y-%m-%d') }}</h3>
+      </div>
+      <div class="card-footer text-muted border-success">
+        Created on <span class="badge badge-light">{{ experiment.date_created.strftime('%Y-%m-%d, %H:%M') }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="col mb-4">
     <div class="card h-100 text-center">
-      <div class="card-header">
+      <div class="card-header bg-secondary text-white">
         Current version
       </div>
       <div class="card-body">
@@ -126,7 +136,7 @@
 
   <div class="col mb-4">
     <div class="card h-100 text-center">
-      <div class="card-header">
+      <div class="card-header bg-secondary text-white">
         Access
       </div>
       <div class="card-body">
@@ -143,7 +153,7 @@
 
   <div class="col mb-4">
     <div class="card h-100 text-center">
-      <div class="card-header">
+      <div class="card-header bg-secondary text-white">
         Script
       </div>
       <div class="card-body">
@@ -155,6 +165,32 @@
 
 </div>
 
+
+<div class="mb-5">
+  <h2>Datasets by experiment version</h2>
+  {% for v, data in n["individual_versions"].items() %}
+
+  {% if loop.index == 1 or loop.index % 6 == 1 %}
+  <div class="row">
+    {% endif %}
+    <div class="col col-12 col-sm-12 col-md-6 col-lg-4 col-xl-2 mb-2">
+      <div class="card text-center">
+        <div class="card-header">v{{ v }}</div>
+        <div class="card-body">
+          <h4 class="card-text"><b>{{ data.get("fin") }}</b> / <span class="text-muted">{{ data.get("total") }}</span>
+          </h4>
+        </div>
+        <div class="card-footer"><span class="card-text"><b>Finished</b></span> / <span
+            class="card-text text-muted">Total</span></div>
+      </div>
+    </div>
+
+    {% if (loop.index == 6) or (loop.index % 6 == 0) or (loop.index == n["individual_versions"]|length) %}
+  </div>
+  {% endif %}
+
+  {% endfor %}
+</div>
 
 {% if experiment.description %}
 <h6 class="border-bottom pt-2 mt-3"><b>Description</b></h6>

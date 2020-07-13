@@ -155,17 +155,13 @@ def experiment(username, exp_title):
     n["current_ver"] = db.count_documents({**f_id, **f_ver})
     n["fin_current_ver"] = db.count_documents({**f_fin, **f_id, **f_ver})
     n["unfin_current_ver"] = n["current_ver"] - n["fin_current_ver"]
+    n["individual_versions"] = {}
 
     # Number of datasets per version
     for v in exp.available_versions:
         f_ver = {"exp_version": v, **f_id}
-        t = "{}_total".format(v)
-        fin = "{}_fin".format(v)
-        unfin = "{}_unfin".format(v)
-
-        n[t] = db.count_documents(f_ver)
-        n[fin] = db.count_documents({**f_fin, **f_ver})
-        n[unfin] = n[t] - n[fin]
+        entry = {"total": db.count_documents(f_ver), "fin": db.count_documents({**f_fin, **f_ver})}
+        n["individual_versions"][v] = entry
 
     # start time
     group = {"_id": 1, "first": {"$min": "$start_time"}, "last": {"$max": "$start_time"}}
@@ -261,7 +257,7 @@ def experiment_script(username, exp_title):
             exp.available_versions.append(exp.version)
 
         # save simple updates
-        exp.last_update = datetime.utcnow
+        exp.last_update = datetime.now
 
         # save experiment
         exp.save()
