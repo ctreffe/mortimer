@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## Mortimer v0.6.0 (Released 2020-07-13)
+
 ### Changed
 
 * Mortimer was updated to be compatible with alfred's new logging and configuration handling introduced in alfred3 v1.2.0.
