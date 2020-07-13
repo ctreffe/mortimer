@@ -1,0 +1,86 @@
+{% extends "skeleton.html" %}
+
+{% block layout %}
+<div class="wrapper">
+    <!-- Sidebar -->
+    <nav id="sidebar" class="bg-dark">
+        <div class="">
+            <ul class="list-unstyled comments">
+                <li><a href="{{ url_for('main.home') }}" class="pl-3 pt-2">
+                        <h3 style="display: inline;">mortimer</h3><small class="text-light"> v{{ mortimer }}</small>
+                    </a></li>
+            </ul>
+
+        </div>
+
+        <ul class="list-unstyled comments">
+
+
+            <li><a href="{{ url_for('web_experiments.user_experiments', username=current_user.username) }}"><i
+                        class="fas fa-desktop mr-2"></i>Experiments</a></li>
+            <li><a href="{{ url_for('web_experiments.new_experiment') }}"><i class="fas fa-plus-circle mr-2"></i>New
+                    Experiment</a></li>
+            <hr class="lightrule">
+            <li><a href="{{ url_for('main.futurize_script') }}"><i class="fas fa-dot-circle mr-2"></i>Futurize
+                    Script</a></li>
+            <hr class="lightrule">
+            <!-- <li><a href="#"><i class="fas fa-cog mr-2"></i>Settings*</a></li> -->
+            <!-- <li><a href="#"><i class="fas fa-question mr-2"></i>Help*</a></li> -->
+            <li><a href="{{ url_for('users.account') }}"><i class="fas fa-user mr-2"></i>Account</a></li>
+            <hr class="lightrule">
+            <!-- <li><a href="#"><i class="fas fa-quote-left mr-2"></i>About*</a></li> -->
+            <li><a href="{{ url_for('main.impressum') }}"><i class="fas fa-align-left mr-2"></i>Impressum</a></li>
+        </ul>
+
+        <footer style="position: fixed; bottom:0; height:60px;" class="pl-2">
+            <a href=" https://github.com/ctreffe/mortimer/releases">
+                <small class="text-light"><i class="fab fa-github"></i> mortimer v{{ mortimer }}</small></a><br>
+            <a href="https://github.com/ctreffe/alfred/releases">
+                <small class="text-light"><i class="fab fa-github"></i> alfred v{{ alfred }}</small></a>
+        </footer>
+
+    </nav>
+
+    <!-- Content -->
+    <div id="content">
+
+
+        <nav class="navbar navbar-light navbar-expand-sm shadow-sm bg-light text-secondary" id="contentNav">
+            <div class="container-fluid">
+
+                {% block navigation %}{% endblock %}
+
+                <ul class="nav navbar-nav ml-auto">
+                    <li class="nav-item"><a href="{{ url_for('users.logout') }}" class="nav-link"><i
+                                class="fas fa-sign-out-alt mr-2"></i>Logout</a></li>
+                </ul>
+
+            </div>
+        </nav>
+
+        <div id="contentBody">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">
+                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                    &times;
+                </button>
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            {% block subheading %}{% endblock %}
+            {% block content %}{% endblock %}
+
+        </div>
+
+
+
+    </div>
+
+</div>
+
+{% endblock %}

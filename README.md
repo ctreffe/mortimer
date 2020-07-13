@@ -2,56 +2,76 @@
 
 Mortimer is a free, open source web application written in the [Flask Framework](http://flask.pocoo.org/). It's purpose is to host and manage [Alfred](https://github.com/ctreffe/alfred) experiments and surveys.
 
+**IMPORTANT NOTE**: Mortimer is currently not easy to set up and use safely. Please contanct us, if you want to use it. Most importantly, you should allow only trusted users to register.
+
 # Installation
 
 ## Prerequisites
 
-- Python 3.5 or newer installed
-- Git installed
+- Python 3.7 or newer installed
 - A [MongoDB](https://www.mongodb.com/de) instance with [authentication](https://docs.mongodb.com/manual/tutorial/enable-authentication/) enabled.
     - For MongoDB installation on Debian servers, you can refer to the [official installation guide](https://docs.mongodb.com/manual/tutorial/install-mongodb-on-debian/).
     - Create a databse "mortimer" and a database "alfred" in your MongoDB instance. The "mortimer" db will be used for user management and deployment of Alfred experiments. The "alfred" database will be used by Alfred to store experimental data.
+- Refer to the [MongoDB security checklist](https://docs.mongodb.com/manual/administration/security-checklist/) to ensure adequate security of your database.
 
-## Install
+## Installation
 
-### Set up and activate a virtual python environment
+**IMPORTANT NOTE**: Mortimer is currently not easy to set up and use safely. Please contanct us, if you want to use it. Most importantly, you should only ever allow trusted users to register.
 
-In a shell, execute the following commands:
-```
-python3 -m venv /path/to/new/virtual/environment/mortimer3
-source /path/to/new/virtual/environment/mortimer3/bin/activate
-```
-
-### Download and install Alfred
-Mortimer requires [Alfred](https://github.com/ctreffe/alfred). Please visit the Alfred repository for instructions on how to install Alfred.
-
-
-### Clone the latest stable version from GitHub
-After cloning, switch to the mortimer directory.
-
-```
-git clone https://github.com/ctreffe/mortimer.git
-cd mortimer
-```
-
-### Install dependencies
-In a shell, execute the following command to install required Python packages (make sure that you are inside the mortimer directory):
-
-```
-pip install -r requirements.txt
+``` BASH
+pip install mortimer
 ```
 
 ### Configure Mortimer
-Now it is time to configure Mortimer. You can do so by editing the `config.py`, or by setting the correct environment variables (Link: How to use environment variables for Mortimer configuration). The latter has the advantage of being easier to update, if a new version of Mortimer is released. The first one is more straight-forward to do.
+Now you need to configure mortimer. You have the following options on where to place it:
 
-For a first installation, you need the following settings:
-- Set the login data for your MongoDB databases
-- Set a secret key (used e.g. for encrypting session data)
-- Set a registration parole to protect access to the platform. New users need to enter this parole during registration.
-- Set the login data to a mail account. Mortimer will use this account to send password reset emails. You can alsp deactivate the use of email, but in this case Mortimer will not allow users to reset their password if they forget it. We do not recommend this.
+1. If you are operating on a unix-based operating system, you can create a file `mortimer.conf` in `/etc`.
+2. You can create a file `mortimer.conf` in your user home directory.
+3. You can create a file `mortimer.conf` in a directory of your choosing and set the **directory path** (not the full path to the file) as an environment variable with the key `MORTIMER_CONFIG`.
+4. You can create a file `mortimer.conf` in your instance path.
 
+You only need to use one of these options. If you don't know which one to use, we recommend to place the configuration fiel in your instance directory. The files are read in that order, later files override earlier ones.
+
+For a minimal setup, you need to specify the following settings. 
+
+Notes:
+
+* The mongoDB user needs to have the following roles:
+    + `userAdmin` role on the "alfred" database.
+    + `readWrite` role on the "mortimer" dabatase.
+    + `read` role on the "alfred" database.
+
+``` Python
+# General flask settings
+SECRET_KEY =            # Must be URL-safe base64-encoded 32-byte key for fernet encryption in STR (NOT in bytes)
+PAROLE =                # a passphrase that new users need to enter upon registration
+DEBUG =                 # True or False
+
+# flask-mongoengine settings
+MONGODB_SETTINGS = {
+    "host": "localhost",
+    "port": 27017,
+    "username": "<username>",
+    "password": "<password>"
+}
+```
 
 ## Start
+
+Before starting, you need to create a run.py and specify your instance path. The run.py will look like this:
+
+``` Python
+from mortimer import create_app
+
+path = "" # fill in your instance path here!
+
+app = create_app(instance_path=path)
+
+if __name__ == "__main__":
+    app.run(debug=True)
+
+```
+
 
 You are now ready to start Mortimer. In a shell, execute the following command (make sure that you are inside the mortimer directory):
 
@@ -69,4 +89,6 @@ flask run --host=0.0.0.0 --port=5000
 
 
 **Important Note: Do not use this in a production setting. It is not intended to meet security and performance requirements for a production server. Instead, see Flasks [Deployment Options](http://flask.pocoo.org/docs/1.0/deploying/#deployment) for WSGI server recommendations.**
+
+**IMPORTANT NOTE**: Mortimer is currently not easy to set up and use safely. Please contanct us, if you want to use it. Most importantly, you should allow only trusted users to register.
 

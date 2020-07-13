@@ -1,0 +1,63 @@
+{% extends "layout_experiment.html" %}
+
+{% block content %}
+
+<div class="content-section mb-3">
+
+  <small>Directories created here are placed in the main experiment directory that also contains your <code
+      style="color:black">script.py</code> </small>
+
+  <div id="NewDirectory">
+    <form
+      action="{{ url_for('web_experiments.new_directory', experiment_title=experiment.title, username=experiment.author) }}"
+      , method="POST">
+
+
+      <div>
+        
+        <input class="form-control form-control-lg mr-3 mb-3 mt-3" id="new_directory" name="new_directory" required
+            type="text" value="" placeholder="Name">
+            <input class="btn btn-primary btn-sm" type="submit" value="Create">
+      </div>
+
+
+    </form>
+  </div>
+
+</div>
+
+{{ display|safe }}
+
+<div class="mt-5 float-right">
+  <button type="button" class="btn btn-sm btn-danger btn-sm mt-1 mb-1" data-toggle="modal" data-target="#deleteModal"><i
+    class='fas fa-trash mr-2'></i> Delete
+    All Files</button>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel"
+  aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">Delete All Files</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        Are you sure that you want to delete <b>all user-created directories and files</b> for this experiment? The data
+        stored in Mortimer will be lost!
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <form method="POST"
+          action="{{ url_for('web_experiments.delete_all_files', experiment_title=experiment.title, username=experiment.author) }}">
+          <input class="btn btn-danger" type="submit" value="Delete">
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock content %}

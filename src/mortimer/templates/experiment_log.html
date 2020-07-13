@@ -1,0 +1,81 @@
+{% extends 'layout_experiment.html' %}
+
+{% block content %}
+
+
+{% if range[1] == "-99" %}
+<h3>Experiment Log (all entries)</h3>
+{% elif range[0] == "default" %}
+<h3>Experiment Log (newest {{ range[2] }} entries)</h3>
+{% else %}
+<h3>Experiment Log (entries {{ range[0] }} - {{ range[1] }})</h3>
+{% endif %}
+
+
+<hr>
+
+<form method="POST"
+  action="{{ url_for('web_experiments.experiment_log', experiment_title=experiment.title, username=experiment.author) }}"
+  class="needs-validation" novalidate>
+  {{ form.hidden_tag() }}
+
+  <div class="form-row">
+
+    <div class="col-auto">
+
+      <div class="form-check form-check-inline pr-3">
+        {{ form.debug(class="form-check form-check-inline") }}
+        {{ form.debug.label(class="form-check-label btn btn-sm btn-secondary") }}
+      </div>
+      <div class="form-check form-check-inline pr-3">
+        {{ form.info(class="form-check form-check-inline") }}
+        {{ form.info.label(class="form-check-label btn btn-sm btn-info") }}
+      </div>
+      <div class="form-check form-check-inline pr-3">
+        {{ form.warning(class="form-check form-check-inline") }}
+        {{ form.warning.label(class="form-check-label btn btn-sm btn-warning") }}
+      </div>
+      <div class="form-check form-check-inline pr-3">
+        {{ form.error(class="form-check form-check-inline") }}
+        {{ form.error.label(class="form-check-label btn btn-sm btn-danger") }}
+      </div>
+      <div class="form-check form-check-inline pr-3">
+        {{ form.critical(class="form-check form-check-inline") }}
+        {{ form.critical.label(class="form-check-label btn btn-sm btn-danger") }}
+      </div>
+    </div>
+
+    <div class="col-3">
+      <div class="form-group row">
+        {{ form.display_range.label(class="form-control-label col-6 col-form-label") }}
+        {% if form.display_range.errors %}
+        {{ form.display_range(class="form-control col is-invalid") }}
+        <!-- , placeholder=form.display_range.label.text -->
+
+        <div class="invalid-feedback">
+          {% for error in form.display_range.errors %}
+          <span>{{ error }}</span>
+          {% endfor %}
+        </div>
+
+        {% else %}
+        {{ form.display_range(class="form-control col") }}
+        {% endif %}
+      </div>
+    </div>
+    <div class="col-auto ml-5">
+      {{ form.submit(class="btn btn-sm btn-primary", id="submit")}}
+    </div>
+
+  </div>
+
+</form>
+
+<hr>
+
+{% for entry in log %}
+{{ entry|safe }}
+{% endfor %}
+
+
+{% endblock %}
