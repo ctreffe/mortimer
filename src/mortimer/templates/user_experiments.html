@@ -1,0 +1,166 @@
+{% extends "layout.html" %}
+
+{% block custom_css %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
+{% endblock custom_css %}
+
+{% block navigation %}
+
+<ul class="nav navbar-nav mr-auto">
+  <li class="nav-item">
+    <a href="{{ url_for('web_experiments.user_experiments', username=current_user.username) }}" class="nav-link">
+      <i class="fas fa-globe mr-2"></i>Web Experiments (current)</a>
+  </li>
+  <li class="nav-item nav-link">|</li>
+  <li class="nav-item"><a href="{{ url_for('local_experiments.experiments') }}" class="nav-link"><i
+        class="fas fa-dot-circle mr-2"></i>Local Experiments</a></li>
+</ul>
+
+{% endblock %}
+
+{% block content %}
+
+
+<table id="exp-overview" class="display">
+
+  <thead>
+    <tr>
+      <th class="small">Status</th>
+      <th class="small">Title</th>
+      <th class="small">Last Update</th>
+      <th class="small">Created</th>
+      <th class="small">Toggle</th>
+      <th class="small">Start</th>
+      <th class="small">Delete</th>
+    </tr>
+  </thead>
+
+  <tbody>
+
+    {% for exp in experiments %}
+    <tr>
+
+      <td>
+        {% if exp.active %}
+        <span class="badge badge-success mr-2">active </span>
+        {% else %}
+        <span class="badge badge-warning mr-2">inactive </span>
+        {% endif %}
+      </td>
+
+      <th class="strong">
+        {% if exp.active %}
+        <a href="{{ url_for('web_experiments.experiment', exp_title=exp.title, username=exp.author) }}"
+          class="nav-link"> {{ exp.title }}</a>
+        {% else %}
+        <a href="{{ url_for('web_experiments.experiment', exp_title=exp.title, username=exp.author) }}"
+          class="nav-link"> {{ exp.title }}</a>
+        {% endif %}
+      </th>
+
+      <td class="small text-muted">{{ exp.last_update.strftime('%Y-%m-%d') }}</td>
+      <td class="small text-muted">{{ exp.date_created.strftime('%Y-%m-%d') }}</td>
+
+      <td class="small">
+        <form method="POST"
+          action="{{ url_for('web_experiments.de_activate_experiment', experiment_title=exp.title, username=exp.author) }}">
+
+          {% if exp.active %}
+          <button class="btn btn-sm btn-secondary" type="submit"><i
+              class='fas fa-stop-circle mr-2'></i>deactivate</button>
+          {% else %}
+          <button class="btn btn-sm btn-primary" type="submit"><i class='fas fa-play-circle mr-2'></i>activate</button>
+          {% endif %}
+
+        </form>
+      </td>
+
+      <td class="small">
+        {% if exp.active %}
+        <a class="btn btn-success btn-sm" target="_blank" rel="noopener noreferrer"
+          href="{{ url_for('alfredo.start', expid=exp.id) }}"><i class="fas fa-play mr-2"></i>Start</a>
+        {% else %}
+        -
+        {% endif %}
+
+      </td>
+
+      <td class="small"><button type="button" class="btn btn-danger btn-sm" data-toggle="modal"
+          data-target="#deleteModal{{ secure_filename(exp.title) }}"><i class='fas fa-trash mr-2'></i>delete</button>
+      </td>
+
+    </tr>
+
+    {% endfor %}
+
+
+
+  </tbody>
+
+</table>
+
+
+
+{% for exp in experiments %}
+
+<!-- Modal -->
+<div class="modal fade" id="deleteModal{{ secure_filename(exp.title) }}" tabindex="-1" role="dialog"
+  aria-labelledby="deleteModal{{ secure_filename(exp.title) }}" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModal{{ secure_filename(exp.title) }}">Delete Experiment</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        Are you sure that you want to delete this experiment? The data stored in Mortimer will be lost! <br><br>The
+        experimental data in the Alfred database will <b>not</b> be deleted by this.
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <form method="POST"
+          action="{{ url_for('web_experiments.delete_experiment', experiment_title=exp.title, username=exp.author) }}">
+          <input class="btn btn-danger" type="submit" value="Delete">
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endfor %}
+
+{% endblock content %}
+
+{% block custom_js %}
+
+<script src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
+
+<script>
+  $(document).ready(function () {
+    $('#exp-overview').DataTable({
+      "order": [
+        [2, "desc"]
+      ],
+      // "scrollX": true,
+      "scrollY": "70vh",
+      "lengthMenu": [
+        [10, 25, 50, 100, 200, -1],
+        [10, 25, 50, 100, 200, "All"]
+      ],
+      "pageLength": 50,
+      "columnDefs": [{
+          className: "dt-nowrap",
+          targets: "_all"
+        },
+        {
+          "width": "5%",
+          "targets": [0]
+        }
+      ],
+
+    });
+  });
+</script>
+
+{% endblock custom_js %}

@@ -33,4 +33,12 @@ test_copy2.py
 .vscode/launch.json
 .vscode/
 
-tests/
+
+development_mortimer.conf
+.envrc
+mortimer.conf
+tests/run_locally/*
+tests/run_locally/run.py
+src/mortimer.egg-info
+build/
+dist/

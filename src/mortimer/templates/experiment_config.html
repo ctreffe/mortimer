@@ -1,0 +1,129 @@
+{% extends "layout_experiment.html" %}
+
+{% block content %}
+
+<form method="POST" class="needs-validation" action="" novalidate>
+    {{ form.hidden_tag() }}
+
+    <h2 class="border-bottom"><i class="fas fa-cog mr-2"></i>Experiment Configuration</h2>
+
+    <div class="form-group">
+        <!-- TITLE FORM -->
+        <div class="form-group row">
+            <div class="col-xl-2 col-form-label">
+                {{ form.title.label(class="form-control-label") }}
+            </div>
+            <div class="col-xl-10">
+                {% if form.title.errors %}
+
+                {{ form.title(class="form-control form-control-sm is-invalid") }}
+
+                <div class="invalid-feedback">
+                    {% for error in form.title.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                {% else %}
+                {{ form.title(class="form-control form-control-sm") }}
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- DESCRIPTION FORM -->
+        <div class="form-group row">
+            <div class="col-xl-2 col-form-label">
+                {{ form.description.label(class="form-control-label") }}
+            </div>
+            <div class="col-xl-10">
+                {% if form.description.errors %}
+
+                {{ form.description(class="form-control form-control-sm is-invalid") }}
+
+                <div class="invalid-feedback">
+                    {% for error in form.description.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                {% else %}
+                {{ form.description(class="form-control form-control-sm") }}
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- PASSWORD FORM -->
+        <div class="form-group row">
+            <div class="col-xl-2 col-form-label">
+                {{ form.password.label(class="form-control-label") }}
+            </div>
+            <div class="col-xl-10">
+                {% if form.password.errors %}
+
+                {{ form.password(class="form-control form-control-sm is-invalid") }}
+
+                <div class="invalid-feedback">
+                    {% for error in form.password.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+
+                {% else %}
+                {{ form.password(class="form-control form-control-sm") }}
+                {% endif %}
+                <small id="passwordHelpBlock" class="form-text text-muted">
+                    Here, you can protect access to your experiment with a password. Just leave this field empty if
+                    you
+                    want the experiment to be public.
+                </small>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="row pt-5">
+
+        <!-- config.conf -->
+        <div class="col-xl-6">
+            <h3 class="border-bottom">config.conf</h3>
+
+            {% if form.exp_config.errors %}
+            {{ form.exp_config(class="form-control form-control-sm is-invalid", style="font-family: 'Dejavu Sans Mono', monospace;" , rows="20") }}
+
+            <div class="invalid-feedback">
+                {% for error in form.exp_config.errors %}
+                <span>{{ error }}</span>
+                {% endfor %}
+            </div>
+
+            {% else %}
+            {{ form.exp_config(class="form-control form-control-sm", style="font-family: 'Dejavu Sans Mono', monospace;", rows="20", placeholder="Input config.conf") }}
+            {% endif %}
+
+        </div>
+
+        <!-- secrets.conf -->
+        <div class="col-xl-6">
+            <h3 class="border-bottom">secrets.conf</h3>
+
+            {% if form.exp_secrets.errors %}
+            {{ form.exp_secrets(class="form-control form-control-sm is-invalid", style="font-family: 'Dejavu Sans Mono', monospace;" , rows="20") }}
+
+            <div class="invalid-feedback">
+                {% for error in form.exp_secrets.errors %}
+                <span>{{ error }}</span>
+                {% endfor %}
+            </div>
+
+            {% else %}
+            {{ form.exp_secrets(class="form-control form-control-sm", style="font-family: 'Dejavu Sans Mono', monospace;", rows="20", placeholder="Input secrets.conf") }}
+            {% endif %}
+
+        </div>
+    </div>
+
+    {{ form.submit(class="btn btn-primary btn-block mt-3")}}
+
+</form>
+
+{% endblock %}
