@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+* Mortimer was updated to be compatible with alfred's new logging and configuration handling introduced in alfred3 v1.2.0.
+
+* The "Log" tab received an update. To increase performance, we now only show the newest 300 entries by default. You can still choose to display all entries. If you have a very large log, you should be prepared for a few seconds processing time in this case.
+
+* Changed the "Configuration" tab. You can now paste your secrets.conf and config.conf from your local experiment directory into text fields. Note that some settings will be overwritten by mortimer, most notably the **metdata** and **loca_saving_agent** sections in *config.conf* and the **mongo_saving_agent** section in *secrets.conf*.
+
+* The experiment homepage and the "Resources" tab both received a small facelift. Most notably, we now show datasets by experimental version.
+
+* Changed default sorting in "Experiments" overview (new default: Last Update) and "Data" Tab (new default: save_time).
+
 ### Fixed
 
 * Included a hotfix for a performance issues with our use of the DataTables Javascript plugin. Until we include server-side processing for the table, the data tab will only show a preview of 50 observations.
