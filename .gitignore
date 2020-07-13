@@ -32,3 +32,5 @@ test_copy2.py
 .vscode/.ropeproject/config.py
 .vscode/launch.json
 .vscode/
+
+tests/
