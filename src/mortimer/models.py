@@ -152,7 +152,7 @@ class User(db.Document, UserMixin):
         string.
         """
         f = create_fernet()
-        encryption_config = {"key": f.decrypt(self.encryption_key).decode()}
+        encryption_config = {"key": f.decrypt(self.encryption_key).decode(), "public_key": "false"}
 
         return {"encryption": encryption_config}
 
@@ -218,8 +218,7 @@ class WebExperiment(db.Document):
         exp_config = ExperimentConfig(expdir=self.path)
 
         # parse config from mortimer
-        metadata = self.metadata_config(session_id)
-        exp_config.read_dict(metadata)
+        exp_config.read_dict(self.metadata_config(session_id))
 
         return exp_config
 
@@ -230,7 +229,7 @@ class WebExperiment(db.Document):
             secrets_string = f.decrypt(self.exp_secrets).decode()
         except TypeError:
             logger = logging.getLogger(__name__)
-            logger.exception(
+            logger.info(
                 (
                     "Exception during secrets decryption. "
                     "To proceed, the value of secrets.conf was set to an empty string."
@@ -247,6 +246,16 @@ class WebExperiment(db.Document):
         exp_secrets.read_dict(exp_author.encryption_config)
 
         return exp_secrets
+
+    def parse_encryption_key(self):
+
+        f = create_fernet()
+        exp_author = User.objects.get_or_404(id=self.author_id)
+        key = f.decrypt(exp_author.encryption_key).decode()
+
+        encryption_config = {"encryption": {"key": key, "public_key": "false"}}
+
+        return encryption_config
 
     def metadata_config(self, session_id: str) -> dict:
         """Returns a configuration dictionary of experiment metadata for
