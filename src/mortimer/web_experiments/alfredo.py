@@ -269,7 +269,7 @@ def experiment():
             resp.cache_control.no_cache = True
             return resp
     except Exception:
-        log = alfredlog.QueuedLoggingInterface("alfred3", f"exp.{str(experiment.id)}")
+        log = alfredlog.QueuedLoggingInterface("alfred3", f"exp.{str(experiment.exp_id)}")
         log.session_id = sid
         log.exception("Exception during experiment execution.")
         # raise e
