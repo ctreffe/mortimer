@@ -272,11 +272,8 @@ def experiment():
         log = alfredlog.QueuedLoggingInterface("alfred3", f"exp.{str(experiment.exp_id)}")
         log.session_id = sid
         log.exception("Exception during experiment execution.")
-        # raise e
-        # logger.critical(
-        #     msg=traceback.format_exc(), exp_id=str(experiment.exp_id), session_id=sid
-        # )
-        return render_template("errors/500_alfred.html")
+
+        abort(500)
 
 
 @alfredo.route("/staticfile/<identifier>")
