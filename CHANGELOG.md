@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## Mortimer v0.6.1 (Released 2020-07-23)
+
+### Fixed
+
+* Fixed a bug that prevented correct logging of exceptions occuring during experiment execution.
+
+* Fixed a bug that messed up the layout of the experiment page for inactive experiments.
+
 ## Mortimer v0.6.0 (Released 2020-07-13)
 
 ### Changed
