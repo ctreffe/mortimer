@@ -4,10 +4,12 @@
 <div>
   <h1>{{ experiment.title }}</h1>
 
-  {% if experiment.active == True %}
-
   <div class="row">
     <div class="col">
+
+      {% if experiment.active == True %}
+
+
       <div class="input-group mb-3">
         <div class="input-group-prepend">
           <form method="POST"
