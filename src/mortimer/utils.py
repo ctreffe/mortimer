@@ -62,35 +62,15 @@ def send_reset_email(user):
 
     token = user.get_reset_token()
     msg = Message(
-        "Password Reset Request", sender="alfred@psych.uni-goettingen.de", recipients=[user.email]
+        "Password Reset Request",
+        sender=current_app.config["MAIL_SENDER_ADDRESS"],
+        recipients=[user.email],
     )
 
     msg.body = render_template(
-        "email/reset_pw.html", URL=url_for("users.reset_password", token=token), _external=True
+        "email/reset_pw.html", URL=url_for("users.reset_password", token=token, _external=True)
     )
     mail.send(msg)
-    #     msg.body = Template('''Dear Mortimer user,
-
-    # a request to reset your password was made for your email address.
-
-    # To reset your password, visit the following link:
-    # {{ URL }}
-
-    # If you did not make this request, you can simply ignore this email and no changes will be made.
-
-    # Kind regards,
-    # The Mortimer & Alfred Team
-    # --
-    # Alfred Support
-
-    # Georg-August-Universität Göttingen
-    # Wirtschafts- und Sozialpsychologie
-
-    # E-Mail: alfred@psych.uni-goettingen.de
-    # Web: psych.uni-goettingen.de/ecosop
-    #                         ''', lstrip_blocks=True).render(URL=url_for('users.reset_password', token=token, _external=True))
-
-    # mail.send(msg)
 
 
 def display_directory(directories: list, parent_directory: str, experiment) -> str:
