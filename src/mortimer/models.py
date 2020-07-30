@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import random
 import string
+import secrets
 import logging
 from datetime import datetime
 from pathlib import Path
@@ -37,10 +38,14 @@ class User(db.Document, UserMixin):
     alfred_user = db.StringField()
     alfred_pw = db.BinaryField()
     alfred_col = db.StringField()
+    alfred_col_detached = db.StringField()
+    alfred_col_misc = db.StringField()
 
     local_db_user = db.StringField()
     local_db_pw = db.BinaryField()
     local_col = db.StringField()
+    local_col_detached = db.StringField()
+    local_col_misc = db.StringField()
 
     settings = db.DictField(
         default={
@@ -73,19 +78,19 @@ class User(db.Document, UserMixin):
         """Generate a random password and encrypt it with the apps secret fernet key."""
 
         f = create_fernet()
-        letters = string.ascii_lowercase
-        pw_raw = "".join(random.choice(letters) for i in range(20))
+        alphabet = string.ascii_letters + string.digits
+        pw_raw = "".join(secrets.choice(alphabet) for i in range(20))
         pw_enc = f.encrypt(pw_raw.encode())
         return pw_enc
 
-    def prepare_local_db_user(self):
+    def create_local_db_user(self):
+
         user_lower = self.username.lower().replace(" ", "_")
         self.local_db_user = "localUser_{}".format(user_lower)
         self.local_col = "local_{}".format(user_lower)
+        self.local_col_detached = "local_{}_detached".format(user_lower)
+        self.local_col_misc = "local_{}_misc".format(user_lower)
         self.local_db_pw = self.generate_password()
-        self.create_local_db_user()
-
-    def create_local_db_user(self):
 
         f = create_fernet()
         pw_dec = f.decrypt(self.local_db_pw).decode()
@@ -95,16 +100,27 @@ class User(db.Document, UserMixin):
 
         # local exp role
         rolename = "localAccess{}".format(self.local_db_user)
-        res = {"db": alfred_db, "collection": self.local_col}
+        res = {"db": alfred_db}
+        c_exp = {**res, **{"collection": self.local_col}}
+        c_detached = {**res, **{"collection": self.local_col_detached}}
+        c_misc = {**res, **{"collection": self.local_col_misc}}
+
         act = ["find", "insert", "update"]
-        priv = [{"resource": res, "actions": act}]
+        priv = [{"resource": res_dict, "actions": act} for res_dict in [c_exp, c_detached, c_misc]]
 
         client.alfred.command("createRole", rolename, privileges=priv, roles=[])
 
         client.alfred.command("createUser", self.local_db_user, pwd=pw_dec, roles=[rolename])
 
     def create_db_user(self):
-        """Create a new user in the alfred database."""
+        """Create a new user with appropriate role in the alfred database."""
+
+        self.alfred_pw = self.generate_password()  # password is encrypted
+
+        user_lower = self.username.lower().replace(" ", "_")
+        self.alfred_col = "col_{}".format(user_lower)
+        self.alfred_col_detached = "col_{}_detached".format(user_lower)
+        self.alfred_col_misc = "col_{}_misc".format(user_lower)
 
         f = create_fernet()
         pw_dec = f.decrypt(self.alfred_pw).decode()
@@ -112,9 +128,13 @@ class User(db.Document, UserMixin):
         alfred_db = current_app.config["ALFRED_DB"]
         user_lower = self.username.lower().replace(" ", "_")
         rolename = "alfredAccess_{}".format(user_lower)
-        res = {"db": alfred_db, "collection": self.alfred_col}
+        res = {"db": alfred_db}
+        c_exp = {**res, **{"collection": self.alfred_col}}
+        c_detached = {**res, **{"collection": self.alfred_col_detached}}
+        c_misc = {**res, **{"collection": self.alfred_col_misc}}
+
         act = ["find", "insert", "update"]
-        priv = [{"resource": res, "actions": act}]
+        priv = [{"resource": res_dict, "actions": act} for res_dict in [c_exp, c_detached, c_misc]]
 
         client = db.connection
 

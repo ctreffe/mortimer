@@ -35,15 +35,13 @@ def register():
         # create user for alfred database and save credentials in user object
         user_lower = user.username.lower().replace(" ", "_")
         user.alfred_user = "alfredUser_{}".format(user_lower)
+
         if User.objects(alfred_user=user.alfred_user):  # pylint: disable=no-member
             flash("Username already taken. Please choose a different one.", "error")
             return redirect(url_for("users.register"))
-        user.alfred_pw = User.generate_password()  # password is encrypted
-        user.alfred_col = "col_{}".format(user_lower)
-        user.create_db_user()
 
-        # create user for local experiments
-        user.prepare_local_db_user()
+        user.create_db_user()
+        user.create_local_db_user()
 
         # save user
         user.save()
@@ -119,7 +117,7 @@ def account():
         form.email.data = current_user.email
 
     if not current_user.local_db_user:
-        current_user.prepare_local_db_user()
+        current_user.create_local_db_user()
         current_user.save()
 
     f = create_fernet()
@@ -130,6 +128,8 @@ def account():
         "username": ("Username for local DB", current_user.local_db_user),
         "password": ("Password for local DB", local_pw),
         "col": ("Collection for local DB", current_user.local_col),
+        "detached_col": ("Detached collection", current_user.local_col_detached),
+        "misc_col": ("Misc collection", current_user.local_col_misc),
         "_key": ("Encryption Key", user_key),
     }
 
