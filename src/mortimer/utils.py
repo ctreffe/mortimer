@@ -68,7 +68,8 @@ def send_reset_email(user):
     )
 
     msg.body = render_template(
-        "email/reset_pw.html", URL=url_for("users.reset_password", token=token, _external=True)
+        "additional/reset_pw.html",
+        URL=url_for("users.reset_password", token=token, _external=True),
     )
     mail.send(msg)
 
