@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+* Added support for two additional collections in the alfred database.
+
 ### Fixed
 
 * Fixed a bug in the password reset email.
