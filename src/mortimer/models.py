@@ -38,14 +38,16 @@ class User(db.Document, UserMixin):
     alfred_user = db.StringField()
     alfred_pw = db.BinaryField()
     alfred_col = db.StringField()
-    alfred_col_detached = db.StringField()
+    alfred_col_unlinked = db.StringField()
     alfred_col_misc = db.StringField()
+    alfred_col_detached = db.StringField()  # for bw compatibility
 
     local_db_user = db.StringField()
     local_db_pw = db.BinaryField()
     local_col = db.StringField()
-    local_col_detached = db.StringField()
+    local_col_unlinked = db.StringField()
     local_col_misc = db.StringField()
+    local_col_detached = db.StringField()  # for bw compatibility
 
     settings = db.DictField(
         default={
@@ -88,7 +90,7 @@ class User(db.Document, UserMixin):
         user_lower = self.username.lower().replace(" ", "_")
         self.local_db_user = "localUser_{}".format(user_lower)
         self.local_col = "local_{}".format(user_lower)
-        self.local_col_detached = "local_{}_detached".format(user_lower)
+        self.local_col_unlinked = "local_{}_unlinked".format(user_lower)
         self.local_col_misc = "local_{}_misc".format(user_lower)
         self.local_db_pw = self.generate_password()
 
@@ -102,11 +104,11 @@ class User(db.Document, UserMixin):
         rolename = "localAccess{}".format(self.local_db_user)
         res = {"db": alfred_db}
         c_exp = {**res, **{"collection": self.local_col}}
-        c_detached = {**res, **{"collection": self.local_col_detached}}
+        c_unlinked = {**res, **{"collection": self.local_col_unlinked}}
         c_misc = {**res, **{"collection": self.local_col_misc}}
 
         act = ["find", "insert", "update"]
-        priv = [{"resource": res_dict, "actions": act} for res_dict in [c_exp, c_detached, c_misc]]
+        priv = [{"resource": res_dict, "actions": act} for res_dict in [c_exp, c_unlinked, c_misc]]
 
         client.alfred.command("createRole", rolename, privileges=priv, roles=[])
 
@@ -119,7 +121,7 @@ class User(db.Document, UserMixin):
 
         user_lower = self.username.lower().replace(" ", "_")
         self.alfred_col = "col_{}".format(user_lower)
-        self.alfred_col_detached = "col_{}_detached".format(user_lower)
+        self.alfred_col_unlinked = "col_{}_unlinked".format(user_lower)
         self.alfred_col_misc = "col_{}_misc".format(user_lower)
 
         f = create_fernet()
@@ -130,11 +132,11 @@ class User(db.Document, UserMixin):
         rolename = "alfredAccess_{}".format(user_lower)
         res = {"db": alfred_db}
         c_exp = {**res, **{"collection": self.alfred_col}}
-        c_detached = {**res, **{"collection": self.alfred_col_detached}}
+        c_unlinked = {**res, **{"collection": self.alfred_col_unlinked}}
         c_misc = {**res, **{"collection": self.alfred_col_misc}}
 
         act = ["find", "insert", "update"]
-        priv = [{"resource": res_dict, "actions": act} for res_dict in [c_exp, c_detached, c_misc]]
+        priv = [{"resource": res_dict, "actions": act} for res_dict in [c_exp, c_unlinked, c_misc]]
 
         client = db.connection
 
