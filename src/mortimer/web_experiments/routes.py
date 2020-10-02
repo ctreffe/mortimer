@@ -5,6 +5,8 @@ import re
 import shutil
 import sys
 import logging
+import random
+
 from pathlib import Path
 from datetime import datetime
 from uuid import uuid4
@@ -615,9 +617,11 @@ def web_export(username, experiment_title):
         if form_exp_data.data_type.data == "exp_data":
             col = current_user.alfred_col
             f = {"exp_id": str(experiment.id), "type": DataManager.EXP_DATA}
+            shuffle = False
         elif form_exp_data.data_type.data == "unlinked":
             col = current_user.alfred_col_unlinked
             f = {"exp_id": str(experiment.id), "type": DataManager.UNLINKED_DATA}
+            shuffle = True
 
         exporter = ExpDataExporter()
         if not "all versions" in form_exp_data.version.data:
@@ -640,7 +644,7 @@ def web_export(username, experiment_title):
                 exporter.process_one(dataset)
 
             delimiter = ";" if form_exp_data.file_type.data == "csv2" else ","
-            data = exporter.write_to_object(delimiter=delimiter)
+            data = exporter.write_to_object(shuffle=shuffle, delimiter=delimiter)
             fn = f"{form_exp_data.data_type.data}_{experiment.title}.csv"
             return send_file(
                 make_str_bytes(data),
@@ -651,7 +655,7 @@ def web_export(username, experiment_title):
             )
 
         elif form_exp_data.file_type.data == "json":
-            data = to_json(cursor)
+            data = to_json(cursor, shuffle=shuffle)
             fn = f"{form_exp_data.data_type.data}_{experiment.title}.json"
             return send_file(
                 make_str_bytes(data),

@@ -7,6 +7,7 @@ import json
 import csv
 import re
 import io
+import random
 
 from bson import json_util
 
@@ -25,8 +26,10 @@ def make_str_bytes(f):
     return bytes_f
 
 
-def to_json(cursor):
+def to_json(cursor, shuffle=False):
     L = list(cursor)
+    if shuffle:
+        random.shuffle(L)
     out = json_util.dumps(obj=L)
     return out
 
