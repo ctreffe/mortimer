@@ -11,6 +11,7 @@ from wtforms import (
     TextAreaField,
     SelectField,
     SelectMultipleField,
+    RadioField,
 )
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from mortimer.models import User, WebExperiment, LocalExperiment
@@ -218,6 +219,32 @@ class ResetPasswordForm(FlaskForm):
     submit = SubmitField("Reset Password")
 
 
+class ExportCodebookForm(FlaskForm):
+    choices = [
+        ("csv1", "csv ( , )"),
+        ("csv2", "csv ( ; )"),
+        ("json", "json"),
+    ]
+    file_type = RadioField(default="csv2", choices=choices, validators=[DataRequired()])
+    version = SelectField("Version", validators=[DataRequired()], default="latest")
+
+
+class ExportExpDataForm(FlaskForm):
+    choices = [
+        ("csv1", "csv ( , )"),
+        ("csv2", "csv ( ; )"),
+        ("json", "json"),
+    ]
+    file_type = RadioField(default="csv2", choices=choices, validators=[DataRequired()])
+    data_type = RadioField(
+        default="exp_data",
+        choices=[("exp_data", "Main Experiment Data"), ("unlinked", "Unlinked Data")],
+        validators=[DataRequired()],
+    )
+    version = SelectMultipleField("Version", validators=[DataRequired()])
+    submit = SubmitField("Export Experiment Data")
+
+
 class ExperimentExportForm(FlaskForm):
 
     file_type = SelectField(
@@ -291,4 +318,3 @@ class ExperimentConfigurationForm(FlaskForm):
     minimum_display_time = StringField("Minimum display time")
 
     submit = SubmitField("Save")
-

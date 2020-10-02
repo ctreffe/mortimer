@@ -15,7 +15,7 @@ from mortimer.models import User, WebExperiment
 from mortimer.utils import send_reset_email, create_fernet
 from flask_login import login_user, current_user, logout_user, login_required
 
-
+# pylint: disable=no-member
 users = Blueprint("users", __name__)
 
 
@@ -32,16 +32,14 @@ def register():
         user = User(username=form.username.data, email=form.email.data, password=hashed_password)
         user.encryption_key = User.generate_encryption_key()
 
-        # create user for alfred database and save credentials in user object
-        user_lower = user.username.lower().replace(" ", "_")
-        user.alfred_user = "alfredUser_{}".format(user_lower)
-
-        if User.objects(alfred_user=user.alfred_user):  # pylint: disable=no-member
+        if User.objects(alfred_user=f"alfredUser_{user.user_lower}") or User.objects(
+            local_db_user=f"localUser_{user.user_lower}"
+        ):
             flash("Username already taken. Please choose a different one.", "error")
             return redirect(url_for("users.register"))
 
-        user.create_db_user()
-        user.create_local_db_user()
+        user.set_db_config()
+        user.set_local_db_config()
 
         # save user
         user.save()
@@ -116,10 +114,6 @@ def account():
         form.username.data = current_user.username
         form.email.data = current_user.email
 
-    if not current_user.local_db_user:
-        current_user.create_local_db_user()
-        current_user.save()
-
     f = create_fernet()
     local_pw = f.decrypt(current_user.local_db_pw).decode()
     user_key = f.decrypt(current_user.encryption_key).decode()
@@ -128,8 +122,6 @@ def account():
         "username": ("Username for local DB", current_user.local_db_user),
         "password": ("Password for local DB", local_pw),
         "col": ("Collection for local DB", current_user.local_col),
-        "detached_col": ("Detached collection", current_user.local_col_detached),
-        "misc_col": ("Misc collection", current_user.local_col_misc),
         "_key": ("Encryption Key", user_key),
     }
 

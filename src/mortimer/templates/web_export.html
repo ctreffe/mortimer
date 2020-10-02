@@ -2,52 +2,91 @@
 
 {% block content %}
 
-<div class="content-section">
-    {% if type == "web" %}
-    <form method="POST" enctype="multipart/form-data"
-        action="{{ url_for('web_experiments.web_export', experiment_title=experiment.title, username=experiment.author) }}"
-        class="needs-validation" novalidate>
-        {% else %}
-        <form method="POST" enctype="multipart/form-data"
-            action="{{ url_for('local_experiments.local_export', experiment_title=experiment.title, username=experiment.author) }}"
-            class="needs-validation" novalidate>
-            {% endif %}
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-heading">Experiment Data</h2>
+    </div>
 
-            {{ form.hidden_tag() }}
-            <fieldset class="form-group">
-                <legend class="border-bottom mb-4"><b>{{ experiment.title }}</b>: {{ legend }}</legend>
+    <form method="POST" enctype="multipart/form-data" class="needs-validation card-body" id="exp_data_form">
+        {{ form_exp_data.hidden_tag() }}
 
-                <div class="form-group">
-                    {{ form.file_type.label(class="form-control-label") }}
-                    {% if form.file_type.errors %}
-                    {{ form.file_type(class="form-control form-control-lg is-invalid") }}
-                    <!-- , placeholder=form.file_type.label.text -->
+
+        <div class="form-group">
+
+            <div class="form-group row">
+                <div class="col-2 col-form-label">
+                    {{ form_exp_data.data_type.label }}
+                </div>
+                <div class="col">
+                    <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                        {% for subfield in form_exp_data.data_type %}
+
+                        {% if subfield.checked %}
+                        <label class="btn btn-outline-secondary active">
+                            {% else %}
+                            <label class="btn btn-outline-secondary">
+                                {% endif %}
+                                {{ subfield }}
+                                {{ subfield.label.text }}
+                            </label>
+                            {% endfor %}
+
+                    </div>
 
                     <div class="invalid-feedback">
-                        {% for error in form.file_type.errors %}
+                        {% for error in form_exp_data.data_type.errors %}
                         <span>{{ error }}</span>
                         {% endfor %}
                     </div>
+                </div>
+            </div>
 
-                    {% else %}
-                    {{ form.file_type(class="form-control form-control-lg") }}
-                    {% endif %}
+            <div class="form-group row">
+                <div class="col-2 col-form-label">
+                    {{ form_exp_data.file_type.label }}
                 </div>
 
-                <div class="form-group">
-                    {{ form.version.label(class="form-control-label") }}
-                    {% if form.version.errors %}
-                    {{ form.version(class="form-control form-control-lg is-invalid") }}
-                    <!-- , placeholder=form.version.label.text -->
+                <div class="col">
+                    <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                        {% for subfield in form_exp_data.file_type %}
+                        {% if subfield.checked %}
+                        <label class="btn btn-outline-secondary active">
+                            {% else %}
+                            <label class="btn btn-outline-secondary">
+                                {% endif %}
+                                {{ subfield }}
+                                {{ subfield.label.text }}
+                            </label>
+                            {% endfor %}
+
+                    </div>
 
                     <div class="invalid-feedback">
-                        {% for error in form.version.errors %}
+                        {% for error in form_exp_data.file_type.errors %}
+                        <span>{{ error }}</span>
+                        {% endfor %}
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="form-group row">
+                <div class="col-2 col-form-label">
+                    {{ form_exp_data.version.label(class="form-control-label") }}
+                </div>
+
+                <div class="col">
+                    {% if form_exp_data.version.errors %}
+                    {{ form_exp_data.version(class="form-control is-invalid") }}
+
+                    <div class="invalid-feedback">
+                        {% for error in form_exp_data.version.errors %}
                         <span>{{ error }}</span>
                         {% endfor %}
                     </div>
 
                     {% else %}
-                    {{ form.version(class="form-control form-control-lg") }}
+                    {{ form_exp_data.version(class="form-control") }}
                     {% endif %}
 
                     <small id="passwordHelpBlock" class="form-text text-muted">
@@ -56,56 +95,103 @@
                         matter which other versions you select.
                     </small>
                 </div>
+            </div>
 
-                <div class="form-group">
-                    {{ form.none_value.label(class="form-control-label") }}
-                    {% if form.none_value.errors %}
-                    {{ form.none_value(class="form-control form-control-lg is-invalid") }}
-                    <!-- , placeholder=form.none_value.label.text -->
+            <div class="form-group row">
+                <div class="col-2">
 
-                    <div class="invalid-feedback">
-                        {% for error in form.none_value.errors %}
-                        <span>{{ error }}</span>
+                </div>
+                <div class="col">
+                    <button type="submit" class="btn btn-primary" form="exp_data_form"><i
+                            class="fas fa-download mr-2"></i>Export Experiment
+                        Data</button>
+                </div>
+            </div>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+<div class="card mt-3">
+    <div class="card-header">
+        <h2>Codebook</h2>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data" class="needs-validation card-body" id="codebook_form">
+        {{ form_codebook.hidden_tag() }}
+
+
+        <div class="form-group row">
+            <div class="col-2 col-form-label">
+                {{ form_codebook.file_type.label }}
+            </div>
+
+            <div class="col">
+                <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                    {% for subfield in form_codebook.file_type %}
+                    {% if subfield.checked %}
+                    <label class="btn btn-outline-secondary active">
+                        {% else %}
+                        <label class="btn btn-outline-secondary">
+                            {% endif %}
+                            {{ subfield }}
+                            {{ subfield.label.text }}
+                        </label>
                         {% endfor %}
-                    </div>
 
-                    {% else %}
-                    {{ form.none_value(class="form-control form-control-lg") }}
-                    {% endif %}
-                    <small id="passwordHelpBlock" class="form-text text-muted">
-                        Here, you can define a value that should be inserted for missing
-                    </small>
                 </div>
 
-                <div class="form-check  ">
+                <div class="invalid-feedback">
+                    {% for error in form_codebook.file_type.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
+                </div>
+            </div>
 
-                    {% if form.replace_none_with_empty_string.errors %}
-                    {{ form.replace_none_with_empty_string(class="form-check-input is-invalid") }}
+        </div>
 
-                    <div class="invalid-feedback">
-                        {% for error in form.replace_none_with_empty_string.errors %}
-                        <span>{{ error }}</span>
-                        {% endfor %}
-                    </div>
 
-                    {% else %}
-                    {{ form.replace_none_with_empty_string(class="form-check-input") }}
-                    {% endif %}
-                    {{ form.replace_none_with_empty_string.label(class="form-check-label") }}
+        <div class="form-group row">
+            <div class="col-2 col-form-label">
+                {{ form_codebook.version.label(class="form-control-label") }}
+            </div>
 
-                    <small id="passwordHelpBlock" class="form-text text-muted">
-                        If you check this box, the input to the field <code>{{ form.none_value.label }}</code> will be
-                        discarded.
-                    </small>
+            <div class="col">
+                {% if form_codebook.version.errors %}
+                {{ form_codebook.version(class="form-control is-invalid") }}
+
+                <div class="invalid-feedback">
+                    {% for error in form_codebook.version.errors %}
+                    <span>{{ error }}</span>
+                    {% endfor %}
                 </div>
 
-            </fieldset>
-
-            <div class="form-group">
-                {{ form.submit(class="btn btn-primary", id="submit")}}
+                {% else %}
+                {{ form_codebook.version(class="form-control") }}
+                {% endif %}
 
             </div>
-        </form>
+        </div>
+
+
+
+        <div class="form-group row">
+            <div class="col-2">
+
+            </div>
+            <div class="col">
+                <button type="submit" class="btn btn-primary" form="codebook_form"><i
+                        class="fas fa-download mr-2"></i>Export
+                    Codebook</button>
+            </div>
+        </div>
+
+    </form>
+
+
 </div>
 
 {% endblock content %}
