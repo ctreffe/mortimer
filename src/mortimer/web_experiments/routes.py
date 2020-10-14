@@ -31,6 +31,7 @@ from alfred3 import alfredlog
 from alfred3.data_manager import DataManager
 from alfred3.data_manager import ExpDataExporter
 from alfred3.data_manager import CodeBookExporter
+from alfred3.data_manager import DataDecryptor
 
 from mortimer import export
 from mortimer.export import make_str_bytes, to_json
@@ -119,10 +120,7 @@ def new_experiment():
         )
 
     return render_template(
-        "create_experiment.html",
-        title="New Experiment",
-        form=form,
-        legend="New Experiment",
+        "create_experiment.html", title="New Experiment", form=form, legend="New Experiment",
     )
 
 
@@ -407,10 +405,7 @@ def manage_resources(username, experiment_title):
     )
 
     return render_template(
-        "manage_resources.html",
-        legend="Manage Resources",
-        experiment=experiment,
-        display=display,
+        "manage_resources.html", legend="Manage Resources", experiment=experiment, display=display,
     )
 
 
@@ -481,8 +476,7 @@ def delete_all_files(username, experiment_title):
     defaults={"relative_path": None},
 )
 @web_experiments.route(
-    "/<username>/<path:experiment_title>/new_directory/<path:relative_path>",
-    methods=["POST"],
+    "/<username>/<path:experiment_title>/new_directory/<path:relative_path>", methods=["POST"],
 )
 @login_required
 def new_directory(username: str, experiment_title: str, relative_path: str = None):
@@ -540,8 +534,7 @@ def new_directory(username: str, experiment_title: str, relative_path: str = Non
 
 
 @web_experiments.route(
-    "/<username>/<path:experiment_title>/<path:relative_path>/delete_directory",
-    methods=["POST"],
+    "/<username>/<path:experiment_title>/<path:relative_path>/delete_directory", methods=["POST"],
 )
 @login_required
 def delete_directory(username, experiment_title, relative_path):
@@ -569,8 +562,7 @@ def delete_directory(username, experiment_title, relative_path):
 
 
 @web_experiments.route(
-    "/<username>/<path:experiment_title>/<path:relative_path>/delete_file",
-    methods=["POST"],
+    "/<username>/<path:experiment_title>/<path:relative_path>/delete_file", methods=["POST"],
 )
 @login_required
 def delete_file(username, experiment_title, relative_path):
@@ -618,10 +610,12 @@ def web_export(username, experiment_title):
             col = current_user.alfred_col
             f = {"exp_id": str(experiment.id), "type": DataManager.EXP_DATA}
             shuffle = False
+            decrypt = False
         elif form_exp_data.data_type.data == "unlinked":
             col = current_user.alfred_col_unlinked
             f = {"exp_id": str(experiment.id), "type": DataManager.UNLINKED_DATA}
             shuffle = True
+            decrypt = True
 
         exporter = ExpDataExporter()
         if not "all versions" in form_exp_data.version.data:
@@ -638,10 +632,19 @@ def web_export(username, experiment_title):
             )
 
         cursor = db[col].find(f)
+        fern = create_fernet()
+        key = fern.decrypt(current_user.encryption_key)
+        decryptor = DataDecryptor(key=key)
 
         if "csv" in form_exp_data.file_type.data:
             for dataset in cursor:
                 exporter.process_one(dataset)
+
+            if decrypt:
+                decrypted_docs = []
+                for doc in exporter.list_of_docs:
+                    decrypted_docs.append(decryptor.decrypt(doc))
+                exporter.list_of_docs = decrypted_docs
 
             delimiter = ";" if form_exp_data.file_type.data == "csv2" else ","
             data = exporter.write_to_object(shuffle=shuffle, delimiter=delimiter)
@@ -655,7 +658,11 @@ def web_export(username, experiment_title):
             )
 
         elif form_exp_data.file_type.data == "json":
-            data = to_json(cursor, shuffle=shuffle)
+            if decrypt:
+                data = to_json(cursor, shuffle=shuffle, decryptor=decryptor)
+            else:
+                data = to_json(cursor, shuffle=shuffle)
+
             fn = f"{form_exp_data.data_type.data}_{experiment.title}.json"
             return send_file(
                 make_str_bytes(data),
@@ -685,7 +692,7 @@ def web_export(username, experiment_title):
         exporter = CodeBookExporter()
         exporter.process(codebook)
 
-        if "csv" in form_exp_data.file_type.data:
+        if "csv" in form_codebook.file_type.data:
 
             delimiter = ";" if form_codebook.file_type.data == "csv2" else ","
             data = exporter.write_to_object(delimiter=delimiter)
@@ -698,8 +705,8 @@ def web_export(username, experiment_title):
                 cache_timeout=1,
             )
 
-        elif form_exp_data.file_type.data == "json":
-            data = json_util.dumps(exporter.codebook)
+        elif form_codebook.file_type.data == "json":
+            data = json_util.dumps(exporter.codebook, indent=4)
             fn = f"codebook_{experiment.title}.json"
             return send_file(
                 make_str_bytes(data),

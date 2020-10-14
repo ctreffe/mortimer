@@ -26,11 +26,28 @@ def make_str_bytes(f):
     return bytes_f
 
 
-def to_json(cursor, shuffle=False):
-    L = list(cursor)
+def to_json(cursor, shuffle=False, decryptor=None):
+    """Turns a MongoDB Cursor into a JSON file.
+
+    Args:
+        shuffle: If *True*, the document order will be shuffled 
+            (useful e.g. for preventing a link of experiment and 
+            unlinked data).
+        decryptor: An alfred3.data_manager.Decryptor instance, which,
+            if provided, will be used to try decryption of the values
+            of all decouments.
+    """
+    data = list(cursor)
+
+    if decryptor:
+        decrypted_data = []
+        for doc in data:
+            decrypted_data.append(decryptor.decrypt(doc))
+        data = decrypted_data
+
     if shuffle:
-        random.shuffle(L)
-    out = json_util.dumps(obj=L)
+        random.shuffle(data)
+    out = json_util.dumps(obj=data, indent=4)
     return out
 
 

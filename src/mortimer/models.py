@@ -238,6 +238,7 @@ class User(db.Document, UserMixin):
     def mongo_saving_agent_unlinked(self) -> dict:
         mongo_agent = self.mongo_saving_agent["mongo_saving_agent"]
         mongo_agent["collection"] = self.alfred_col_unlinked
+        mongo_agent["encrypt"] = "true"
         return {"mongo_saving_agent_unlinked": mongo_agent}
 
     @property
