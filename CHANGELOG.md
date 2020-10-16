@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 * Added support for two additional collections in the alfred database.
+* Redesigned and enhanced data export. When used with alfred v1.4+, Mortimer now offers export of unlinked data and codebooks.
 
 ### Fixed
 
