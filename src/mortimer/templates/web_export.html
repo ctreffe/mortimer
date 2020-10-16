@@ -2,110 +2,226 @@
 
 {% block content %}
 
-<div class="content-section">
-    {% if type == "web" %}
-    <form method="POST" enctype="multipart/form-data"
-        action="{{ url_for('web_experiments.web_export', experiment_title=experiment.title, username=experiment.author) }}"
-        class="needs-validation" novalidate>
-        {% else %}
-        <form method="POST" enctype="multipart/form-data"
-            action="{{ url_for('local_experiments.local_export', experiment_title=experiment.title, username=experiment.author) }}"
-            class="needs-validation" novalidate>
-            {% endif %}
 
-            {{ form.hidden_tag() }}
-            <fieldset class="form-group">
-                <legend class="border-bottom mb-4"><b>{{ experiment.title }}</b>: {{ legend }}</legend>
+<div class="row">
 
-                <div class="form-group">
-                    {{ form.file_type.label(class="form-control-label") }}
-                    {% if form.file_type.errors %}
-                    {{ form.file_type(class="form-control form-control-lg is-invalid") }}
-                    <!-- , placeholder=form.file_type.label.text -->
-
-                    <div class="invalid-feedback">
-                        {% for error in form.file_type.errors %}
-                        <span>{{ error }}</span>
-                        {% endfor %}
-                    </div>
-
-                    {% else %}
-                    {{ form.file_type(class="form-control form-control-lg") }}
-                    {% endif %}
-                </div>
-
-                <div class="form-group">
-                    {{ form.version.label(class="form-control-label") }}
-                    {% if form.version.errors %}
-                    {{ form.version(class="form-control form-control-lg is-invalid") }}
-                    <!-- , placeholder=form.version.label.text -->
-
-                    <div class="invalid-feedback">
-                        {% for error in form.version.errors %}
-                        <span>{{ error }}</span>
-                        {% endfor %}
-                    </div>
-
-                    {% else %}
-                    {{ form.version(class="form-control form-control-lg") }}
-                    {% endif %}
-
-                    <small id="passwordHelpBlock" class="form-text text-muted">
-                        By pressing <code>command</code> (Mac) or <code>Strg</code> (Windows) while clicking, you can
-                        select multiple versions at once. If you select "all versions", all data will be exported, no
-                        matter which other versions you select.
-                    </small>
-                </div>
-
-                <div class="form-group">
-                    {{ form.none_value.label(class="form-control-label") }}
-                    {% if form.none_value.errors %}
-                    {{ form.none_value(class="form-control form-control-lg is-invalid") }}
-                    <!-- , placeholder=form.none_value.label.text -->
-
-                    <div class="invalid-feedback">
-                        {% for error in form.none_value.errors %}
-                        <span>{{ error }}</span>
-                        {% endfor %}
-                    </div>
-
-                    {% else %}
-                    {{ form.none_value(class="form-control form-control-lg") }}
-                    {% endif %}
-                    <small id="passwordHelpBlock" class="form-text text-muted">
-                        Here, you can define a value that should be inserted for missing
-                    </small>
-                </div>
-
-                <div class="form-check  ">
-
-                    {% if form.replace_none_with_empty_string.errors %}
-                    {{ form.replace_none_with_empty_string(class="form-check-input is-invalid") }}
-
-                    <div class="invalid-feedback">
-                        {% for error in form.replace_none_with_empty_string.errors %}
-                        <span>{{ error }}</span>
-                        {% endfor %}
-                    </div>
-
-                    {% else %}
-                    {{ form.replace_none_with_empty_string(class="form-check-input") }}
-                    {% endif %}
-                    {{ form.replace_none_with_empty_string.label(class="form-check-label") }}
-
-                    <small id="passwordHelpBlock" class="form-text text-muted">
-                        If you check this box, the input to the field <code>{{ form.none_value.label }}</code> will be
-                        discarded.
-                    </small>
-                </div>
-
-            </fieldset>
-
-            <div class="form-group">
-                {{ form.submit(class="btn btn-primary", id="submit")}}
-
+    {# Experiment Data #}
+    <div class="col">
+        <div class="card h-100">
+            <div class="card-header">
+                <h2 class="card-heading"><i class="fas fa-chart-area mr-2"></i>Experiment Data</h2>
             </div>
-        </form>
+
+            <form method="POST" enctype="multipart/form-data" class="needs-validation card-body" id="exp_data_form">
+                {{ form_exp_data.hidden_tag() }}
+
+
+                <div class="form-group">
+
+                    <div class="form-group row">
+                        <div class="col-3 col-form-label">
+                            {{ form_exp_data.data_type.label }}
+                        </div>
+                        <div class="col">
+                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                {% for subfield in form_exp_data.data_type %}
+
+                                {% if subfield.checked %}
+                                <label class="btn btn-outline-secondary active">
+                                    {% else %}
+                                    <label class="btn btn-outline-secondary">
+                                        {% endif %}
+                                        {{ subfield }}
+                                        {{ subfield.label.text }}
+                                    </label>
+                                    {% endfor %}
+
+                            </div>
+
+                            <div class="invalid-feedback">
+                                {% for error in form_exp_data.data_type.errors %}
+                                <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+
+                            <small class="form-text text-muted">
+                                Unlinked data is data that was collected on an <code>UnlinkedDataPage</code>. It is
+                                saved separately from experiment data and cannot be linked to a specific experiment
+                                session. As such, unlinked data can be suitable for collecting personalized data.
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-3 col-form-label">
+                            {{ form_exp_data.file_type.label }}
+                        </div>
+
+                        <div class="col">
+                            <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                {% for subfield in form_exp_data.file_type %}
+                                {% if subfield.checked %}
+                                <label class="btn btn-outline-secondary active">
+                                    {% else %}
+                                    <label class="btn btn-outline-secondary">
+                                        {% endif %}
+                                        {{ subfield }}
+                                        {{ subfield.label.text }}
+                                    </label>
+                                    {% endfor %}
+
+                            </div>
+
+                            <div class="invalid-feedback">
+                                {% for error in form_exp_data.file_type.errors %}
+                                <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+
+                            <small class="form-text text-muted">Semicolon-separated .csv is recommended for working with
+                                Excel.
+                            </small>
+                        </div>
+
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-3 col-form-label">
+                            {{ form_exp_data.version.label(class="form-control-label") }}
+                        </div>
+
+                        <div class="col">
+                            {% if form_exp_data.version.errors %}
+                            {{ form_exp_data.version(class="form-control is-invalid") }}
+
+                            <div class="invalid-feedback">
+                                {% for error in form_exp_data.version.errors %}
+                                <span>{{ error }}</span>
+                                {% endfor %}
+                            </div>
+
+                            {% else %}
+                            {{ form_exp_data.version(class="form-control") }}
+                            {% endif %}
+
+                            <small id="passwordHelpBlock" class="form-text text-muted">
+                                By pressing <code>command</code> (Mac) or <code>Strg</code> (Windows) while clicking,
+                                you can
+                                select multiple versions at once. If you select "all versions", all data will be
+                                exported, no
+                                matter which other versions you select.
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="form-group row">
+                        <div class="col-3">
+
+                        </div>
+                        <div class="col">
+                            <button type="submit" class="btn btn-primary" form="exp_data_form"><i
+                                    class="fas fa-download mr-2"></i>Export Experiment
+                                Data</button>
+                        </div>
+                    </div>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
+
+
+
+    {# Codebook #}
+    <div class="col-12 col-lg-6">
+        <div class="card h-100">
+            <div class="card-header">
+                <h2 class="card-heading"><i class="fas fa-table mr-2"></i>Codebook</h2>
+            </div>
+
+            <form method="POST" enctype="multipart/form-data" class="needs-validation card-body" id="codebook_form">
+                {{ form_codebook.hidden_tag() }}
+
+
+                <div class="form-group row">
+                    <div class="col-3 col-form-label">
+                        {{ form_codebook.file_type.label }}
+                    </div>
+
+                    <div class="col">
+                        <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                            {% for subfield in form_codebook.file_type %}
+                            {% if subfield.checked %}
+                            <label class="btn btn-outline-secondary active">
+                                {% else %}
+                                <label class="btn btn-outline-secondary">
+                                    {% endif %}
+                                    {{ subfield }}
+                                    {{ subfield.label.text }}
+                                </label>
+                                {% endfor %}
+
+                        </div>
+
+                        <div class="invalid-feedback">
+                            {% for error in form_codebook.file_type.errors %}
+                            <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                </div>
+
+
+                <div class="form-group row">
+                    <div class="col-3 col-form-label">
+                        {{ form_codebook.version.label(class="form-control-label") }}
+                    </div>
+
+                    <div class="col">
+                        {% if form_codebook.version.errors %}
+                        {{ form_codebook.version(class="form-control is-invalid") }}
+
+                        <div class="invalid-feedback">
+                            {% for error in form_codebook.version.errors %}
+                            <span>{{ error }}</span>
+                            {% endfor %}
+                        </div>
+
+                        {% else %}
+                        {{ form_codebook.version(class="form-control") }}
+                        {% endif %}
+
+                    </div>
+                </div>
+
+
+
+                <div class="form-group row">
+                    <div class="col-3">
+
+                    </div>
+                    <div class="col">
+                        <button type="submit" class="btn btn-primary" form="codebook_form"><i
+                                class="fas fa-download mr-2"></i>Export
+                            Codebook</button>
+                    </div>
+                </div>
+
+            </form>
+
+
+        </div>
+    </div>
+
 </div>
+
+
+
+
+
 
 {% endblock content %}

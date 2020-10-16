@@ -2,7 +2,7 @@
 import string, random
 
 from flask import Blueprint, current_app
-from flask import render_template, url_for, flash, redirect, request
+from flask import render_template, url_for, flash, redirect, request, abort
 from mortimer import bcrypt
 from mortimer.forms import (
     RegistrationForm,
@@ -15,7 +15,7 @@ from mortimer.models import User, WebExperiment
 from mortimer.utils import send_reset_email, create_fernet
 from flask_login import login_user, current_user, logout_user, login_required
 
-
+# pylint: disable=no-member
 users = Blueprint("users", __name__)
 
 
@@ -32,18 +32,14 @@ def register():
         user = User(username=form.username.data, email=form.email.data, password=hashed_password)
         user.encryption_key = User.generate_encryption_key()
 
-        # create user for alfred database and save credentials in user object
-        user_lower = user.username.lower().replace(" ", "_")
-        user.alfred_user = "alfredUser_{}".format(user_lower)
-        if User.objects(alfred_user=user.alfred_user):  # pylint: disable=no-member
+        if User.objects(alfred_user=f"alfredUser_{user.user_lower}") or User.objects(
+            local_db_user=f"localUser_{user.user_lower}"
+        ):
             flash("Username already taken. Please choose a different one.", "error")
             return redirect(url_for("users.register"))
-        user.alfred_pw = User.generate_password()  # password is encrypted
-        user.alfred_col = "col_{}".format(user_lower)
-        user.create_db_user()
 
-        # create user for local experiments
-        user.prepare_local_db_user()
+        user.set_db_config()
+        user.set_local_db_config()
 
         # save user
         user.save()
@@ -118,10 +114,6 @@ def account():
         form.username.data = current_user.username
         form.email.data = current_user.email
 
-    if not current_user.local_db_user:
-        current_user.prepare_local_db_user()
-        current_user.save()
-
     f = create_fernet()
     local_pw = f.decrypt(current_user.local_db_pw).decode()
     user_key = f.decrypt(current_user.encryption_key).decode()
@@ -183,3 +175,20 @@ def reset_password(token):
         return redirect(url_for("users.login"))
 
     return render_template("reset_password.html", title="Reset Password", form=form)
+
+
+@users.route("/reset_mongodb_pw", methods=["GET", "POST"])
+def reset_local_mongodb_pw():
+    if current_user.email != "jbrachem@posteo.de":
+        abort(403)
+
+    usrname = request.args.get("usr")
+    user = User.objects(username=usrname).first()
+    if user:
+        user.reset_local_mongodb_pw()
+        user.save()
+        flash(f"Password for local collection reset for user {user.username}", "success")
+    else:
+        flash(f"User {usrname} not found.", "info")
+
+    return redirect(url_for("main.home"))

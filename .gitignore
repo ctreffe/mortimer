@@ -42,3 +42,4 @@ tests/run_locally/run.py
 src/mortimer.egg-info
 build/
 dist/
+mortimer_venv/

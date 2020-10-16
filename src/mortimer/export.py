@@ -7,29 +7,51 @@ import json
 import csv
 import re
 import io
+import random
+
+from bson import json_util
 
 # this is necessary, because send_file requires bytes-like objects
 def make_str_bytes(f):
     # Creating the byteIO object from the StringIO Object
     bytes_f = io.BytesIO()
-    bytes_f.write(f.getvalue().encode("utf-8"))
+    try:
+        bytes_f.write(f.getvalue().encode("utf-8"))
+        f.close()
+    except AttributeError:
+        bytes_f.write(f.encode("utf-8"))
     # seeking was necessary. Python 3.5.2, Flask 0.12.2
+
     bytes_f.seek(0)
-    f.close()
     return bytes_f
 
 
-def to_json(cursor):
-    sIO = io.StringIO()
-    L = list(cursor)
-    json.dump(L, sIO)
-    sIO.seek(0)
-    return sIO
+def to_json(cursor, shuffle=False, decryptor=None):
+    """Turns a MongoDB Cursor into a JSON file.
+
+    Args:
+        shuffle: If *True*, the document order will be shuffled 
+            (useful e.g. for preventing a link of experiment and 
+            unlinked data).
+        decryptor: An alfred3.data_manager.Decryptor instance, which,
+            if provided, will be used to try decryption of the values
+            of all decouments.
+    """
+    data = list(cursor)
+
+    if decryptor:
+        decrypted_data = []
+        for doc in data:
+            decrypted_data.append(decryptor.decrypt(doc))
+        data = decrypted_data
+
+    if shuffle:
+        random.shuffle(data)
+    out = json_util.dumps(obj=data, indent=4)
+    return out
 
 
-def to_csv(
-    cursor, none_value=None, remove_linebreaks=False, dialect="excel", **writerparams
-):
+def to_csv(cursor, none_value=None, remove_linebreaks=False, dialect="excel", **writerparams):
     rows = cursor_to_rows(cursor, none_value)
     if remove_linebreaks:
         for i in range(1, len(rows)):
@@ -168,9 +190,7 @@ class Header(object):
                     raise Exception("break")
             rv = rv + child.getDataFromDoc(subDoc if found else {})
         if self.additional_data:
-            rv = rv + self.additional_data.getDataFromDoc(
-                doc.get("additional_data", {})
-            )
+            rv = rv + self.additional_data.getDataFromDoc(doc.get("additional_data", {}))
         return rv
 
     def getDataFromDocs(self, docs):
