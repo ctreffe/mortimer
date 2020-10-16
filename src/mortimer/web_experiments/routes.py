@@ -706,7 +706,7 @@ def web_export(username, experiment_title):
             )
 
         elif form_codebook.file_type.data == "json":
-            data = json_util.dumps(exporter.codebook, indent=4)
+            data = json_util.dumps(exporter.full_codebook, indent=4)
             fn = f"codebook_{experiment.title}.json"
             return send_file(
                 make_str_bytes(data),
