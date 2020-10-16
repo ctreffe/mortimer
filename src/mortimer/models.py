@@ -140,6 +140,21 @@ class User(db.Document, UserMixin):
             "createUser", self.local_db_user, pwd=pw_dec, roles=[self.local_db_rolename]
         )
 
+    def reset_local_mongodb_pw(self):
+        """Generates a new password for the 'local' collection and 
+        updates it in the database and in the user data.
+        """
+        newpw = self.generate_password()
+
+        f = create_fernet()
+        pw_dec = f.decrypt(newpw).decode()
+
+        alfred_db = current_app.config["ALFRED_DB"]
+        client = db.connection
+
+        client[alfred_db].command("updateUser", self.local_db_user, pwd=pw_dec)
+        self.local_db_pw = newpw
+
     def set_local_db_config(self):
         self.local_db_user = "localUser_{}".format(self.user_lower)
         self.local_col = "local_{}".format(self.user_lower)

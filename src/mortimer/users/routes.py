@@ -2,7 +2,7 @@
 import string, random
 
 from flask import Blueprint, current_app
-from flask import render_template, url_for, flash, redirect, request
+from flask import render_template, url_for, flash, redirect, request, abort
 from mortimer import bcrypt
 from mortimer.forms import (
     RegistrationForm,
@@ -175,3 +175,20 @@ def reset_password(token):
         return redirect(url_for("users.login"))
 
     return render_template("reset_password.html", title="Reset Password", form=form)
+
+
+@users.route("/reset_mongodb_pw", methods=["GET", "POST"])
+def reset_local_mongodb_pw():
+    if current_user.email != "jbrachem@posteo.de":
+        abort(403)
+
+    usrname = request.args.get("usr")
+    user = User.objects(username=usrname).first()
+    if user:
+        user.reset_local_mongodb_pw()
+        user.save()
+        flash(f"Password for local collection reset for user {user.username}", "success")
+    else:
+        flash(f"User {usrname} not found.", "info")
+
+    return redirect(url_for("main.home"))
