@@ -238,7 +238,7 @@ class ExportExpDataForm(FlaskForm):
     file_type = RadioField(default="csv2", choices=choices, validators=[DataRequired()])
     data_type = RadioField(
         default="exp_data",
-        choices=[("exp_data", "Main Experiment Data"), ("unlinked", "Unlinked Data")],
+        choices=[("exp_data", "Experiment Data"), ("unlinked", "Unlinked Data")],
         validators=[DataRequired()],
     )
     version = SelectMultipleField("Version", validators=[DataRequired()])
