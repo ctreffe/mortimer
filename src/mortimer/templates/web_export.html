@@ -137,6 +137,7 @@
 
     {# Codebook #}
     <div class="col-12 col-lg-6">
+
         <div class="card h-100">
             <div class="card-header">
                 <h2 class="card-heading"><i class="fas fa-table mr-2"></i>Codebook</h2>
@@ -210,6 +211,25 @@
                             Codebook</button>
                     </div>
                 </div>
+
+                <div class="form-group row border-top">
+                    <div class="col-3">
+
+                    </div>
+                    <div class="col">
+                        <a href="{{ url_for('web_experiments.export_base_codebook') }}" class="btn btn-info mt-3"><i
+                                class="fas fa-download mr-2"></i>Export
+                            Base
+                            Codebook</a>
+                        <small class="form-text text-muted">
+                            The base codebook describes those variables in an alfred dataset that are not linked to
+                            specific
+                            input elements. They are associated with pages, sections, or the whole experiment.
+                        </small>
+                    </div>
+                </div>
+
+
 
             </form>
 

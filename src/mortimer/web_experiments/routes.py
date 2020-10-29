@@ -26,6 +26,7 @@ from flask_login import current_user, login_required
 from werkzeug.utils import secure_filename
 from bson import json_util
 
+import alfred3
 from alfred3 import alfredlog
 
 from alfred3.data_manager import DataManager
@@ -120,7 +121,10 @@ def new_experiment():
         )
 
     return render_template(
-        "create_experiment.html", title="New Experiment", form=form, legend="New Experiment",
+        "create_experiment.html",
+        title="New Experiment",
+        form=form,
+        legend="New Experiment",
     )
 
 
@@ -405,7 +409,10 @@ def manage_resources(username, experiment_title):
     )
 
     return render_template(
-        "manage_resources.html", legend="Manage Resources", experiment=experiment, display=display,
+        "manage_resources.html",
+        legend="Manage Resources",
+        experiment=experiment,
+        display=display,
     )
 
 
@@ -476,7 +483,8 @@ def delete_all_files(username, experiment_title):
     defaults={"relative_path": None},
 )
 @web_experiments.route(
-    "/<username>/<path:experiment_title>/new_directory/<path:relative_path>", methods=["POST"],
+    "/<username>/<path:experiment_title>/new_directory/<path:relative_path>",
+    methods=["POST"],
 )
 @login_required
 def new_directory(username: str, experiment_title: str, relative_path: str = None):
@@ -534,7 +542,8 @@ def new_directory(username: str, experiment_title: str, relative_path: str = Non
 
 
 @web_experiments.route(
-    "/<username>/<path:experiment_title>/<path:relative_path>/delete_directory", methods=["POST"],
+    "/<username>/<path:experiment_title>/<path:relative_path>/delete_directory",
+    methods=["POST"],
 )
 @login_required
 def delete_directory(username, experiment_title, relative_path):
@@ -562,7 +571,8 @@ def delete_directory(username, experiment_title, relative_path):
 
 
 @web_experiments.route(
-    "/<username>/<path:experiment_title>/<path:relative_path>/delete_file", methods=["POST"],
+    "/<username>/<path:experiment_title>/<path:relative_path>/delete_file",
+    methods=["POST"],
 )
 @login_required
 def delete_file(username, experiment_title, relative_path):
@@ -721,6 +731,20 @@ def web_export(username, experiment_title):
         experiment=experiment,
         form_exp_data=form_exp_data,
         form_codebook=form_codebook,
+    )
+
+
+@web_experiments.route("/export_base_codebook", methods=["GET"])
+@login_required
+def export_base_codebook():
+    alfred_path = Path(alfred3.__file__).parent.resolve()
+    base_codebook_path = alfred_path / "files" / "base_codebook.csv"
+    return send_file(
+        base_codebook_path,
+        mimetype="text/csv",
+        as_attachment=True,
+        attachment_filename="base_codebook.csv",
+        cache_timeout=1,
     )
 
 
