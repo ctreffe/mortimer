@@ -6,6 +6,7 @@ import shutil
 import sys
 import logging
 import random
+import importlib
 
 from pathlib import Path
 from datetime import datetime
@@ -737,10 +738,9 @@ def web_export(username, experiment_title):
 @web_experiments.route("/export_base_codebook", methods=["GET"])
 @login_required
 def export_base_codebook():
-    alfred_path = Path(alfred3.__file__).parent.resolve()
-    base_codebook_path = alfred_path / "files" / "base_codebook.csv"
+    codebook = importlib.resources.read_text(alfred3.files, "base_codebook.csv")
     return send_file(
-        base_codebook_path,
+        make_str_bytes(codebook),
         mimetype="text/csv",
         as_attachment=True,
         attachment_filename="base_codebook.csv",
