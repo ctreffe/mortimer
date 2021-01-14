@@ -107,9 +107,6 @@ def new_experiment():
             exp.public = True
 
         exp.save()  # IMPORTANT! Needed to create an exp ID
-        exp.set_settings()
-        # save the exp to the data base
-        exp.save()
 
         # append an entry for the current experiment to the current user
         current_user.experiments.append(exp.id)  # pylint: disable=no-member
@@ -196,10 +193,6 @@ def experiment(username, exp_title):
     # Form for script.py upload
     form = NewScriptForm()
 
-    if not exp.settings:
-        exp.set_settings()
-        exp.save()
-
     if form.validate_on_submit() and form.script.data:
 
         # process script.py
@@ -212,7 +205,6 @@ def experiment(username, exp_title):
         # update version
         if exp.version != form.version.data:
             exp.version = form.version.data
-            exp.settings["experiment"]["version"] = form.version.data
             exp.available_versions.append(exp.version)
 
         # save experiment
@@ -270,7 +262,6 @@ def experiment_script(username, exp_title):
         # update version
         if exp.version != form.version.data:
             exp.version = form.version.data
-            exp.settings["experiment"]["version"] = form.version.data
             exp.available_versions.append(exp.version)
 
         # save simple updates
