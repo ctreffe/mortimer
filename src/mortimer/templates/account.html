@@ -55,53 +55,6 @@
         </div>
     </form>
 
-    <div class="alert alert-danger pt-3" role="alert">
-        <p><b>View Sensitive Information</b></p>
-
-        <p>You can view your DB credentials for saving to the alfred database from standalone ("local") experiments and
-            your personal encryption key here.</p>
-
-        <p>Keep those secrets safe!</p>
-
-        <!-- Show/Hide Button -->
-        <button class="btn btn-primary btn-sm" type="button" data-toggle="collapse" data-target="#showSecrets"
-            aria-expanded="false" aria-controls="showSecrets">
-            Show/hide Secrets
-        </button>
-
-        <!-- Credentials -->
-        <div class="collapse pt-1" id="showSecrets">
-            <hr>
-            {% for key, value in info.items() if not key.startswith("_") %}
-            <div class="form-group row">
-                <label for="{{ key }}" class="col-sm-3 col-form-label">{{ value[0] }}</label>
-                <div class="col-sm-9">
-                    <input type="text" id="{{ key }}" readonly class="form-control" value="{{ value[1] }}">
-                </div>
-            </div>
-            {% endfor %}
-            <hr>
-            <div class="form-group row">
-                <label for="{{ encryption_key }}" class="col-sm-3 col-form-label">{{ info.get('_key')[0] }}</label>
-                <div class="col-sm-9">
-                    <input type="text" readonly class="form-control" value="{{ info.get('_key')[1] }}">
-                </div>
-            </div>
-
-            <p>This encryption key will be used, if you use the <code>alfred3.Experiment.encrypt()</code> or
-                <code>alfred3.Experiment.decrypt()</code> methods in web experiments deployed via mortimer. You will
-                need
-                it, if you want to decrypt data that you encrypted before writing to the database. Use <a
-                    href="https://cryptography.io/en/latest/fernet/"><code>cryptography.fernet.Fernet</code></a> for
-                decryption outside of alfred experiments.</p>
-            <p><i class="fas fa-exclamation-triangle"></i> The methods <code>alfred3.Experiment.encrypt()</code> and
-                <code>alfred3.Experiment.decrypt()</code> are <b>experimental</b> and are likely to
-                change in future versions. If you want to be sure that your code will work with future versions, you can
-                still use this key for your own fernet instances.
-            </p>
-
-        </div>
-    </div>
 </div>
 
 {% endblock content %}

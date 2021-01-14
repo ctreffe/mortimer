@@ -11,7 +11,6 @@ from cryptography.fernet import Fernet
 from flask import current_app
 from flask_login import UserMixin
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
-from alfred3 import settings as alfred_settings
 from alfred3.config import ExperimentConfig, ExperimentSecrets
 from alfred3 import alfredlog
 
@@ -42,14 +41,6 @@ class User(db.Document, UserMixin):
     alfred_col_unlinked = db.StringField()
     alfred_col_misc = db.StringField()
     alfred_col_detached = db.StringField()  # for bw compatibility
-
-    local_db_rolename = db.StringField()
-    local_db_user = db.StringField()
-    local_db_pw = db.BinaryField()
-    local_col = db.StringField()
-    local_col_unlinked = db.StringField()
-    local_col_misc = db.StringField()
-    local_col_detached = db.StringField()  # for bw compatibility
 
     settings = db.DictField(
         default={
@@ -89,80 +80,6 @@ class User(db.Document, UserMixin):
         pw_raw = "".join(secrets.choice(alphabet) for i in range(20))
         pw_enc = f.encrypt(pw_raw.encode())
         return pw_enc
-
-    def _prepare_local_db_role_privileges(self):
-        alfred_db = current_app.config["ALFRED_DB"]
-        res = {"db": alfred_db}
-
-        c_exp = {**res, **{"collection": self.local_col}}
-        c_unlinked = {**res, **{"collection": self.local_col_unlinked}}
-        c_misc = {**res, **{"collection": self.local_col_misc}}
-
-        act = ["find", "insert", "update"]
-        priv = [{"resource": res_dict, "actions": act} for res_dict in [c_exp, c_unlinked, c_misc]]
-
-        return priv
-
-    def create_local_db_role(self):
-        self.local_db_rolename = "localAccess{}".format(self.local_db_user)
-        priv = self._prepare_role_privileges()
-
-        alfred_db = current_app.config["ALFRED_DB"]
-        client = db.connection
-        client[alfred_db].command("createRole", self.local_db_rolename, privileges=priv, roles=[])
-
-    def update_local_db_role(self):
-
-        if not self.local_col:
-            self.local_col = "local_{}".format(self.user_lower)
-        # if not self.local_col_unlinked:
-        self.local_col_unlinked = self.local_col  # "local_{}_unlinked".format(self.user_lower)
-        # if not self.local_col_misc:
-        self.local_col_misc = self.local_col  # "local_{}_misc".format(self.user_lower)
-        if not self.local_db_rolename:
-            self.local_db_rolename = "localAccess{}".format(self.local_db_user)
-
-        alfred_db = current_app.config["ALFRED_DB"]
-        client = db.connection
-        priv = self._prepare_local_db_role_privileges()
-        client[alfred_db].command("updateRole", self.local_db_rolename, privileges=priv, roles=[])
-
-    def create_local_db_user(self):
-        self.local_db_pw = self.generate_password()
-
-        f = create_fernet()
-        pw_dec = f.decrypt(self.local_db_pw).decode()
-
-        alfred_db = current_app.config["ALFRED_DB"]
-        client = db.connection
-
-        client[alfred_db].command(
-            "createUser", self.local_db_user, pwd=pw_dec, roles=[self.local_db_rolename]
-        )
-
-    def reset_local_mongodb_pw(self):
-        """Generates a new password for the 'local' collection and 
-        updates it in the database and in the user data.
-        """
-        newpw = self.generate_password()
-
-        f = create_fernet()
-        pw_dec = f.decrypt(newpw).decode()
-
-        alfred_db = current_app.config["ALFRED_DB"]
-        client = db.connection
-
-        client[alfred_db].command("updateUser", self.local_db_user, pwd=pw_dec)
-        self.local_db_pw = newpw
-
-    def set_local_db_config(self):
-        self.local_db_user = "localUser_{}".format(self.user_lower)
-        self.local_col = "local_{}".format(self.user_lower)
-        self.local_col_unlinked = self.local_col  # "local_{}_unlinked".format(self.user_lower)
-        self.local_col_misc = self.local_col  # "local_{}_misc".format(self.user_lower)
-
-        self.create_local_db_role()
-        self.create_local_db_user()
 
     def _prepare_db_role_privileges(self):
         alfred_db = current_app.config["ALFRED_DB"]
@@ -312,7 +229,7 @@ class WebExperiment(db.Document):
 
     exp_config = db.StringField()  # possibility to include config.conf
     exp_secrets = db.BinaryField()
-    settings = db.DictField()
+    settings = db.DictField() # DEPRECATED
 
     public = db.BooleanField(default=True)
     password = db.StringField()
@@ -409,33 +326,6 @@ class WebExperiment(db.Document):
 
         return {"metadata": config, "general": {"runs_on_mortimer": "true"}}
 
-    def set_settings(self):
-        """Set experiment settings based on self and alfred.settings."""
-        if not self.id:
-            raise AttributeError("The experiment needs to have an ID before settings can be set.")
-
-        exp_specific_settings = alfred_settings.ExperimentSpecificSettings()
-
-        settings = {
-            "general": dict(alfred_settings.general),
-            "experiment": {
-                "title": self.title,
-                "author": self.author,
-                "version": self.version,
-                "type": alfred_settings.experiment.type,
-                "exp_id": str(self.id),
-                "qt_fullscreen": alfred_settings.experiment.qt_full_screen,
-                "web_layout": alfred_settings.experiment.web_layout,
-            },
-            "mortimer_specific": {"session_id": None, "path": self.path},
-            "log": dict(alfred_settings.log),
-            "navigation": dict(exp_specific_settings.navigation),
-            "debug": dict(exp_specific_settings.debug),  # pylint: disable=no-member
-            "hints": dict(exp_specific_settings.hints),
-            "messages": dict(exp_specific_settings.messages),
-        }
-
-        self.settings = settings
 
     def __repr__(self):
         return "Experiment(Title: %s, Version: %s, Created: %s, Author: %s)" % (
@@ -445,21 +335,3 @@ class WebExperiment(db.Document):
             self.author,
         )
 
-
-class LocalExperiment(db.Document):
-    author = db.StringField(required=True)
-    title = db.StringField(required=True, unique_with="author")
-    version = db.StringField()
-    exp_id = db.StringField(required=True, unique_with="author")
-    available_versions = db.ListField(db.StringField())
-    date_created = db.DateTimeField(default=datetime.utcnow, required=True)
-    last_update = db.DateTimeField(default=datetime.utcnow, required=True)
-    description = db.StringField()
-
-    def __repr__(self):
-        return "Local WebExperiment(Title: %s, Version: %s, Created: %s, Author: %s)" % (
-            self.title,
-            self.version,
-            self.date_created,
-            self.author,
-        )

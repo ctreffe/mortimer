@@ -1045,11 +1045,6 @@ def update_users():
 
         user.update_db_role()
 
-        if not user.local_db_user:
-            user.set_local_db_config()
-        else:
-            user.update_local_db_role()
-
         user.save()
 
         flash(f"User {user.username} was updated.", "info")
