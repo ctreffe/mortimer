@@ -769,6 +769,7 @@ def data(username, experiment_title):
                 experiment_title=experiment.title,
             )
         )
+        return redirect(url_for("web_experiments.experiment", exp_title=experiment.title, username=current_user.username))
 
     cur = db.find({"exp_id": str(experiment.id)})
     data_list = export.cursor_to_rows(cursor=cur)
@@ -892,6 +893,10 @@ def experiment_log(username, experiment_title, end, start):
     form = FilterLogForm()
 
     logfile = Path(exp.path) / "exp.log"
+    if not logfile.exists():
+        flash("No log found", "info")
+        return redirect(url_for("web_experiments.experiment", exp_title=exp.title, username=current_user.username))
+
     # parse with start and end values (crude pagination)
     date_pattern = re.compile(r"(?P<date>\d{4}-\d{2}-\d{2} )")
     with open(logfile, "r", encoding="utf-8") as f:
