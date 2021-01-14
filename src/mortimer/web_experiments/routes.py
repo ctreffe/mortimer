@@ -762,13 +762,6 @@ def data(username, experiment_title):
     results = db.count_documents({"exp_id": str(experiment.id)})
     if results == 0:
         flash("No data found for this experiment.", "warning")
-        return redirect(
-            url_for(
-                "web_experiments.data",
-                username=experiment.author,
-                experiment_title=experiment.title,
-            )
-        )
         return redirect(url_for("web_experiments.experiment", exp_title=experiment.title, username=current_user.username))
 
     cur = db.find({"exp_id": str(experiment.id)})
