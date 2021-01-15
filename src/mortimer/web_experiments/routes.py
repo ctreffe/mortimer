@@ -178,7 +178,7 @@ def experiment(username, exp_title):
         n["individual_versions"][v] = entry
 
     # start time
-    group = {"_id": 1, "first": {"$min": "$start_time"}, "last": {"$max": "$start_time"}}
+    group = {"_id": 1, "first": {"$min": "$exp_start_time"}, "last": {"$max": "$exp_start_time"}}
     pipe = [{"$match": f_id}, {"$group": group}]
     times = list(db.aggregate(pipe))
 
