@@ -1,0 +1,20 @@
+{% extends "layout_experiment.html" %}
+
+{% block content %}
+
+<div class="card">
+    <div class="card-body">
+        <div class="row">
+            <div class="col col-md-3 my-auto"><b>Main experiment data</b></div>
+            <div class="col">
+
+                <a href="{{ url_for('web_experiments.export_main_data', username=experiment.author, experiment_title=experiment.title, delim='comma')}}" class="btn btn-primary mr-2">csv ( , )</a>
+                <a href="{{ url_for('web_experiments.export_main_data', username=experiment.author, experiment_title=experiment.title, delim='semicolon')}}" class="btn btn-primary">csv ( ; )</a>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock content %}

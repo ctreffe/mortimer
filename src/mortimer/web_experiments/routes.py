@@ -7,6 +7,9 @@ import sys
 import logging
 import random
 import importlib
+import io
+import csv
+import json
 
 from pathlib import Path
 from datetime import datetime
@@ -29,13 +32,11 @@ from bson import json_util
 
 import alfred3
 from alfred3 import alfredlog
+from alfred3 import data_manager
 
-from alfred3.data_manager import DataManager
-from alfred3.data_manager import ExpDataExporter
-from alfred3.data_manager import CodeBookExporter
 from alfred3.data_manager import DataDecryptor
 
-from mortimer import export
+from mortimer import export as expt
 from mortimer.export import make_str_bytes, to_json
 from mortimer.forms import (
     ExperimentConfigurationForm,  # Deprecated
@@ -585,158 +586,229 @@ def delete_file(username, experiment_title, relative_path):
         )
     )
 
-
 @web_experiments.route("/<username>/<path:experiment_title>/web_export", methods=["POST", "GET"])
 @login_required
 def web_export(username, experiment_title):
-    # pylint: disable=no-member
-    experiment = WebExperiment.objects.get_or_404(title=experiment_title, author=username)
+    return ""
 
+# @web_experiments.route("/<username>/<path:experiment_title>/web_export", methods=["POST", "GET"])
+# @login_required
+# def web_export(username, experiment_title):
+    # pylint: disable=no-member
+    # experiment = WebExperiment.objects.get_or_404(title=experiment_title, author=username)
+
+    # if experiment.author != current_user.username:
+    #     abort(403)
+
+    # versions1 = [
+    #     (version, version) for version in ["all versions"] + experiment.available_versions
+    # ]
+    # versions2 = [(version, version) for version in ["latest"] + experiment.available_versions]
+
+    # form_exp_data = ExportExpDataForm()
+    # form_exp_data.version.choices = versions1
+
+    # form_codebook = ExportCodebookForm()
+    # form_codebook.version.choices = versions2
+
+    # if form_exp_data.validate_on_submit():
+    #     db = get_alfred_db()
+    #     if form_exp_data.data_type.data == "exp_data":
+    #         col = current_user.alfred_col
+    #         f = {"exp_id": str(experiment.id), "type": data_manager.DataManager.EXP_DATA}
+    #         shuffle = False
+    #         decrypt = False
+    #     elif form_exp_data.data_type.data == "unlinked":
+    #         col = current_user.alfred_col_unlinked
+    #         f = {"exp_id": str(experiment.id), "type": data_manager.DataManager.UNLINKED_DATA}
+    #         shuffle = True
+    #         decrypt = True
+
+    #     if not "all versions" in form_exp_data.version.data:
+    #         f.update({"exp_version": {"$in": form_exp_data.version.data}})
+
+    #     if not db[col].find_one():
+    #         flash("No data found.", "info")
+    #         return redirect(
+    #             url_for(
+    #                 "web_experiments.web_export",
+    #                 username=experiment.author,
+    #                 experiment_title=experiment.title,
+    #             )
+    #         )
+
+    #     cursor = db[col].find(f)
+    #     fern = create_fernet()
+    #     key = fern.decrypt(current_user.encryption_key)
+    #     decryptor = data_manager.DataDecryptor(key=key)
+
+    #     if "csv" in form_exp_data.file_type.data:
+    #         data = [data_manager.DataManager.flatten(dataset) for dataset in cursor]
+    #         data = decryptor.decrypt(data) if decrypt is True else data
+    #         if shuffle:
+    #             random.shuffle(data)
+    #         fieldnames = list(data[0].keys())
+    #         delimiter = ";" if form_exp_data.file_type.data == "csv2" else ","
+
+    #         f = io.StringIO()
+    #         writer = csv.DictWriter(f, fieldnames=fieldnames, delimiter=delimiter)
+    #         writer.writeheader()
+    #         writer.writerows(data)
+
+    #         fn = f"{form_exp_data.data_type.data}_{experiment.title}.csv"
+    #         return send_file(
+    #                 make_str_bytes(data),
+    #                 mimetype="text/csv",
+    #                 as_attachment=True,
+    #                 attachment_filename=fn,
+    #                 cache_timeout=1,
+    #             )
+
+    #     elif form_exp_data.file_type.data == "json":
+    #         if decrypt:
+    #             data = [decryptor.decrypt(dataset) for dataset in cursor]
+    #         else:
+    #             data = list(cursor)
+    #         if shuffle:
+    #             random.shuffle(data)
+
+    #         f = json.dumps(data, sort_keys=True, indent=4)
+    #         fn = f"{form_exp_data.data_type.data}_{experiment.title}.json"
+    #         return send_file(
+    #             make_str_bytes(data),
+    #             mimetype="application/json",
+    #             as_attachment=True,
+    #             attachment_filename=fn,
+    #             cache_timeout=1,
+    #         )
+
+    # if form_codebook.validate_on_submit():
+    #     db = get_alfred_db()
+    #     col = current_user.alfred_col
+    #     f = {"exp_id": str(experiment.id), "type": data_manager.DataManager.EXP_DATA}
+
+    #     cursor
+
+    #     codebook = db[col].find_one(f)
+
+    #     if not codebook:
+    #         flash("No codebook data found.", "info")
+    #         return redirect(
+    #             url_for(
+    #                 "web_experiments.web_export",
+    #                 experiment_title=experiment.title,
+    #                 username=current_user.username,
+    #             )
+    #         )
+
+    #     exporter = CodeBookExporter()
+    #     exporter.process(codebook)
+
+    #     if "csv" in form_codebook.file_type.data:
+
+    #         delimiter = ";" if form_codebook.file_type.data == "csv2" else ","
+    #         data = exporter.write_to_object(delimiter=delimiter)
+    #         fn = f"codebook_{experiment.title}.csv"
+    #         return send_file(
+    #             make_str_bytes(data),
+    #             mimetype="text/csv",
+    #             as_attachment=True,
+    #             attachment_filename=fn,
+    #             cache_timeout=1,
+    #         )
+
+    #     elif form_codebook.file_type.data == "json":
+    #         data = json_util.dumps(exporter.full_codebook, indent=4)
+    #         fn = f"codebook_{experiment.title}.json"
+    #         return send_file(
+    #             make_str_bytes(data),
+    #             mimetype="application/json",
+    #             as_attachment=True,
+    #             attachment_filename=fn,
+    #             cache_timeout=1,
+    #         )
+
+    # return render_template(
+    #     "web_export.html",
+    #     experiment=experiment,
+    #     form_exp_data=form_exp_data,
+    #     form_codebook=form_codebook,
+    # )
+
+
+# @web_experiments.route("/export_base_codebook", methods=["GET"])
+# @login_required
+# def export_base_codebook():
+#     codebook = importlib.resources.read_text(alfred3.files, "base_codebook.csv")
+#     return send_file(
+#         make_str_bytes(codebook),
+#         mimetype="text/csv",
+#         as_attachment=True,
+#         attachment_filename="base_codebook.csv",
+#         cache_timeout=1,
+#     )
+
+@web_experiments.route("/<username>/<path:experiment_title>/export")
+@login_required
+def export(username, experiment_title):
+    experiment = WebExperiment.objects.get_or_404(  # pylint: disable=no-member
+        title=experiment_title, author=username
+    )
     if experiment.author != current_user.username:
         abort(403)
+    
+    return render_template("export.html", experiment=experiment)
 
-    versions1 = [
-        (version, version) for version in ["all versions"] + experiment.available_versions
-    ]
-    versions2 = [(version, version) for version in ["latest"] + experiment.available_versions]
-
-    form_exp_data = ExportExpDataForm()
-    form_exp_data.version.choices = versions1
-
-    form_codebook = ExportCodebookForm()
-    form_codebook.version.choices = versions2
-
-    if form_exp_data.validate_on_submit():
-        db = get_alfred_db()
-        if form_exp_data.data_type.data == "exp_data":
-            col = current_user.alfred_col
-            f = {"exp_id": str(experiment.id), "type": DataManager.EXP_DATA}
-            shuffle = False
-            decrypt = False
-        elif form_exp_data.data_type.data == "unlinked":
-            col = current_user.alfred_col_unlinked
-            f = {"exp_id": str(experiment.id), "type": DataManager.UNLINKED_DATA}
-            shuffle = True
-            decrypt = True
-
-        exporter = ExpDataExporter()
-        if not "all versions" in form_exp_data.version.data:
-            f.update({"exp_version": {"$in": form_exp_data.version.data}})
-
-        if not db[col].find_one():
-            flash("No data found.", "info")
-            return redirect(
-                url_for(
-                    "web_experiments.web_export",
-                    username=experiment.author,
-                    experiment_title=experiment.title,
-                )
-            )
-
-        cursor = db[col].find(f)
-        fern = create_fernet()
-        key = fern.decrypt(current_user.encryption_key)
-        decryptor = DataDecryptor(key=key)
-
-        if "csv" in form_exp_data.file_type.data:
-            for dataset in cursor:
-                exporter.process_one(dataset)
-
-            if decrypt:
-                decrypted_docs = []
-                for doc in exporter.list_of_docs:
-                    decrypted_docs.append(decryptor.decrypt(doc))
-                exporter.list_of_docs = decrypted_docs
-
-            delimiter = ";" if form_exp_data.file_type.data == "csv2" else ","
-            data = exporter.write_to_object(shuffle=shuffle, delimiter=delimiter)
-            fn = f"{form_exp_data.data_type.data}_{experiment.title}.csv"
-            return send_file(
-                make_str_bytes(data),
-                mimetype="text/csv",
-                as_attachment=True,
-                attachment_filename=fn,
-                cache_timeout=1,
-            )
-
-        elif form_exp_data.file_type.data == "json":
-            if decrypt:
-                data = to_json(cursor, shuffle=shuffle, decryptor=decryptor)
-            else:
-                data = to_json(cursor, shuffle=shuffle)
-
-            fn = f"{form_exp_data.data_type.data}_{experiment.title}.json"
-            return send_file(
-                make_str_bytes(data),
-                mimetype="application/json",
-                as_attachment=True,
-                attachment_filename=fn,
-                cache_timeout=1,
-            )
-
-    if form_codebook.validate_on_submit():
-        db = get_alfred_db()
-        col = current_user.alfred_col_misc
-        f = {"exp_id": str(experiment.id), "type": DataManager.CODEBOOK_DATA}
-
-        codebook = db[col].find_one(f)
-
-        if not codebook:
-            flash("No codebook data found.", "info")
-            return redirect(
-                url_for(
-                    "web_experiments.web_export",
-                    experiment_title=experiment.title,
-                    username=current_user.username,
-                )
-            )
-
-        exporter = CodeBookExporter()
-        exporter.process(codebook)
-
-        if "csv" in form_codebook.file_type.data:
-
-            delimiter = ";" if form_codebook.file_type.data == "csv2" else ","
-            data = exporter.write_to_object(delimiter=delimiter)
-            fn = f"codebook_{experiment.title}.csv"
-            return send_file(
-                make_str_bytes(data),
-                mimetype="text/csv",
-                as_attachment=True,
-                attachment_filename=fn,
-                cache_timeout=1,
-            )
-
-        elif form_codebook.file_type.data == "json":
-            data = json_util.dumps(exporter.full_codebook, indent=4)
-            fn = f"codebook_{experiment.title}.json"
-            return send_file(
-                make_str_bytes(data),
-                mimetype="application/json",
-                as_attachment=True,
-                attachment_filename=fn,
-                cache_timeout=1,
-            )
-
-    return render_template(
-        "web_export.html",
-        experiment=experiment,
-        form_exp_data=form_exp_data,
-        form_codebook=form_codebook,
-    )
-
-
-@web_experiments.route("/export_base_codebook", methods=["GET"])
+@web_experiments.route("/<username>/<path:experiment_title>/export_main_data/<delim>")
 @login_required
-def export_base_codebook():
-    codebook = importlib.resources.read_text(alfred3.files, "base_codebook.csv")
-    return send_file(
-        make_str_bytes(codebook),
-        mimetype="text/csv",
-        as_attachment=True,
-        attachment_filename="base_codebook.csv",
-        cache_timeout=1,
+def export_main_data(username, experiment_title, delim: str):
+    experiment = WebExperiment.objects.get_or_404(  # pylint: disable=no-member
+        title=experiment_title, author=username
     )
+    if experiment.author != current_user.username:
+        abort(403)
+    
+    if delim == "comma":
+        delim = ","
+    elif delim == "semicolon":
+        delim = ";"
+    
+    dtype = data_manager.DataManager.EXP_DATA
+    
+    db = get_alfred_db()
+    col = current_user.alfred_col
+
+    if not db[col].find_one():
+        flash("No data found.", "info")
+        return redirect(
+            url_for(
+                "web_experiments.export",
+                username=experiment.author,
+                experiment_title=experiment.title,
+            )
+        )
+    
+    cursor = db[col].find({"exp_id": str(experiment.id), "type": dtype})
+
+    data = [data_manager.DataManager.flatten(dataset) for dataset in cursor]
+    fieldnames = list(data[0].keys())
+
+    f = io.StringIO()
+    writer = csv.DictWriter(f, fieldnames=fieldnames, delimiter=delim)
+    writer.writeheader()
+    writer.writerows(data)
+
+    fn = f"{dtype}_{experiment.title}.csv"
+    return send_file(
+            make_str_bytes(f),
+            mimetype="text/csv",
+            as_attachment=True,
+            attachment_filename=fn,
+            cache_timeout=1,
+        )
+    
+
+
 
 
 @web_experiments.route("/<username>/<path:experiment_title>/data", methods=["GET"])
