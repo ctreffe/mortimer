@@ -34,8 +34,6 @@ import alfred3
 from alfred3 import alfredlog
 from alfred3 import data_manager
 
-from alfred3.data_manager import DataDecryptor
-
 from mortimer import export as expt
 from mortimer.export import make_str_bytes, to_json
 from mortimer.forms import (
@@ -748,7 +746,7 @@ def web_export(username, experiment_title):
 #         cache_timeout=1,
 #     )
 
-@web_experiments.route("/<username>/<path:experiment_title>/export")
+@web_experiments.route("/<username>/<path:experiment_title>/export", methods=["GET", "POST"])
 @login_required
 def export(username, experiment_title):
     experiment = WebExperiment.objects.get_or_404(  # pylint: disable=no-member
@@ -757,21 +755,235 @@ def export(username, experiment_title):
     if experiment.author != current_user.username:
         abort(403)
     
+    if request.method == "POST":
+        dtype, delim = request.values.get("submit").split(".")
+        versionlist = request.values.getlist("select-version")
+        versions = "$VERSIONSEP$".join(versionlist)
+
+        if dtype == "main":
+            return redirect(url_for("web_experiments.export_main_data", experiment_title=experiment.title, username=experiment.author, delim=delim, versions=versions))
+        
+        elif dtype == "codebook":
+            if len(versionlist) > 1 or "all" in versionlist:
+                flash("Sorry, codebooks can only be exported for a single specific version.", "danger")
+                return redirect(url_for("web_experiments.export", experiment_title=experiment.title, username=experiment.author))
+            
+            return redirect(url_for("web_experiments.export_codebook_data", experiment_title=experiment.title, username=experiment.author, delim=delim, version=versionlist[0]))
+        
+        elif dtype == "unlinked":
+            return redirect(url_for("web_experiments.export_unlinked_data", experiment_title=experiment.title, username=experiment.author, delim=delim, versions=versions))
+        
+        elif dtype == "full":
+            return redirect(url_for("web_experiments.export_full_data", experiment_title=experiment.title, username=experiment.author, versions=versions))
+
     return render_template("export.html", experiment=experiment)
 
-@web_experiments.route("/<username>/<path:experiment_title>/export_main_data/<delim>")
+@web_experiments.route("/<username>/<path:experiment_title>/export_main_data/<delim>/<versions>")
 @login_required
-def export_main_data(username, experiment_title, delim: str):
+def export_main_data(username, experiment_title, delim: str, versions: str):
     experiment = WebExperiment.objects.get_or_404(  # pylint: disable=no-member
         title=experiment_title, author=username
     )
     if experiment.author != current_user.username:
         abort(403)
     
+    db = get_alfred_db()
+    col = current_user.alfred_col
+
+    if not db[col].find_one():
+        flash("No data found.", "info")
+        return redirect(
+            url_for(
+                "web_experiments.export",
+                username=experiment.author,
+                experiment_title=experiment.title,
+            )
+        )
+    
+    dtype = data_manager.DataManager.EXP_DATA
+    f = {"exp_id": str(experiment.id), "type": dtype}
+    
+    versions = versions.split("$VERSIONSEP$")
+    if not "all" in versions:
+        f.update({"exp_version": {"$in": versions}})
+
+    cursor = db[col].find(f)
+    fieldnames = data_manager.DataManager.extract_ordered_fieldnames(cursor)
+
+    # fresh cursor is needed, because previous one is exhausted
+    cursor = db[col].find(f)
+    data = [data_manager.DataManager.flatten(dataset) for dataset in cursor]
+
+
     if delim == "comma":
         delim = ","
     elif delim == "semicolon":
         delim = ";"
+
+    f = io.StringIO()
+    writer = csv.DictWriter(f, fieldnames=fieldnames, delimiter=delim, extrasaction="ignore")
+    writer.writeheader()
+    writer.writerows(data)
+
+    fn = f"{dtype}_{experiment.title}.csv"
+    return send_file(
+            make_str_bytes(f),
+            mimetype="text/csv",
+            as_attachment=True,
+            attachment_filename=fn,
+            cache_timeout=1,
+        )
+
+
+
+@web_experiments.route("/<username>/<path:experiment_title>/export_codebook_data/<delim>/<version>")
+@login_required
+def export_codebook_data(username, experiment_title, delim: str, version: str):
+    experiment = WebExperiment.objects.get_or_404(  # pylint: disable=no-member
+        title=experiment_title, author=username
+    )
+    if experiment.author != current_user.username:
+        abort(403)
+    
+    db = get_alfred_db()
+    col = current_user.alfred_col
+
+    if not db[col].find_one():
+        flash("No data found.", "info")
+        return redirect(
+            url_for(
+                "web_experiments.export",
+                username=experiment.author,
+                experiment_title=experiment.title,
+            )
+        )
+    
+    dtype_main = data_manager.DataManager.EXP_DATA
+    dtype_unlinked = data_manager.DataManager.EXP_DATA
+    f_main = {"exp_id": str(experiment.id), "type": dtype_main, "exp_version": version}
+    f_unlinked = {"exp_id": str(experiment.id), "type": dtype_unlinked, "exp_version": version}
+    
+    squashed_data = {}
+
+    cursor_main = db[col].find(f_main)
+    for entry in cursor_main:
+        squashed_data = {**squashed_data, **entry}
+    
+    cursor_unlinked = db[col].find(f_unlinked)
+    for entry in cursor_unlinked:
+        squashed_data = {**squashed_data, **entry}
+
+    data = data_manager.DataManager.extract_codebook_data(squashed_data)
+    fieldnames = data_manager.DataManager.extract_fieldnames(data)
+
+    if delim == "comma":
+        delim = ","
+    elif delim == "semicolon":
+        delim = ";"
+
+    f = io.StringIO()
+    writer = csv.DictWriter(f, fieldnames=fieldnames, delimiter=delim, extrasaction="ignore")
+    writer.writeheader()
+    writer.writerows(data)
+
+    fn = f"codebook_{experiment.title}.csv"
+    return send_file(
+            make_str_bytes(f),
+            mimetype="text/csv",
+            as_attachment=True,
+            attachment_filename=fn,
+            cache_timeout=1,
+        )
+
+
+
+
+
+
+
+@web_experiments.route("/<username>/<path:experiment_title>/export_unlinked_data/<delim>/<versions>")
+@login_required
+def export_unlinked_data(username, experiment_title, delim: str, versions: str):
+    experiment = WebExperiment.objects.get_or_404(  # pylint: disable=no-member
+        title=experiment_title, author=username
+    )
+    if experiment.author != current_user.username:
+        abort(403)
+    
+    dtype = data_manager.DataManager.UNLINKED_DATA
+    
+    db = get_alfred_db()
+    col = current_user.alfred_col_unlinked
+
+    if not db[col].find_one():
+        flash("No data found.", "info")
+        return redirect(
+            url_for(
+                "web_experiments.export",
+                username=experiment.author,
+                experiment_title=experiment.title,
+            )
+        )
+    
+    f = {"exp_id": str(experiment.id), "type": dtype}
+    versions = versions.split("$VERSIONSEP$")
+    if not "all" in versions:
+        f.update({"exp_version": {"$in": versions}})
+    
+    cursor = db[col].find(f)
+    data = [data_manager.DataManager.flatten(dataset) for dataset in cursor]
+    fieldnames = data_manager.DataManager.extract_fieldnames(data)
+    
+    fern = create_fernet()
+    key = fern.decrypt(current_user.encryption_key)
+    data = data_manager.decrypt_recursively(data=data, key=key)
+
+    random.shuffle(data)
+
+    if delim == "json":
+        f = json.dumps(list(data), indent=4, sort_keys=True)
+        fn = f"unlinked_{experiment.title}.json"
+        return send_file(
+            make_str_bytes(f),
+            mimetype="application/json",
+            as_attachment=True,
+            attachment_filename=fn,
+            cache_timeout=1,
+        )
+    
+    else:
+        if delim == "comma":
+            delim = ","
+        elif delim == "semicolon":
+            delim = ";"
+
+        f = io.StringIO()
+        writer = csv.DictWriter(f, fieldnames=fieldnames, delimiter=delim, extrasaction="ignore")
+        writer.writeheader()
+        writer.writerows(data)
+
+        fn = f"{dtype}_{experiment.title}.csv"
+        return send_file(
+                make_str_bytes(f),
+                mimetype="text/csv",
+                as_attachment=True,
+                attachment_filename=fn,
+                cache_timeout=1,
+            )
+
+
+
+
+
+    
+@web_experiments.route("/<username>/<path:experiment_title>/export_full_data/<versions>")
+@login_required
+def export_full_data(username, experiment_title, versions: str):
+    experiment = WebExperiment.objects.get_or_404(  # pylint: disable=no-member
+        title=experiment_title, author=username
+    )
+    if experiment.author != current_user.username:
+        abort(403)
     
     dtype = data_manager.DataManager.EXP_DATA
     
@@ -788,27 +1000,22 @@ def export_main_data(username, experiment_title, delim: str):
             )
         )
     
-    cursor = db[col].find({"exp_id": str(experiment.id), "type": dtype})
+    f = {"exp_id": str(experiment.id), "type": dtype}
+    versions = versions.split("$VERSIONSEP$")
+    if not "all" in versions:
+        f.update({"exp_version": {"$in": versions}})
 
-    data = [data_manager.DataManager.flatten(dataset) for dataset in cursor]
-    fieldnames = list(data[0].keys())
+    data = db[col].find(f)
 
-    f = io.StringIO()
-    writer = csv.DictWriter(f, fieldnames=fieldnames, delimiter=delim)
-    writer.writeheader()
-    writer.writerows(data)
-
-    fn = f"{dtype}_{experiment.title}.csv"
+    f = json.dumps(list(data), indent=4, sort_keys=True)
+    fn = f"full_{experiment.title}.json"
     return send_file(
-            make_str_bytes(f),
-            mimetype="text/csv",
-            as_attachment=True,
-            attachment_filename=fn,
-            cache_timeout=1,
-        )
-    
-
-
+        make_str_bytes(f),
+        mimetype="application/json",
+        as_attachment=True,
+        attachment_filename=fn,
+        cache_timeout=1,
+    )
 
 
 @web_experiments.route("/<username>/<path:experiment_title>/data", methods=["GET"])
