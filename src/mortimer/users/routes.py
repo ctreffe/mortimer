@@ -28,18 +28,17 @@ def register():
     form = RegistrationForm()
 
     if form.validate_on_submit():
+        if User.objects(username=form.username.data):
+            flash("Username already taken. Please choose a different one.", "error")
+            return redirect(url_for("users.register"))
+        elif User.objects(email=form.email.data):
+            flash("Email already taken. Please choose a different one.", "error")
+            return redirect(url_for("users.register"))
+
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode("utf-8")
         user = User(username=form.username.data, email=form.email.data, password=hashed_password)
         user.encryption_key = User.generate_encryption_key()
-
-        if User.objects(alfred_user=f"alfredUser_{user.user_lower}") or User.objects(
-            local_db_user=f"localUser_{user.user_lower}"
-        ):
-            flash("Username already taken. Please choose a different one.", "error")
-            return redirect(url_for("users.register"))
-
         user.set_db_config()
-        user.set_local_db_config()
 
         # save user
         user.save()
@@ -114,19 +113,8 @@ def account():
         form.username.data = current_user.username
         form.email.data = current_user.email
 
-    f = create_fernet()
-    local_pw = f.decrypt(current_user.local_db_pw).decode()
-    user_key = f.decrypt(current_user.encryption_key).decode()
-
-    info = {
-        "username": ("Username for local DB", current_user.local_db_user),
-        "password": ("Password for local DB", local_pw),
-        "col": ("Collection for local DB", current_user.local_col),
-        "_key": ("Encryption Key", user_key),
-    }
-
     return render_template(
-        "account.html", title="Account", form=form, user=current_user, info=info
+        "account.html", title="Account", form=form, user=current_user
     )
 
 
@@ -175,20 +163,3 @@ def reset_password(token):
         return redirect(url_for("users.login"))
 
     return render_template("reset_password.html", title="Reset Password", form=form)
-
-
-@users.route("/reset_mongodb_pw", methods=["GET", "POST"])
-def reset_local_mongodb_pw():
-    if current_user.email != "jbrachem@posteo.de":
-        abort(403)
-
-    usrname = request.args.get("usr")
-    user = User.objects(username=usrname).first()
-    if user:
-        user.reset_local_mongodb_pw()
-        user.save()
-        flash(f"Password for local collection reset for user {user.username}", "success")
-    else:
-        flash(f"User {usrname} not found.", "info")
-
-    return redirect(url_for("main.home"))

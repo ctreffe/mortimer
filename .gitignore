@@ -43,3 +43,4 @@ src/mortimer.egg-info
 build/
 dist/
 mortimer_venv/
+.mortimer/

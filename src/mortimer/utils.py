@@ -4,7 +4,6 @@ import json, os, re, subprocess
 from datetime import datetime
 from uuid import uuid4
 
-from alfred3 import settings as alfred_settings
 from cryptography.fernet import Fernet
 from flask import current_app, render_template, url_for
 from flask_login import current_user
