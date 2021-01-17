@@ -260,6 +260,7 @@ class WebExperiment(db.Document):
 
         # parse config from mortimer
         exp_config.read_dict(self.metadata_config(session_id))
+        exp_config.read_string(self.exp_config)
 
         return exp_config
 
