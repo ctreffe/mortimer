@@ -14,7 +14,7 @@ from wtforms import (
     RadioField,
 )
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
-from mortimer.models import User, WebExperiment, LocalExperiment
+from mortimer.models import User, WebExperiment
 from flask import current_app
 import re
 
@@ -108,34 +108,6 @@ class WebExperimentForm(FlaskForm):
         except Exception:
             raise ValidationError(
                 "Please use only points and digits for the version number. Example: '1.3.2'"
-            )
-
-    submit = SubmitField("Create")
-
-
-class LocalExperimentForm(FlaskForm):
-    title = StringField("Title", validators=[DataRequired()])
-    exp_id = StringField("Experiment ID", validators=[DataRequired()])
-    description = TextAreaField("Description")
-
-    def validate_title(self, title):
-        # , version=self.version
-        experiment = LocalExperiment.objects(
-            title__exact=title.data, author__exact=current_user.username
-        ).first()
-        if experiment is not None:
-            raise ValidationError(
-                "You already have a local experiment with this title. Please choose a unique title."
-            )
-
-    def validate_exp_id(self, exp_id):
-        experiment = LocalExperiment.objects(
-            exp_id__exact=exp_id.data, author__exact=current_user.username
-        ).first()
-        if experiment is not None:
-
-            raise ValidationError(
-                "There already exists an experiment with this ID in the database. Please choose a unique ID. If you already collected data using this ID, please contanct an administrator."
             )
 
     submit = SubmitField("Create")

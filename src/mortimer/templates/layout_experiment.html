@@ -26,7 +26,7 @@
             class="nav-link active" id="nav-resources"><i class="fas fa-table"></i> Data</a></li>
     <li class="nav-item nav-link">|</li>
     <li class="nav-item"><a
-            href="{{ url_for('web_experiments.web_export', experiment_title=experiment.title, username=experiment.author) }}"
+            href="{{ url_for('web_experiments.export', experiment_title=experiment.title, username=experiment.author) }}"
             class="nav-link active" id="nav-export"><i class="fas fa-download mr-2"></i>Export</a></li>
     <li class="nav-item nav-link">|</li>
     <li class="nav-item"><a

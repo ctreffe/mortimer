@@ -38,7 +38,6 @@ def create_app(instance_path=None):
     from mortimer.web_experiments.routes import web_experiments
     from mortimer.web_experiments.alfredo import alfredo
     from mortimer.main.routes import main
-    from mortimer.local_experiments.routes import local_experiments
     from mortimer.errors.handlers import errors
 
     # register blueprints
@@ -46,7 +45,6 @@ def create_app(instance_path=None):
     app.register_blueprint(web_experiments)
     app.register_blueprint(main)
     app.register_blueprint(alfredo)
-    app.register_blueprint(local_experiments)
     app.register_blueprint(errors)
 
     # global variables for use in templates

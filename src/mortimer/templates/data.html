@@ -13,7 +13,7 @@
   <thead>
     <tr>
 
-      {% for col in data_list[0] %}
+      {% for col in fieldnames %}
       <th scope="col" class="small">{{ col }}</th>
       {% endfor %}
     </tr>
@@ -21,18 +21,16 @@
 
   <tbody>
 
-    {% for col in data_list[1:] %}
+    {% for row in data %}
     <tr>
-      {% for cell in col %}
-      <td class="small text-muted">
-        <div data-toggle="tooltip" title="{{ cell }}" class="datatab-cell">
-          {{ cell }}
+      {% for col in fieldnames %}
+        <td class="small text-muted">
+        <div data-toggle="tooltip" title="{{ row[col] }}" class="datatab-cell">
+          {{ row[col] }}
         </div>
-
-      </td>
+        </td>
       {% endfor %}
-    </tr>
-
+    </tr>  
     {% endfor %}
 
   </tbody>

@@ -39,6 +39,7 @@ class Script:
     def __init__(self):
 
         self.experiment = None
+        self.exp_session = None
         self.expdir = None
         self.config = None
 
@@ -172,25 +173,43 @@ def start(expid):
     session["sid"] = sid
     session["page_tokens"] = []
 
-    # initialize configuration
-    config = {
-        "exp_config": experiment.parse_exp_config(sid),
-        "exp_secrets": experiment.parse_exp_secrets(),
-    }
+    config = experiment.parse_exp_config(sid)
+    secrets = experiment.parse_exp_secrets()
 
     # initialize log
     log = alfredlog.QueuedLoggingInterface("alfred3", f"exp.{str(experiment.id)}")
     log.session_id = sid
-    log.setLevel(config["exp_config"].get("log", "level").upper())
+    log.setLevel(config.get("log", "level").upper())
     experiment.prepare_logger()
 
+    user_script = import_script(experiment.id)
+
+    # CREATE SESSION
     try:
-        user_script = import_script(experiment.id)
-        Script.generate_experiment = user_script.generate_experiment
-        script = Script()
-        alfred_exp = script.generate_experiment(config=config)
-        alfred_exp.start()
-        experiment_manager.save(sid, alfred_exp)
+        exp_session = user_script.exp.create_session(
+            session_id=sid, 
+            config=config, 
+            secrets=secrets, 
+            **request.args
+            )
+
+    except Exception:
+        msg = "Error during creation of experiment session."
+        log.exception(msg)
+        if current_user.is_authenticated:
+            flash(f"{msg} For further details, take a look at the log.", "danger")
+            return redirect(
+                url_for(
+                    "web_experiments.experiment",
+                    username=current_user.username,
+                    exp_title=experiment.title,
+                ))
+        else:
+            abort(500)
+    
+    try:
+        exp_session.start()
+        experiment_manager.save(sid, exp_session)
     except Exception:
         msg = "An exception occured during experiment startup."
         log.exception(msg)
@@ -221,10 +240,7 @@ def experiment():
 
     try:
         if request.method == "POST":
-
             move = request.values.get("move", None)
-            directjump = request.values.get("directjump", None)
-            par = request.values.get("par", None)
             page_token = request.values.get("page_token", None)
 
             try:
@@ -234,38 +250,32 @@ def experiment():
             except ValueError:
                 return redirect(url_for("alfredo.experiment"))
 
-            kwargs = request.values.to_dict()
-            kwargs.pop("move", None)
-            kwargs.pop("directjump", None)
-            kwargs.pop("par", None)
+            data = request.values.to_dict()
+            data.pop("move", None)
+            data.pop("directjump", None)
+            data.pop("par", None)
 
-            experiment.user_interface_controller.update_with_user_input(kwargs)
-            if move is None and directjump is None and par is None and kwargs == {}:
+            experiment.movement_manager.current_page.set_data(data)
+            if move is None and not data:
                 pass
-            elif directjump and par:
-                posList = list(map(int, par.split(".")))
-                experiment.user_interface_controller.move_to_position(posList)
-            elif move == "started":
-                pass
-            elif move == "forward":
-                experiment.user_interface_controller.move_forward()
-            elif move == "backward":
-                experiment.user_interface_controller.move_backward()
-            elif move == "jump" and par and re.match(r"^\d+(\.\d+)*$", par):
-                posList = list(map(int, par.split(".")))
-                experiment.user_interface_controller.move_to_position(posList)
+            elif move:
+                experiment.movement_manager.move(direction=move)
             else:
                 abort(400)
             return redirect(url_for("alfredo.experiment"))
 
         elif request.method == "GET":
+            url_pagename = request.args.get("page", None) # https://basepath.de/experiment?page=name
+            if url_pagename:
+                experiment.movement_manager.jump_by_name(name=url_pagename)
+
             page_token = str(uuid4())
 
             token_list = session["page_tokens"]
             token_list.append(page_token)
             session["page_tokens"] = token_list
 
-            resp = make_response(experiment.user_interface_controller.render(page_token))
+            resp = make_response(experiment.user_interface_controller.render_html(page_token))
             resp.cache_control.no_cache = True
             return resp
     except Exception:
@@ -302,7 +312,6 @@ def dynamicfile(identifier):
     resp = make_response(send_file(strIO, mimetype=content_type))
     resp.cache_control.no_cache = True
     return resp
-
 
 @alfredo.route("/callable/<identifier>", methods=["GET", "POST"])
 def callable(identifier):
