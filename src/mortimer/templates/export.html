@@ -9,7 +9,7 @@
         <div class="card-body">
             <div class="row">
                 <div class="col col-md-4">
-                    <h4>Select Version</h4>
+                    <h4>Select Experiment Version</h4>
                     <small class="text-muted">
                         You can select multiple versions by pressing <code>CMD</code> (Mac) or <code>STRG</code>
                         (Windows) while clicking.
@@ -68,6 +68,26 @@
         </div>
     </div>
 
+    <div class="card mb-3">
+    <div class="card-body">
+        <div class="row">
+            <div class="col col-md-4 my-auto">
+            <h4>Move history</h4>
+            <small class="text-muted">
+            Information on participant's movements in the experiment. Each row contains information 
+            about one move, i.e. there can be lots of rows for a single participant.
+            </small>
+            </div>
+            <div class="col my-auto">
+
+                <button type="submit" name="submit" value="moves.comma" class="btn btn-primary">csv ( , )</button>
+                <button type="submit" name="submit" value="moves.semicolon" class="btn btn-primary">csv ( ; )</button>
+
+            </div>
+        </div>
+    </div>
+</div>
+
 
     <div class="card mb-3">
     <div class="card-body">
@@ -109,51 +129,6 @@
     </div>
 </div>
 
-
-
 </form>
-
-
-
-{# <div class="card mb-3">
-    <div class="card-body">
-        <div class="row">
-            <div class="col col-md-4 my-auto">
-            <h4>Codebook data</h4>
-            <small class="text-muted">
-            Codebook with information on the types and settings of all input elements in the experiment.
-            </small>
-            </div>
-            <div class="col my-auto">
-
-                <a href="#" class="btn btn-primary mr-2">csv ( , )</a>
-                <a href="#" class="btn btn-primary">csv ( ; )</a>
-
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="card mb-3">
-    <div class="card-body">
-        <div class="row">
-            <div class="col col-md-4 my-auto">
-            <h4>Move history</h4>
-            <small class="text-muted">
-            Information on participant's movements in the experiment. Each row contains information 
-            about one move, i.e. there can be lots of rows for a single participant.
-            </small>
-            </div>
-            <div class="col my-auto">
-
-                <a href="#" class="btn btn-primary mr-2">csv ( , )</a>
-                <a href="#" class="btn btn-primary">csv ( ; )</a>
-
-            </div>
-        </div>
-    </div>
-</div> #}
-
-
 
 {% endblock content %}
