@@ -158,6 +158,7 @@ class User(db.Document, UserMixin):
             "host": appdb_config["host"],
             "port": str(appdb_config["port"]),
             "collection": self.alfred_col,
+            "misc_collection": self.alfred_col_misc,
             "user": self.alfred_user,
             "password": f.decrypt(self.alfred_pw).decode(),
             "use_ssl": str(appdb_config.get("ssl")).lower(),
