@@ -9,6 +9,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+Starting from v0.8.1, Mortimer allows experimenters to check, whether partcipants have
+participated in a specific experiment through the route `/participation`.
+
+A guide on how to use it is available in the [wiki](https://github.com/ctreffe/mortimer/wiki/Check-participation)
+
+## Mortimer v0.8.0
+
+### Changed
+
+Mortimer was updated to be compatible with alfred3 v2.0. This included
+first and foremost an update to the data export handling and some small
+updates to coniguration handling. Due to these changes, Mortimer v0.8.0
+is not compatible with older versions of alfred3.
+
+## Mortimer v0.7.0
+
+### Added
+
 * Added support for two additional collections in the alfred database.
 * Redesigned and enhanced data export. When used with alfred v1.4+, Mortimer now offers export of unlinked data and codebooks.
 
