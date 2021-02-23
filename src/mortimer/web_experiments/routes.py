@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+
+# pylint: disable=no-member
 import collections
 import os
 import re
@@ -10,6 +12,7 @@ import importlib
 import io
 import csv
 import json
+import hashlib
 
 from pathlib import Path
 from datetime import datetime
@@ -25,6 +28,7 @@ from flask import (
     request,
     send_file,
     url_for,
+    make_response
 )
 from flask_login import current_user, login_required
 from werkzeug.utils import secure_filename
@@ -47,7 +51,7 @@ from mortimer.forms import (
     ExportExpDataForm,
     ExportCodebookForm,
 )
-from mortimer.models import User, WebExperiment
+from mortimer.models import User, WebExperiment, Participant
 from mortimer.utils import (
     ScriptFile,
     ScriptString,
@@ -1213,3 +1217,36 @@ def update_users():
         flash(f"User {user.username} was updated.", "info")
 
     return render_template("home.html", id=None)
+
+
+@web_experiments.route("/participation", methods=["POST", "GET"])
+def participation():
+
+    alias = request.values.get("alias")
+    exp_id = request.values.get("exp_id")
+
+    if not alias and not exp_id:
+        abort(400)
+
+    alias = hashlib.sha224(alias.encode()).hexdigest()
+
+    if request.method == "GET":
+        participant = Participant.objects(alias=alias).first()
+        if not participant or not exp_id in participant.experiments:
+            return make_response("false")
+        elif exp_id in participant.experiments:
+            return make_response("true")
+    
+    elif request.method == "POST":
+        participant = Participant.objects(alias=alias).first()
+
+        if not participant:
+            participant = Participant(alias=alias)
+        
+        if exp_id in participant.experiments:
+            abort(400)
+        else:
+            participant.experiments.append(exp_id)
+            participant.save()
+            return make_response("success")
+        
