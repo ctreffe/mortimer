@@ -306,7 +306,7 @@ class WebExperiment(db.Document):
         parsing with :class:`alfred3.config.ExperimentConfig`.
 
         It also includes the boolean 'True' value for the option
-        *runs_on_mortimer* in section *general*.
+        *runs_on_mortimer* in section *mortimer_specific*.
 
         The included metadata are:
 
@@ -325,7 +325,7 @@ class WebExperiment(db.Document):
         config["session_id"] = session_id
         config["version"] = self.version
 
-        return {"metadata": config, "general": {"runs_on_mortimer": "true"}}
+        return {"metadata": config, "mortimer_specific": {"runs_on_mortimer": "true"}}
 
 
     def __repr__(self):
