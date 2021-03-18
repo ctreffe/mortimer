@@ -182,7 +182,6 @@ def start(expid):
     log.setLevel(config.get("log", "level").upper())
     experiment.prepare_logger()
 
-    user_script = import_script(experiment.id)
 
     # CREATE SESSION
     try:
@@ -281,9 +280,19 @@ def experiment():
     except Exception:
         log = alfredlog.QueuedLoggingInterface("alfred3", f"exp.{str(experiment.exp_id)}")
         log.session_id = sid
-        log.exception("Exception during experiment execution.")
-
-        abort(500)
+        msg = "Exception during experiment execution."
+        log.exception(msg)
+        if current_user.is_authenticated:
+            flash(f"{msg} For further details, take a look at the log.", "danger")
+            return redirect(
+                url_for(
+                    "web_experiments.experiment",
+                    username=current_user.username,
+                    exp_title=experiment.title,
+                )
+            )
+        else:
+            abort(500)
 
 
 @alfredo.route("/staticfile/<identifier>")

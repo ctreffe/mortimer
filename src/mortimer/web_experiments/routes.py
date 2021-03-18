@@ -1244,7 +1244,7 @@ def participation():
             participant = Participant(alias=alias)
         
         if exp_id in participant.experiments:
-            abort(400)
+            return make_response("already registered")
         else:
             participant.experiments.append(exp_id)
             participant.save()

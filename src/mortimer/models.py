@@ -153,6 +153,7 @@ class User(db.Document, UserMixin):
         """
         f = create_fernet()
         appdb_config = current_app.config["MONGODB_SETTINGS"]
+        
         mongo_config = {
             "use": "true",
             "host": appdb_config["host"],
