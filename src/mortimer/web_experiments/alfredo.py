@@ -183,8 +183,9 @@ def start(expid):
     experiment.prepare_logger()
 
 
-    # CREATE SESSION
+    # IMPORT SCRIPT CREATE SESSION
     try:
+        user_script = import_script(experiment.id)
         exp_session = user_script.exp.create_session(
             session_id=sid, 
             config=config, 
