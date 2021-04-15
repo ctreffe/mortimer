@@ -340,4 +340,4 @@ class WebExperiment(db.Document):
 
 class Participant(db.Document):
     alias = db.StringField(required=True, unique=True)
-    experiments = db.ListField(db.StringField())
+    experiments = db.DictField()

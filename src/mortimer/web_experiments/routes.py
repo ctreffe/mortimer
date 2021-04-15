@@ -1224,19 +1224,32 @@ def participation():
 
     alias = request.values.get("alias")
     exp_id = request.values.get("exp_id")
+    exp_version = request.values.get("exp_version", None)
 
     if not alias and not exp_id:
         abort(400)
 
     alias = hashlib.sha224(alias.encode()).hexdigest()
 
+    # handle request of participation
     if request.method == "GET":
         participant = Participant.objects(alias=alias).first()
+        
         if not participant or not exp_id in participant.experiments:
             return make_response("false")
+
         elif exp_id in participant.experiments:
-            return make_response("true")
+
+            if  not exp_version:
+                return make_response("true")
+
+            elif exp_version in participant.experiments[exp_id]["versions"]:
+                return make_response("true")
+
+            else:
+                return make_response("false")
     
+    # handle input of new data
     elif request.method == "POST":
         participant = Participant.objects(alias=alias).first()
 
@@ -1244,9 +1257,21 @@ def participation():
             participant = Participant(alias=alias)
         
         if exp_id in participant.experiments:
-            return make_response("already registered")
-        else:
-            participant.experiments.append(exp_id)
+            
+            if not exp_version:
+                return make_response("already registered")
+            
+            elif exp_version in participant.experiments[exp_id]["versions"]:
+                return make_response("already registered")
+            
+            else: # add version to participant
+                participant.experiments[exp_id]["versions"].append(exp_version)
+                participant.save()
+                return make_response("success")
+        
+        else: # first entry for participant
+            participant.experiments[exp_id] = {}
+            participant.experiments[exp_id]["versions"] = [exp_version] if exp_version is not None else []
             participant.save()
             return make_response("success")
         
