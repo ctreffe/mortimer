@@ -5,7 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## Mortimer v0.8.4 (Released 2021-04-15)
+
+### Added v0.8.4
+
+- Added button for starting an experiment directly with url parameters
+
+### Changed v0.8.4
+- Participant registration route now works with experiment version. The version is required for registration and optional for checking.
+- Changed internal handling of page tokens
+- /callable route in alfredo.py does not automatically redirect to /experiment anymore. This prevents unnecessary redirects. Previously, those redirects happened every time the called function return `None`.
+- /callable route in alfredo.py now automatically jsonifies return values.
+
+## Mortimer v0.8.2
 
 ### Added
 
