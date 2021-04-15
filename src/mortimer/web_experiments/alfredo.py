@@ -331,15 +331,19 @@ def callable(identifier):
         f = experiment.user_interface_controller.get_callable(identifier)
     except KeyError:
         abort(404)
+    
     if request.content_type == "application/json":
         values = request.get_json()
     else:
         values = request.values.to_dict()
+    
+    values.pop("_", None) # remove argument with name "_"
+    
     rv = f(**values)
     if rv is not None:
-        resp = make_response(rv)
+        resp = jsonify(rv)
+        resp.cache_control.no_cache = True
+        return resp
     else:
-        resp = make_response(redirect(url_for("alfredo.experiment")))
-    resp.cache_control.no_cache = True
-    return resp
+        return (" ", 204)
 
