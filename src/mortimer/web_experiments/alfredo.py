@@ -172,7 +172,7 @@ def start(expid):
     # create session id
     sid = str(uuid4())
     session["sid"] = sid
-    session["page_tokens"] = []
+    session["page_tokens"] = {}
 
     config = experiment.parse_exp_config(sid)
     secrets = experiment.parse_exp_secrets()
@@ -238,18 +238,18 @@ def experiment():
         return
 
     experiment = experiment_manager.get(sid)
+    tkey = experiment.current_page.name + sid
 
     try:
         if request.method == "POST":
             move = request.values.get("move", None)
-            page_token = request.values.get("page_token", None)
+            submitted_token = request.values.get("page_token", None)
 
-            try:
-                token_list = session["page_tokens"]
-                token_list.remove(page_token)
-                session["page_tokens"] = token_list
-            except ValueError:
+            token = session["page_tokens"].pop(tkey, None)
+            if not token or not token == submitted_token:
                 return redirect(url_for("alfredo.experiment"))
+            session.modified = True # because the dict is mutable
+
 
             data = request.values.to_dict()
             data.pop("move", None)
@@ -270,13 +270,11 @@ def experiment():
             if url_pagename:
                 experiment.movement_manager.jump_by_name(name=url_pagename)
 
-            page_token = str(uuid4())
+            token = session["page_tokens"].get(tkey, uuid4().hex)
+            session["page_tokens"][tkey] = token
+            session.modified = True # because the dict is mutable
 
-            token_list = session["page_tokens"]
-            token_list.append(page_token)
-            session["page_tokens"] = token_list
-
-            resp = make_response(experiment.user_interface_controller.render_html(page_token))
+            resp = make_response(experiment.user_interface_controller.render_html(token))
             resp.cache_control.no_cache = True
             return resp
     except Exception:
