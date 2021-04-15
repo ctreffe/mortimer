@@ -1236,21 +1236,24 @@ def participation():
         participant = Participant.objects(alias=alias).first()
         
         if not participant or not exp_id in participant.experiments:
-            return make_response("false")
+            return make_response("false", 200)
 
         elif exp_id in participant.experiments:
 
             if  not exp_version:
-                return make_response("true")
+                return make_response("true", 200)
 
             elif exp_version in participant.experiments[exp_id]["versions"]:
-                return make_response("true")
+                return make_response("true", 200)
 
             else:
-                return make_response("false")
+                return make_response("false", 200)
     
     # handle input of new data
     elif request.method == "POST":
+        if not exp_version:
+            return abort(400)
+
         participant = Participant.objects(alias=alias).first()
 
         if not participant:
@@ -1258,20 +1261,17 @@ def participation():
         
         if exp_id in participant.experiments:
             
-            if not exp_version:
-                return make_response("already registered")
-            
-            elif exp_version in participant.experiments[exp_id]["versions"]:
-                return make_response("already registered")
+            if exp_version in participant.experiments[exp_id]["versions"]:
+                return make_response("already registered", 200)
             
             else: # add version to participant
                 participant.experiments[exp_id]["versions"].append(exp_version)
                 participant.save()
-                return make_response("success")
+                return make_response("success"), 201
         
         else: # first entry for participant
             participant.experiments[exp_id] = {}
             participant.experiments[exp_id]["versions"] = [exp_version] if exp_version is not None else []
             participant.save()
-            return make_response("success")
+            return make_response("success", 201)
         
