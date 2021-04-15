@@ -339,7 +339,7 @@ Alfred versions used for data collection in this experiment:
 </script>
 
 <script>
-  var starturl = "{{ url_for('alfredo.start', expid=expid, _save_start_param_=true, _external=True) }}"
+  var starturl = "{{ url_for('alfredo.start', expid=expid, _external=True) }}"
   var updateurl = "{{ url_for('web_experiments.update_urlparam', experiment_title=experiment.title, username=experiment.author, _external=True) }}"
 
 $( "#start_with_param" ).click(function() {
