@@ -26,6 +26,7 @@ from flask import (
     send_from_directory,
     session,
     url_for,
+    jsonify
 )
 from flask_login import current_user
 
