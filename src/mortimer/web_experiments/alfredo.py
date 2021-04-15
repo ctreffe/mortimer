@@ -26,6 +26,7 @@ from flask import (
     send_from_directory,
     session,
     url_for,
+    jsonify
 )
 from flask_login import current_user
 
@@ -39,6 +40,7 @@ class Script:
     def __init__(self):
 
         self.experiment = None
+        self.exp_session = None
         self.expdir = None
         self.config = None
 
@@ -170,27 +172,45 @@ def start(expid):
     # create session id
     sid = str(uuid4())
     session["sid"] = sid
-    session["page_tokens"] = []
+    session["page_tokens"] = {}
 
-    # initialize configuration
-    config = {
-        "exp_config": experiment.parse_exp_config(sid),
-        "exp_secrets": experiment.parse_exp_secrets(),
-    }
+    config = experiment.parse_exp_config(sid)
+    secrets = experiment.parse_exp_secrets()
 
     # initialize log
     log = alfredlog.QueuedLoggingInterface("alfred3", f"exp.{str(experiment.id)}")
     log.session_id = sid
-    log.setLevel(config["exp_config"].get("log", "level").upper())
+    log.setLevel(config.get("log", "level").upper())
     experiment.prepare_logger()
 
+
+    # IMPORT SCRIPT CREATE SESSION
     try:
         user_script = import_script(experiment.id)
-        Script.generate_experiment = user_script.generate_experiment
-        script = Script()
-        alfred_exp = script.generate_experiment(config=config)
-        alfred_exp.start()
-        experiment_manager.save(sid, alfred_exp)
+        exp_session = user_script.exp.create_session(
+            session_id=sid, 
+            config=config, 
+            secrets=secrets, 
+            **request.args
+            )
+
+    except Exception:
+        msg = "Error during creation of experiment session."
+        log.exception(msg)
+        if current_user.is_authenticated:
+            flash(f"{msg} For further details, take a look at the log.", "danger")
+            return redirect(
+                url_for(
+                    "web_experiments.experiment",
+                    username=current_user.username,
+                    exp_title=experiment.title,
+                ))
+        else:
+            abort(500)
+    
+    try:
+        exp_session.start()
+        experiment_manager.save(sid, exp_session)
     except Exception:
         msg = "An exception occured during experiment startup."
         log.exception(msg)
@@ -218,62 +238,61 @@ def experiment():
         return
 
     experiment = experiment_manager.get(sid)
+    tkey = experiment.current_page.name + sid
 
     try:
         if request.method == "POST":
-
             move = request.values.get("move", None)
-            directjump = request.values.get("directjump", None)
-            par = request.values.get("par", None)
-            page_token = request.values.get("page_token", None)
+            submitted_token = request.values.get("page_token", None)
 
-            try:
-                token_list = session["page_tokens"]
-                token_list.remove(page_token)
-                session["page_tokens"] = token_list
-            except ValueError:
+            token = session["page_tokens"].pop(tkey, None)
+            if not token or not token == submitted_token:
                 return redirect(url_for("alfredo.experiment"))
+            session.modified = True # because the dict is mutable
 
-            kwargs = request.values.to_dict()
-            kwargs.pop("move", None)
-            kwargs.pop("directjump", None)
-            kwargs.pop("par", None)
 
-            experiment.user_interface_controller.update_with_user_input(kwargs)
-            if move is None and directjump is None and par is None and kwargs == {}:
+            data = request.values.to_dict()
+            data.pop("move", None)
+            data.pop("directjump", None)
+            data.pop("par", None)
+
+            experiment.movement_manager.current_page.set_data(data)
+            if move is None and not data:
                 pass
-            elif directjump and par:
-                posList = list(map(int, par.split(".")))
-                experiment.user_interface_controller.move_to_position(posList)
-            elif move == "started":
-                pass
-            elif move == "forward":
-                experiment.user_interface_controller.move_forward()
-            elif move == "backward":
-                experiment.user_interface_controller.move_backward()
-            elif move == "jump" and par and re.match(r"^\d+(\.\d+)*$", par):
-                posList = list(map(int, par.split(".")))
-                experiment.user_interface_controller.move_to_position(posList)
+            elif move:
+                experiment.movement_manager.move(direction=move)
             else:
                 abort(400)
             return redirect(url_for("alfredo.experiment"))
 
         elif request.method == "GET":
-            page_token = str(uuid4())
+            url_pagename = request.args.get("page", None) # https://basepath.de/experiment?page=name
+            if url_pagename:
+                experiment.movement_manager.jump_by_name(name=url_pagename)
 
-            token_list = session["page_tokens"]
-            token_list.append(page_token)
-            session["page_tokens"] = token_list
+            token = session["page_tokens"].get(tkey, uuid4().hex)
+            session["page_tokens"][tkey] = token
+            session.modified = True # because the dict is mutable
 
-            resp = make_response(experiment.user_interface_controller.render(page_token))
+            resp = make_response(experiment.user_interface_controller.render_html(token))
             resp.cache_control.no_cache = True
             return resp
     except Exception:
         log = alfredlog.QueuedLoggingInterface("alfred3", f"exp.{str(experiment.exp_id)}")
         log.session_id = sid
-        log.exception("Exception during experiment execution.")
-
-        abort(500)
+        msg = "Exception during experiment execution."
+        log.exception(msg)
+        if current_user.is_authenticated:
+            flash(f"{msg} For further details, take a look at the log.", "danger")
+            return redirect(
+                url_for(
+                    "web_experiments.experiment",
+                    username=current_user.username,
+                    exp_title=experiment.title,
+                )
+            )
+        else:
+            abort(500)
 
 
 @alfredo.route("/staticfile/<identifier>")
@@ -303,7 +322,6 @@ def dynamicfile(identifier):
     resp.cache_control.no_cache = True
     return resp
 
-
 @alfredo.route("/callable/<identifier>", methods=["GET", "POST"])
 def callable(identifier):
     try:
@@ -312,15 +330,19 @@ def callable(identifier):
         f = experiment.user_interface_controller.get_callable(identifier)
     except KeyError:
         abort(404)
+    
     if request.content_type == "application/json":
         values = request.get_json()
     else:
         values = request.values.to_dict()
+    
+    values.pop("_", None) # remove argument with name "_"
+    
     rv = f(**values)
     if rv is not None:
-        resp = make_response(rv)
+        resp = jsonify(rv)
+        resp.cache_control.no_cache = True
+        return resp
     else:
-        resp = make_response(redirect(url_for("alfredo.experiment")))
-    resp.cache_control.no_cache = True
-    return resp
+        return (" ", 204)
 

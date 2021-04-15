@@ -11,9 +11,10 @@ from wtforms import (
     TextAreaField,
     SelectField,
     SelectMultipleField,
+    RadioField,
 )
 from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
-from mortimer.models import User, WebExperiment, LocalExperiment
+from mortimer.models import User, WebExperiment
 from flask import current_app
 import re
 
@@ -112,34 +113,6 @@ class WebExperimentForm(FlaskForm):
     submit = SubmitField("Create")
 
 
-class LocalExperimentForm(FlaskForm):
-    title = StringField("Title", validators=[DataRequired()])
-    exp_id = StringField("Experiment ID", validators=[DataRequired()])
-    description = TextAreaField("Description")
-
-    def validate_title(self, title):
-        # , version=self.version
-        experiment = LocalExperiment.objects(
-            title__exact=title.data, author__exact=current_user.username
-        ).first()
-        if experiment is not None:
-            raise ValidationError(
-                "You already have a local experiment with this title. Please choose a unique title."
-            )
-
-    def validate_exp_id(self, exp_id):
-        experiment = LocalExperiment.objects(
-            exp_id__exact=exp_id.data, author__exact=current_user.username
-        ).first()
-        if experiment is not None:
-
-            raise ValidationError(
-                "There already exists an experiment with this ID in the database. Please choose a unique ID. If you already collected data using this ID, please contanct an administrator."
-            )
-
-    submit = SubmitField("Create")
-
-
 class ExperimentScriptForm(FlaskForm):
     script = TextAreaField("Script")
     version = StringField("Updated version", validators=[DataRequired()])
@@ -218,6 +191,32 @@ class ResetPasswordForm(FlaskForm):
     submit = SubmitField("Reset Password")
 
 
+class ExportCodebookForm(FlaskForm):
+    choices = [
+        ("csv1", "csv ( , )"),
+        ("csv2", "csv ( ; )"),
+        ("json", "json"),
+    ]
+    file_type = RadioField(default="csv2", choices=choices, validators=[DataRequired()])
+    version = SelectField("Version", validators=[DataRequired()], default="latest")
+
+
+class ExportExpDataForm(FlaskForm):
+    choices = [
+        ("csv1", "csv ( , )"),
+        ("csv2", "csv ( ; )"),
+        ("json", "json"),
+    ]
+    file_type = RadioField(default="csv2", choices=choices, validators=[DataRequired()])
+    data_type = RadioField(
+        default="exp_data",
+        choices=[("exp_data", "Experiment Data"), ("unlinked", "Unlinked Data")],
+        validators=[DataRequired()],
+    )
+    version = SelectMultipleField("Version", validators=[DataRequired()])
+    submit = SubmitField("Export Experiment Data")
+
+
 class ExperimentExportForm(FlaskForm):
 
     file_type = SelectField(
@@ -291,4 +290,3 @@ class ExperimentConfigurationForm(FlaskForm):
     minimum_display_time = StringField("Minimum display time")
 
     submit = SubmitField("Save")
-
