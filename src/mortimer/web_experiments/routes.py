@@ -1274,4 +1274,19 @@ def participation():
             participant.experiments[exp_id]["versions"] = [exp_version] if exp_version is not None else []
             participant.save()
             return make_response("success", 201)
-        
+
+
+@web_experiments.route("/<username>/<path:experiment_title>/update_urlparam", methods=["POST"])
+@login_required
+def update_urlparam(username, experiment_title):
+    # pylint: disable=no-member
+    exp = WebExperiment.objects.get_or_404(title=experiment_title, author=username)
+
+    if exp.author != current_user.username:
+        abort(403)
+
+    exp.urlparam = request.values.get("urlparam")
+    exp.save()
+
+    return ("", 204)
+

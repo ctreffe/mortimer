@@ -237,6 +237,7 @@ class WebExperiment(db.Document):
     password = db.StringField()
     web = db.BooleanField()
     active = db.BooleanField(default=False)
+    urlparam = db.StringField()
 
     def prepare_logger(self):
         """Sets the formatter and file handler for the experiment
