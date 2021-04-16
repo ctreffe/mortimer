@@ -3,6 +3,7 @@
 import json, os, re, subprocess
 from datetime import datetime
 from uuid import uuid4
+from typing import Iterator
 
 from cryptography.fernet import Fernet
 from flask import current_app, render_template, url_for
@@ -13,6 +14,24 @@ import pymongo
 import copy
 
 from mortimer import mail
+
+def get_plugin_data_queries(exp) -> Iterator[dict]:
+    db = get_user_collection()
+    f = {"exp_id": str(exp.id), "exp_plugin_queries": {"$exists": True, "$ne": {}}}
+    cursor = db.find(f, projection={"_id": False, "exp_plugin_queries": True})
+
+    out = []
+    for doc in cursor:
+        query_list = doc.get("exp_plugin_queries", None)
+        if not query_list:
+            continue
+        for q in query_list:
+            if not q:
+                continue
+            if not q in out:
+                out.append(q)
+                yield q
+    
 
 
 def sanitize_db_cred():
@@ -37,7 +56,8 @@ def get_alfred_db():
 def get_user_collection():
     """Return a users alfred collection.
 
-    For this function to work, the DB User specified in mortimers configuration needs to have the right access privileges for the given database.
+    For this function to work, the DB User specified in mortimers 
+    configuration needs to have the right access privileges for the given database.
 
     :return: Collection object.
     :rtype: pymongo.collection.Collection
@@ -46,6 +66,12 @@ def get_user_collection():
 
     colname = current_user.alfred_col
 
+    return db[colname]
+
+
+def get_user_misc_collection():
+    db = get_alfred_db()
+    colname = current_user.alfred_col_misc
     return db[colname]
 
 

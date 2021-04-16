@@ -28,7 +28,8 @@ from flask import (
     request,
     send_file,
     url_for,
-    make_response
+    make_response,
+    session
 )
 from flask_login import current_user, login_required
 from werkzeug.utils import secure_filename
@@ -59,7 +60,8 @@ from mortimer.utils import (
     display_directory,
     get_user_collection,
     get_alfred_db,
-    create_fernet
+    create_fernet,
+    get_plugin_data_queries
 )
 
 web_experiments = Blueprint("web_experiments", __name__)
@@ -620,8 +622,23 @@ def export(username, experiment_title):
         
         elif dtype == "full":
             return redirect(url_for("web_experiments.export_full_data", experiment_title=experiment.title, username=experiment.author, versions=versions))
+        
+        elif dtype == "plugin":
+            plugin_data_type = request.values.get("plugin_export_select")
+            if not plugin_data_type:
+                flash("No data found for your search.", "info")
+                return redirect(url_for("web_experiments.export", experiment_title=experiment.title, username=experiment.author))
+            queries = get_plugin_data_queries(exp=experiment)
+            plugin_query = next((q for q in queries if q["type"] == plugin_data_type), None)
+            session["plugin_data_query"] = plugin_query
+            return redirect(url_for("web_experiments.export_plugin_data", experiment_title=experiment.title, username=experiment.author, versions=versions))
 
-    return render_template("export.html", experiment=experiment)
+    queries = get_plugin_data_queries(exp=experiment)
+    query_tuples = []
+    for q in queries:
+        query_tuples.append((q["title"], q["type"]))
+
+    return render_template("export.html", experiment=experiment, plugin_queries=query_tuples)
 
 
 @web_experiments.route("/<username>/<path:experiment_title>/export_main_data/<delim>/<versions>")
@@ -912,6 +929,64 @@ def export_full_data(username, experiment_title, versions: str):
 
     f = json.dumps(list(data), indent=4, sort_keys=True)
     fn = f"full_{experiment.title}.json"
+    return send_file(
+        make_str_bytes(f),
+        mimetype="application/json",
+        as_attachment=True,
+        attachment_filename=fn,
+        cache_timeout=1,
+    )
+
+
+@web_experiments.route("/<username>/<path:experiment_title>/export_plugin_data/<versions>")
+@login_required
+def export_plugin_data(username, experiment_title, versions: str):
+    experiment = WebExperiment.objects.get_or_404(  # pylint: disable=no-member
+        title=experiment_title, author=username
+    )
+    if experiment.author != current_user.username:
+        abort(403)
+    
+    query = session["plugin_data_query"]["query"]
+
+    db = get_alfred_db()
+    col = current_user.alfred_col_misc
+
+    if not db[col].find_one():
+        flash("No data found.", "info")
+        return redirect(
+            url_for(
+                "web_experiments.export",
+                username=experiment.author,
+                experiment_title=experiment.title,
+            )
+        )
+    
+    versions = versions.split("$VERSIONSEP$")
+    if not "all" in versions:
+        query["filter"].update({"exp_version": {"$in": versions}})
+
+    data = db[col].find(**query)
+
+    if not data:
+        flash("No data found for your search", "info")
+        return redirect(url_for("web_experiments.export", experiment_title=experiment.title, username=experiment.author))
+
+    dlist = list(data)
+
+    for doc in dlist: # turn ObjectID into string to make it json serializable
+        doc["_id"] = str(doc["_id"])
+
+    # decrypt if necessary
+    if session["plugin_data_query"].get("encrypted", False):
+        fern = create_fernet()
+        key = fern.decrypt(current_user.encryption_key)
+        dlist = data_manager.decrypt_recursively(dlist, key=key)
+    
+    f = json.dumps(dlist, indent=4, sort_keys=True)
+
+    filename = session["plugin_data_query"]["type"]
+    fn = f"{filename}.json"
     return send_file(
         make_str_bytes(f),
         mimetype="application/json",
