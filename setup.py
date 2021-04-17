@@ -34,8 +34,8 @@ setuptools.setup(
     },
     package_dir={"": "src"},
     install_requires=[
-        "alfred3>=1.1.4",
-        "cryptography>=2.9",
+        "alfred3>=2.0",
+        "cryptography>=3.4",
         "email_validator>=1.1",
         "flask>=1.1.2",
         "flask_bcrypt>=0.7.1",
