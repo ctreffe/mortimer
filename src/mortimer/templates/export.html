@@ -1,0 +1,167 @@
+{% extends "layout_experiment.html" %}
+
+{% block content %}
+
+<form action="{{ url_for('web_experiments.export', experiment_title=experiment.title, username=experiment.author) }}"
+    method="POST">
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="row">
+                <div class="col col-md-4">
+                    <h4>Select Experiment Version</h4>
+                    <small class="text-muted">
+                        You can select multiple versions by pressing <code>CMD</code> (Mac) or <code>STRG</code>
+                        (Windows) while clicking.
+                    </small>
+                </div>
+                <div class="col">
+                    <div class="form-group">
+                        <select multiple class="form-control" id="select-version" name="select-version">
+                            <option value="all" selected>all</option>
+                            {% for version in experiment.available_versions|reverse %}
+                            <option value="{{ version }}">{{ version }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="row">
+                <div class="col col-md-4 my-auto">
+                    <h4>Main experiment data</h4>
+                    <small class="text-muted">
+                        Contains the values that are saved by input elements in an experiment and the additional data
+                        dictionary.
+                    </small>
+                </div>
+                <div class="col my-auto">
+
+                    <button type="submit" name="submit" value="main.comma" class="btn btn-primary">csv ( , )</button>
+                    <button type="submit" name="submit" value="main.semicolon" class="btn btn-primary">csv ( ;
+                        )</button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="row">
+                <div class="col col-md-4 my-auto">
+                    <h4>Codebook</h4>
+                    <small class="text-muted">
+                        Information on the types and settings of all input elements in the experiment.
+                    </small>
+                </div>
+                <div class="col my-auto">
+
+                    <button type="submit" name="submit" value="codebook.comma" class="btn btn-primary">csv ( ,
+                        )</button>
+                    <button type="submit" name="submit" value="codebook.semicolon" class="btn btn-primary">csv ( ;
+                        )</button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="row">
+                <div class="col col-md-4 my-auto">
+                    <h4>Move history</h4>
+                    <small class="text-muted">
+                        Information on participant's movements in the experiment. Each row contains information
+                        about one move, i.e. there can be lots of rows for a single participant.
+                    </small>
+                </div>
+                <div class="col my-auto">
+
+                    <button type="submit" name="submit" value="moves.comma" class="btn btn-primary">csv ( , )</button>
+                    <button type="submit" name="submit" value="moves.semicolon" class="btn btn-primary">csv ( ;
+                        )</button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="row">
+                <div class="col col-md-4 my-auto">
+                    <h4>Full experiment data</h4>
+                    <small class="text-muted">
+                        Main experiment data, element information (codebook) and values, and the movement history in
+                        JSON
+                        format. <i>Unlinked data is not included here.</i>
+                    </small>
+                </div>
+                <div class="col my-auto">
+
+                    <button type="submit" name="submit" value="full.json" class="btn btn-primary">json</button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="row">
+                <div class="col col-md-4 my-auto">
+                    <h4>Unlinked experiment data</h4>
+                    <small class="text-muted">
+                        Shuffled unlinked data: Values that are saved on <code>UnlinkedDataPage</code>s. Contains no
+                        data that allows linking with specific experiment sessions.
+                    </small>
+                </div>
+                <div class="col my-auto">
+
+                    <button type="submit" name="submit" value="unlinked.comma" class="btn btn-primary">csv ( ,
+                        )</button>
+                    <button type="submit" name="submit" value="unlinked.semicolon" class="btn btn-primary">csv ( ;
+                        )</button>
+                    <button type="submit" name="submit" value="unlinked.json" class="btn btn-primary">json</button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card mb-3">
+        <div class="card-body">
+            <div class="row">
+                <div class="col col-md-4 my-auto">
+                    <h4>Plugin data</h4>
+                    <small class="text-muted">
+                        Data provided by plugins.
+                    </small>
+                </div>
+                <div class="col my-auto">
+
+                    <select class="custom-select mb-2" id="plugin_export_select" name="plugin_export_select">
+                    {% for title, data_type in plugin_queries %}
+                        <option value="{{ data_type }}">{{ title }}</option>
+                    {% endfor %}
+                    </select>
+
+                    <button type="submit" name="submit" value="plugin.json" class="btn btn-primary">json</button>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+</form>
+
+{% endblock content %}

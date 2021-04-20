@@ -3,8 +3,8 @@
 import json, os, re, subprocess
 from datetime import datetime
 from uuid import uuid4
+from typing import Iterator
 
-from alfred3 import settings as alfred_settings
 from cryptography.fernet import Fernet
 from flask import current_app, render_template, url_for
 from flask_login import current_user
@@ -14,6 +14,24 @@ import pymongo
 import copy
 
 from mortimer import mail
+
+def get_plugin_data_queries(exp) -> Iterator[dict]:
+    db = get_user_collection()
+    f = {"exp_id": str(exp.id), "exp_plugin_queries": {"$exists": True, "$ne": {}}}
+    cursor = db.find(f, projection={"_id": False, "exp_plugin_queries": True})
+
+    out = []
+    for doc in cursor:
+        query_list = doc.get("exp_plugin_queries", None)
+        if not query_list:
+            continue
+        for q in query_list:
+            if not q:
+                continue
+            if not q in out:
+                out.append(q)
+                yield q
+    
 
 
 def sanitize_db_cred():
@@ -38,7 +56,8 @@ def get_alfred_db():
 def get_user_collection():
     """Return a users alfred collection.
 
-    For this function to work, the DB User specified in mortimers configuration needs to have the right access privileges for the given database.
+    For this function to work, the DB User specified in mortimers 
+    configuration needs to have the right access privileges for the given database.
 
     :return: Collection object.
     :rtype: pymongo.collection.Collection
@@ -47,6 +66,12 @@ def get_user_collection():
 
     colname = current_user.alfred_col
 
+    return db[colname]
+
+
+def get_user_misc_collection():
+    db = get_alfred_db()
+    colname = current_user.alfred_col_misc
     return db[colname]
 
 
@@ -62,35 +87,16 @@ def send_reset_email(user):
 
     token = user.get_reset_token()
     msg = Message(
-        "Password Reset Request", sender="alfred@psych.uni-goettingen.de", recipients=[user.email]
+        "Password Reset Request",
+        sender=current_app.config["MAIL_SENDER_ADDRESS"],
+        recipients=[user.email],
     )
 
     msg.body = render_template(
-        "email/reset_pw.html", URL=url_for("users.reset_password", token=token), _external=True
+        "additional/reset_pw.html",
+        URL=url_for("users.reset_password", token=token, _external=True),
     )
     mail.send(msg)
-    #     msg.body = Template('''Dear Mortimer user,
-
-    # a request to reset your password was made for your email address.
-
-    # To reset your password, visit the following link:
-    # {{ URL }}
-
-    # If you did not make this request, you can simply ignore this email and no changes will be made.
-
-    # Kind regards,
-    # The Mortimer & Alfred Team
-    # --
-    # Alfred Support
-
-    # Georg-August-Universität Göttingen
-    # Wirtschafts- und Sozialpsychologie
-
-    # E-Mail: alfred@psych.uni-goettingen.de
-    # Web: psych.uni-goettingen.de/ecosop
-    #                         ''', lstrip_blocks=True).render(URL=url_for('users.reset_password', token=token, _external=True))
-
-    # mail.send(msg)
 
 
 def display_directory(directories: list, parent_directory: str, experiment) -> str:

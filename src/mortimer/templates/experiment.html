@@ -30,6 +30,23 @@
         </div>
       </div>
 
+      <div class="form-row mb-3 justify-content-end">
+      <div class="col col-sm-8">
+      <small class="text-muted pl-2">You can use the field and button below to start your experiment with url parameters, for example: <code>param1=value1&amp;param2=value2</code></small>
+      <div class="input-group pl-2">
+      <input type="text" class="form-control" placeholder="param=value" value="{{ experiment.urlparam }}" id="start_param">
+      <div class="input-group-append">
+      <button class="btn btn-primary" type="button" id="start_with_param">
+      <i class="fas fa-play mr-2"></i>Start with parameters
+      </button>
+      </div>
+      </div>
+      </div>
+      </div>
+
+
+      {# </div> #}
+
       {% else %}
 
       <div class="input-group mb-3">
@@ -203,10 +220,10 @@
 
 <div class="alert alert-info" role="alert">
   <!-- <h3>Futurizing a script</h3> -->
-  <b>When you publish research</b> conducted using Alfred, please cite. <span
+  <b>When you publish research</b> conducted using Alfred, provide the following citation: <span
     title="In this proposed citation, we use the latest alfred version number that was used for data collection in the current experiment. The doi will always link to the Zenodo repository with all versions."><i
       class="fas fa-info-circle"></i></span><br>
-  Treffenstaedt, C., Wiemann, P. & Brachem, J. (2020). Alfred - A library for rapid experiment development (Version
+  Treffenstaedt, C., Brachem, J., & Wiemann, P. (2021). Alfred3 - A library for rapid experiment development (Version
   {{ alfred_versions[-1] }}). Göttingen, Germany: <a
     href="https://doi.org/10.5281/zenodo.1437219">https://doi.org/10.5281/zenodo.1437219</a>
 </div>
@@ -320,5 +337,18 @@ Alfred versions used for data collection in this experiment:
 <script src="https://cdn.jsdelivr.net/npm/clipboard@2/dist/clipboard.min.js"></script>
 <script type="text/javascript">
   new ClipboardJS('.btn');
+</script>
+
+<script>
+  var starturl = "{{ url_for('alfredo.start', expid=expid, _external=True) }}"
+  var updateurl = "{{ url_for('web_experiments.update_urlparam', experiment_title=experiment.title, username=experiment.author, _external=True) }}"
+
+$( "#start_with_param" ).click(function() {
+  var startparam = $( "#start_param" ).val();
+  var targeturl = starturl + "?" + startparam;
+  $.post( updateurl, {urlparam: startparam} );
+  window.open(targeturl).focus();
+});
+
 </script>
 {% endblock %}

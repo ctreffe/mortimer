@@ -1,10 +1,19 @@
 # -*- coding: utf-8 -*-
+
+# pylint: disable=no-member
 import collections
 import os
 import re
 import shutil
 import sys
 import logging
+import random
+import importlib
+import io
+import csv
+import json
+import hashlib
+
 from pathlib import Path
 from datetime import datetime
 from uuid import uuid4
@@ -19,13 +28,19 @@ from flask import (
     request,
     send_file,
     url_for,
+    make_response,
+    session
 )
 from flask_login import current_user, login_required
 from werkzeug.utils import secure_filename
+from bson import json_util
 
+import alfred3
 from alfred3 import alfredlog
+from alfred3 import data_manager
 
-from mortimer import export
+from mortimer import export as expt
+from mortimer.export import make_str_bytes, to_json
 from mortimer.forms import (
     ExperimentConfigurationForm,  # Deprecated
     ExperimentConfigForm,
@@ -34,15 +49,19 @@ from mortimer.forms import (
     FilterLogForm,
     NewScriptForm,
     WebExperimentForm,
+    ExportExpDataForm,
+    ExportCodebookForm,
 )
-from mortimer.models import User, WebExperiment
+from mortimer.models import User, WebExperiment, Participant
 from mortimer.utils import (
     ScriptFile,
     ScriptString,
     _DictObj,
     display_directory,
     get_user_collection,
+    get_alfred_db,
     create_fernet,
+    get_plugin_data_queries
 )
 
 web_experiments = Blueprint("web_experiments", __name__)
@@ -93,9 +112,6 @@ def new_experiment():
             exp.public = True
 
         exp.save()  # IMPORTANT! Needed to create an exp ID
-        exp.set_settings()
-        # save the exp to the data base
-        exp.save()
 
         # append an entry for the current experiment to the current user
         current_user.experiments.append(exp.id)  # pylint: disable=no-member
@@ -108,7 +124,10 @@ def new_experiment():
         )
 
     return render_template(
-        "create_experiment.html", title="New Experiment", form=form, legend="New Experiment",
+        "create_experiment.html",
+        title="New Experiment",
+        form=form,
+        legend="New Experiment",
     )
 
 
@@ -164,7 +183,7 @@ def experiment(username, exp_title):
         n["individual_versions"][v] = entry
 
     # start time
-    group = {"_id": 1, "first": {"$min": "$start_time"}, "last": {"$max": "$start_time"}}
+    group = {"_id": 1, "first": {"$min": "$exp_start_time"}, "last": {"$max": "$exp_start_time"}}
     pipe = [{"$match": f_id}, {"$group": group}]
     times = list(db.aggregate(pipe))
 
@@ -179,10 +198,6 @@ def experiment(username, exp_title):
     # Form for script.py upload
     form = NewScriptForm()
 
-    if not exp.settings:
-        exp.set_settings()
-        exp.save()
-
     if form.validate_on_submit() and form.script.data:
 
         # process script.py
@@ -195,7 +210,6 @@ def experiment(username, exp_title):
         # update version
         if exp.version != form.version.data:
             exp.version = form.version.data
-            exp.settings["experiment"]["version"] = form.version.data
             exp.available_versions.append(exp.version)
 
         # save experiment
@@ -253,7 +267,6 @@ def experiment_script(username, exp_title):
         # update version
         if exp.version != form.version.data:
             exp.version = form.version.data
-            exp.settings["experiment"]["version"] = form.version.data
             exp.available_versions.append(exp.version)
 
         # save simple updates
@@ -393,7 +406,10 @@ def manage_resources(username, experiment_title):
     )
 
     return render_template(
-        "manage_resources.html", legend="Manage Resources", experiment=experiment, display=display,
+        "manage_resources.html",
+        legend="Manage Resources",
+        experiment=experiment,
+        display=display,
     )
 
 
@@ -464,7 +480,8 @@ def delete_all_files(username, experiment_title):
     defaults={"relative_path": None},
 )
 @web_experiments.route(
-    "/<username>/<path:experiment_title>/new_directory/<path:relative_path>", methods=["POST"],
+    "/<username>/<path:experiment_title>/new_directory/<path:relative_path>",
+    methods=["POST"],
 )
 @login_required
 def new_directory(username: str, experiment_title: str, relative_path: str = None):
@@ -522,7 +539,8 @@ def new_directory(username: str, experiment_title: str, relative_path: str = Non
 
 
 @web_experiments.route(
-    "/<username>/<path:experiment_title>/<path:relative_path>/delete_directory", methods=["POST"],
+    "/<username>/<path:experiment_title>/<path:relative_path>/delete_directory",
+    methods=["POST"],
 )
 @login_required
 def delete_directory(username, experiment_title, relative_path):
@@ -550,7 +568,8 @@ def delete_directory(username, experiment_title, relative_path):
 
 
 @web_experiments.route(
-    "/<username>/<path:experiment_title>/<path:relative_path>/delete_file", methods=["POST"],
+    "/<username>/<path:experiment_title>/<path:relative_path>/delete_file",
+    methods=["POST"],
 )
 @login_required
 def delete_file(username, experiment_title, relative_path):
@@ -571,122 +590,409 @@ def delete_file(username, experiment_title, relative_path):
         )
     )
 
-
-@web_experiments.route("/<username>/<path:experiment_title>/web_export", methods=["POST", "GET"])
+@web_experiments.route("/<username>/<path:experiment_title>/export", methods=["GET", "POST"])
 @login_required
-def web_export(username, experiment_title):
-    # pylint: disable=no-member
-    experiment = WebExperiment.objects.get_or_404(title=experiment_title, author=username)
-
+def export(username, experiment_title):
+    experiment = WebExperiment.objects.get_or_404(  # pylint: disable=no-member
+        title=experiment_title, author=username
+    )
     if experiment.author != current_user.username:
         abort(403)
+    
+    if request.method == "POST":
+        dtype, delim = request.values.get("submit").split(".")
+        versionlist = request.values.getlist("select-version")
+        versions = "$VERSIONSEP$".join(versionlist)
 
-    if not experiment.script:
-        flash(
-            "You have not uploaded a script.py yet. Please upload a script.py and try again.",
-            "warning",
-        )
+        if dtype == "main":
+            return redirect(url_for("web_experiments.export_main_data", experiment_title=experiment.title, username=experiment.author, delim=delim, versions=versions))
+        
+        elif dtype == "codebook":
+            if len(versionlist) > 1 or "all" in versionlist:
+                flash("Sorry, codebooks can only be exported for a single specific version.", "danger")
+                return redirect(url_for("web_experiments.export", experiment_title=experiment.title, username=experiment.author))
+            
+            return redirect(url_for("web_experiments.export_codebook_data", experiment_title=experiment.title, username=experiment.author, delim=delim, version=versionlist[0]))
+        
+        elif dtype == "moves":
+            return redirect(url_for("web_experiments.export_move_data", experiment_title=experiment.title, username=experiment.author, delim=delim, versions=versions))
+        
+        elif dtype == "unlinked":
+            return redirect(url_for("web_experiments.export_unlinked_data", experiment_title=experiment.title, username=experiment.author, delim=delim, versions=versions))
+        
+        elif dtype == "full":
+            return redirect(url_for("web_experiments.export_full_data", experiment_title=experiment.title, username=experiment.author, versions=versions))
+        
+        elif dtype == "plugin":
+            plugin_data_type = request.values.get("plugin_export_select")
+            if not plugin_data_type:
+                flash("No data found for your search.", "info")
+                return redirect(url_for("web_experiments.export", experiment_title=experiment.title, username=experiment.author))
+            queries = get_plugin_data_queries(exp=experiment)
+            plugin_query = next((q for q in queries if q["type"] == plugin_data_type), None)
+            session["plugin_data_query"] = plugin_query
+            return redirect(url_for("web_experiments.export_plugin_data", experiment_title=experiment.title, username=experiment.author, versions=versions))
+
+    queries = get_plugin_data_queries(exp=experiment)
+    query_tuples = []
+    for q in queries:
+        query_tuples.append((q["title"], q["type"]))
+
+    return render_template("export.html", experiment=experiment, plugin_queries=query_tuples)
+
+
+@web_experiments.route("/<username>/<path:experiment_title>/export_main_data/<delim>/<versions>")
+@login_required
+def export_main_data(username, experiment_title, delim: str, versions: str):
+    experiment = WebExperiment.objects.get_or_404(  # pylint: disable=no-member
+        title=experiment_title, author=username
+    )
+    if experiment.author != current_user.username:
+        abort(403)
+    
+    db = get_alfred_db()
+    col = current_user.alfred_col
+
+    if not db[col].find_one():
+        flash("No data found.", "info")
         return redirect(
             url_for(
-                "web_experiments.experiment",
-                username=current_user.username,
-                exp_title=experiment.title,
+                "web_experiments.export",
+                username=experiment.author,
+                experiment_title=experiment.title,
             )
         )
+    
+    dtype = data_manager.DataManager.EXP_DATA
+    f = {"exp_id": str(experiment.id), "type": dtype}
+    
+    versions = versions.split("$VERSIONSEP$")
+    if not "all" in versions:
+        f.update({"exp_version": {"$in": versions}})
 
-    form = ExperimentExportForm()
-    form.version.choices = [
-        (version, version) for version in ["all versions"] + experiment.available_versions
-    ]
-    form.file_type.choices = [("csv", "csv"), ("excel_csv", "excel_csv"), ("json", "json")]
+    cursor = db[col].find(f)
+    fieldnames = data_manager.DataManager.extract_ordered_fieldnames(cursor)
 
-    if form.validate_on_submit():
-        db = get_user_collection()
-        if "all versions" in form.version.data:
-            results = db.count_documents({"exp_id": str(experiment.id)})
-            if results == 0:
-                flash("No data found for this experiment.", "warning")
-                return redirect(
-                    url_for(
-                        "web_experiments.web_export",
-                        username=experiment.author,
-                        experiment_title=experiment.title,
-                    )
-                )
+    # fresh cursor is needed, because previous one is exhausted
+    cursor = db[col].find(f)
+    data = [data_manager.DataManager.flatten(dataset) for dataset in cursor]
 
-            cur = db.find({"exp_id": str(experiment.id)})
-        else:
-            for version in form.version.data:
-                results = []
-                results.append(
-                    db.count_documents({"exp_id": str(experiment.id), "exp_version": version})
-                )
-            if max(results) == 0:
-                flash("No data found for this experiment.", "warning")
-                return redirect(
-                    url_for(
-                        "web_experiments.web_export",
-                        username=experiment.author,
-                        experiment_title=experiment.title,
-                    )
-                )
 
-            cur = db.find(
-                {"exp_id": str(experiment.id), "exp_version": {"$in": form.version.data},}
+    if delim == "comma":
+        delim = ","
+    elif delim == "semicolon":
+        delim = ";"
+
+    f = io.StringIO()
+    writer = csv.DictWriter(f, fieldnames=fieldnames, delimiter=delim, extrasaction="ignore")
+    writer.writeheader()
+    writer.writerows(data)
+
+    fn = f"{dtype}_{experiment.title}.csv"
+    return send_file(
+            make_str_bytes(f),
+            mimetype="text/csv",
+            as_attachment=True,
+            attachment_filename=fn,
+            cache_timeout=1,
+        )
+
+
+
+@web_experiments.route("/<username>/<path:experiment_title>/export_codebook_data/<delim>/<version>")
+@login_required
+def export_codebook_data(username, experiment_title, delim: str, version: str):
+    experiment = WebExperiment.objects.get_or_404(  # pylint: disable=no-member
+        title=experiment_title, author=username
+    )
+    if experiment.author != current_user.username:
+        abort(403)
+    
+    db = get_alfred_db()
+    col = current_user.alfred_col
+    col_unlinked = current_user.alfred_col_unlinked
+
+    if not db[col].find_one():
+        flash("No data found.", "info")
+        return redirect(
+            url_for(
+                "web_experiments.export",
+                username=experiment.author,
+                experiment_title=experiment.title,
             )
+        )
+    
+    dtype_main = data_manager.DataManager.EXP_DATA
+    dtype_unlinked = data_manager.DataManager.UNLINKED_DATA
+    
+    f_main = {"exp_id": str(experiment.id), "type": dtype_main, "exp_version": version}
+    f_unlinked = {"exp_id": str(experiment.id), "type": dtype_unlinked, "exp_version": version}
+    
+    cursor_main = db[col].find(f_main)
+    cursor_unlinked = db[col_unlinked].find(f_unlinked)
 
-        none_value = None
+    # extract individual codebooks for each experimen session
+    cbdata_collection = []
+    for entry in cursor_main:
+        cb = data_manager.DataManager.extract_codebook_data(entry)
+        cbdata_collection.append(cb)
+    for entry in cursor_unlinked:
+        cb = data_manager.DataManager.extract_codebook_data(entry)
+        cbdata_collection.append(cb)
+    
+    # combine them to a single dictionary, overwriting old values 
+    # with newer ones
+    data = {}
+    for entry in cbdata_collection:
+        data.update(entry)
 
-        # if form.replace_none.data:
-        if form.none_value.data:
-            none_value = form.none_value.data
-        if form.replace_none_with_empty_string.data:
-            none_value = ""
+    fieldnames = data_manager.DataManager.extract_fieldnames(data.values())
+    fieldnames = data_manager.DataManager.sort_codebook_fieldnames(fieldnames)
 
-        if form.file_type.data == "json":
-            f = export.to_json(cur)
-            bytes_f = export.make_str_bytes(f)
-            return send_file(
-                bytes_f,
-                mimetype="application/json",
-                as_attachment=True,
-                attachment_filename="export.json",
-                cache_timeout=1,
+    if delim == "comma":
+        delim = ","
+    elif delim == "semicolon":
+        delim = ";"
+
+    f = io.StringIO()
+    writer = csv.DictWriter(f, fieldnames=fieldnames, delimiter=delim, extrasaction="ignore")
+    writer.writeheader()
+    writer.writerows(data.values())
+
+    fn = f"codebook_{experiment.title}.csv"
+    return send_file(
+            make_str_bytes(f),
+            mimetype="text/csv",
+            as_attachment=True,
+            attachment_filename=fn,
+            cache_timeout=1,
+        )
+
+
+@web_experiments.route("/<username>/<path:experiment_title>/export_move_data/<delim>/<versions>")
+@login_required
+def export_move_data(username, experiment_title, delim: str, versions: str):
+    experiment = WebExperiment.objects.get_or_404(  # pylint: disable=no-member
+        title=experiment_title, author=username
+    )
+    if experiment.author != current_user.username:
+        abort(403)
+    
+    db = get_alfred_db()
+    col = current_user.alfred_col
+
+    if not db[col].find_one():
+        flash("No data found.", "info")
+        return redirect(
+            url_for(
+                "web_experiments.export",
+                username=experiment.author,
+                experiment_title=experiment.title,
             )
-        elif form.file_type.data == "csv":
-            f = export.to_csv(cur, none_value=none_value)
-            bytes_f = export.make_str_bytes(f)
+        )
+    
+    dtype = data_manager.DataManager.EXP_DATA
+    f = {"exp_id": str(experiment.id), "type": dtype}
+    
+    versions = versions.split("$VERSIONSEP$")
+    if not "all" in versions:
+        f.update({"exp_version": {"$in": versions}})
 
-            return send_file(
-                bytes_f,
+    cursor = db[col].find(f)
+    data = []
+    for sessiondata in cursor:
+        session_history = sessiondata.pop("exp_move_history", [])
+        data += session_history
+    fieldnames = data_manager.DataManager.extract_fieldnames(data)
+
+    if delim == "comma":
+        delim = ","
+    elif delim == "semicolon":
+        delim = ";"
+
+    f = io.StringIO()
+    writer = csv.DictWriter(f, fieldnames=fieldnames, delimiter=delim, extrasaction="ignore")
+    writer.writeheader()
+    writer.writerows(data)
+
+    fn = f"move_history_{experiment.title}.csv"
+    return send_file(
+            make_str_bytes(f),
+            mimetype="text/csv",
+            as_attachment=True,
+            attachment_filename=fn,
+            cache_timeout=1,
+        )
+
+
+@web_experiments.route("/<username>/<path:experiment_title>/export_unlinked_data/<delim>/<versions>")
+@login_required
+def export_unlinked_data(username, experiment_title, delim: str, versions: str):
+    experiment = WebExperiment.objects.get_or_404(  # pylint: disable=no-member
+        title=experiment_title, author=username
+    )
+    if experiment.author != current_user.username:
+        abort(403)
+    
+    dtype = data_manager.DataManager.UNLINKED_DATA
+    
+    db = get_alfred_db()
+    col = current_user.alfred_col_unlinked
+
+    if not db[col].find_one():
+        flash("No data found.", "info")
+        return redirect(
+            url_for(
+                "web_experiments.export",
+                username=experiment.author,
+                experiment_title=experiment.title,
+            )
+        )
+    
+    f = {"exp_id": str(experiment.id), "type": dtype}
+    versions = versions.split("$VERSIONSEP$")
+    if not "all" in versions:
+        f.update({"exp_version": {"$in": versions}})
+    
+    cursor = db[col].find(f)
+    data = [data_manager.DataManager.flatten(dataset) for dataset in cursor]
+    fieldnames = data_manager.DataManager.extract_fieldnames(data)
+    
+    fern = create_fernet()
+    key = fern.decrypt(current_user.encryption_key)
+    data = data_manager.decrypt_recursively(data=data, key=key)
+
+    random.shuffle(data)
+
+    if delim == "json":
+        f = json.dumps(list(data), indent=4, sort_keys=True)
+        fn = f"unlinked_{experiment.title}.json"
+        return send_file(
+            make_str_bytes(f),
+            mimetype="application/json",
+            as_attachment=True,
+            attachment_filename=fn,
+            cache_timeout=1,
+        )
+    
+    else:
+        if delim == "comma":
+            delim = ","
+        elif delim == "semicolon":
+            delim = ";"
+
+        f = io.StringIO()
+        writer = csv.DictWriter(f, fieldnames=fieldnames, delimiter=delim, extrasaction="ignore")
+        writer.writeheader()
+        writer.writerows(data)
+
+        fn = f"{dtype}_{experiment.title}.csv"
+        return send_file(
+                make_str_bytes(f),
                 mimetype="text/csv",
                 as_attachment=True,
-                attachment_filename="export_%s_web.csv" % experiment.title,
+                attachment_filename=fn,
                 cache_timeout=1,
             )
-        elif form.file_type.data == "excel_csv":
-            f = export.to_excel_csv(cur, none_value=none_value)
-            bytes_f = export.make_str_bytes(f)
-            return send_file(
-                bytes_f,
-                mimetype="text/csv",
-                as_attachment=True,
-                attachment_filename="export.csv",
-                cache_timeout=1,
-            )
-        # elif form.file_type.data == "excel":
-        #     f = export.to_excel(cur, none_value=none_value)
-        #     bytes_f = export.make_str_bytes(f)
-        #     return send_file(
-        #         bytes_f,
-        #         mimetype="application/excel",
-        #         cache_timeout=1,
-        #         as_attachment=True,
-        #         attachment_filename="export.xlsx",
-        #     )
 
-    return render_template(
-        "web_export.html", form=form, experiment=experiment, legend="Export data", type="web",
+
+@web_experiments.route("/<username>/<path:experiment_title>/export_full_data/<versions>")
+@login_required
+def export_full_data(username, experiment_title, versions: str):
+    experiment = WebExperiment.objects.get_or_404(  # pylint: disable=no-member
+        title=experiment_title, author=username
+    )
+    if experiment.author != current_user.username:
+        abort(403)
+    
+    dtype = data_manager.DataManager.EXP_DATA
+    
+    db = get_alfred_db()
+    col = current_user.alfred_col
+
+    if not db[col].find_one():
+        flash("No data found.", "info")
+        return redirect(
+            url_for(
+                "web_experiments.export",
+                username=experiment.author,
+                experiment_title=experiment.title,
+            )
+        )
+    
+    f = {"exp_id": str(experiment.id), "type": dtype}
+    versions = versions.split("$VERSIONSEP$")
+    if not "all" in versions:
+        f.update({"exp_version": {"$in": versions}})
+
+    data = db[col].find(f)
+
+    f = json.dumps(list(data), indent=4, sort_keys=True)
+    fn = f"full_{experiment.title}.json"
+    return send_file(
+        make_str_bytes(f),
+        mimetype="application/json",
+        as_attachment=True,
+        attachment_filename=fn,
+        cache_timeout=1,
+    )
+
+
+@web_experiments.route("/<username>/<path:experiment_title>/export_plugin_data/<versions>")
+@login_required
+def export_plugin_data(username, experiment_title, versions: str):
+    experiment = WebExperiment.objects.get_or_404(  # pylint: disable=no-member
+        title=experiment_title, author=username
+    )
+    if experiment.author != current_user.username:
+        abort(403)
+    
+    query = session["plugin_data_query"]["query"]
+
+    db = get_alfred_db()
+    col = current_user.alfred_col_misc
+
+    if not db[col].find_one():
+        flash("No data found.", "info")
+        return redirect(
+            url_for(
+                "web_experiments.export",
+                username=experiment.author,
+                experiment_title=experiment.title,
+            )
+        )
+    
+    versions = versions.split("$VERSIONSEP$")
+    if not "all" in versions:
+        query["filter"].update({"exp_version": {"$in": versions}})
+
+    data = db[col].find(**query)
+
+    if not data:
+        flash("No data found for your search", "info")
+        return redirect(url_for("web_experiments.export", experiment_title=experiment.title, username=experiment.author))
+
+    dlist = list(data)
+
+    for doc in dlist: # turn ObjectID into string to make it json serializable
+        doc["_id"] = str(doc["_id"])
+
+    # decrypt if necessary
+    if session["plugin_data_query"].get("encrypted", False):
+        fern = create_fernet()
+        key = fern.decrypt(current_user.encryption_key)
+        dlist = data_manager.decrypt_recursively(dlist, key=key)
+    
+    f = json.dumps(dlist, indent=4, sort_keys=True)
+
+    filename = session["plugin_data_query"]["type"]
+    fn = f"{filename}.json"
+    return send_file(
+        make_str_bytes(f),
+        mimetype="application/json",
+        as_attachment=True,
+        attachment_filename=fn,
+        cache_timeout=1,
     )
 
 
@@ -704,32 +1010,20 @@ def data(username, experiment_title):
     results = db.count_documents({"exp_id": str(experiment.id)})
     if results == 0:
         flash("No data found for this experiment.", "warning")
-        return redirect(
-            url_for(
-                "web_experiments.data",
-                username=experiment.author,
-                experiment_title=experiment.title,
-            )
-        )
+        return redirect(url_for("web_experiments.experiment", exp_title=experiment.title, username=current_user.username))
 
-    cur = db.find({"exp_id": str(experiment.id)})
-    data_list = export.cursor_to_rows(cursor=cur)
+    cur = db.find({"exp_id": str(experiment.id)}, limit=30)
+    fieldnames = data_manager.DataManager.extract_ordered_fieldnames(cur)
+    cur = db.find({"exp_id": str(experiment.id)}, limit=30)
+    data = [data_manager.DataManager.flatten(d) for d in cur]
+    
 
     # hotfix for performance-issues: show only the first fifty entries.
     # TODO: Implement AJAX for DataTables display
-    cols = 30
-    rows = 50
-    shorter_data_list = [x[:cols] for x in data_list[:rows]]
-    flash(
-        (
-            f"For performance reasons, we currently only show the first {rows} "
-            f"observations of the first {cols} variables."
-        ),
-        "info",
-    )
+    flash("Showing only the first 30 rows.", "info")
 
     return render_template(
-        "data.html", experiment=experiment, author=username, data_list=shorter_data_list
+        "data.html", experiment=experiment, author=username, data=data, fieldnames=fieldnames
     )
 
 
@@ -834,6 +1128,10 @@ def experiment_log(username, experiment_title, end, start):
     form = FilterLogForm()
 
     logfile = Path(exp.path) / "exp.log"
+    if not logfile.exists():
+        flash("No log found", "info")
+        return redirect(url_for("web_experiments.experiment", exp_title=exp.title, username=current_user.username))
+
     # parse with start and end values (crude pagination)
     date_pattern = re.compile(r"(?P<date>\d{4}-\d{2}-\d{2} )")
     with open(logfile, "r", encoding="utf-8") as f:
@@ -951,7 +1249,7 @@ def experiment_log(username, experiment_title, end, start):
         entry_info = (
             f'<span class="badge badge-light">{date}</span>'
             f' - <span class="badge badge-{flash_type[log_level]}">{log_level}</span>'
-            f" - <b>exp id</b> = {exp_id} - <b>session id</b> = {session_id}"
+            f' - <b>exp id</b> = <span class="badge badge-light">{exp_id}</span> - <b>session id</b> = <span class="badge badge-light">{session_id}</span>'
             f' - <span class="badge badge-secondary">{module}</span>'
         )
 
@@ -976,4 +1274,94 @@ def experiment_log(username, experiment_title, end, start):
         form=form,
         range=(start, end, n_entries_to_display),
     )
+
+
+@web_experiments.route("/update_users/")
+@login_required
+def update_users():
+    # pylint: disable=no-member
+    if current_user.email != "jbrachem@posteo.de":
+        abort(403)
+
+    for user in User.objects:
+
+        user.update_db_role()
+
+        user.save()
+
+        flash(f"User {user.username} was updated.", "info")
+
+    return render_template("home.html", id=None)
+
+
+@web_experiments.route("/participation", methods=["POST", "GET"])
+def participation():
+
+    alias = request.values.get("alias")
+    exp_id = request.values.get("exp_id")
+    exp_version = request.values.get("exp_version", None)
+
+    if not alias and not exp_id:
+        abort(400)
+
+    alias = hashlib.sha224(alias.encode()).hexdigest()
+
+    # handle request of participation
+    if request.method == "GET":
+        participant = Participant.objects(alias=alias).first()
+        
+        if not participant or not exp_id in participant.experiments:
+            return make_response("false", 200)
+
+        elif exp_id in participant.experiments:
+
+            if  not exp_version:
+                return make_response("true", 200)
+
+            elif exp_version in participant.experiments[exp_id]["versions"]:
+                return make_response("true", 200)
+
+            else:
+                return make_response("false", 200)
+    
+    # handle input of new data
+    elif request.method == "POST":
+        if not exp_version:
+            return abort(400)
+
+        participant = Participant.objects(alias=alias).first()
+
+        if not participant:
+            participant = Participant(alias=alias)
+        
+        if exp_id in participant.experiments:
+            
+            if exp_version in participant.experiments[exp_id]["versions"]:
+                return make_response("already registered", 200)
+            
+            else: # add version to participant
+                participant.experiments[exp_id]["versions"].append(exp_version)
+                participant.save()
+                return make_response("success"), 201
+        
+        else: # first entry for participant
+            participant.experiments[exp_id] = {}
+            participant.experiments[exp_id]["versions"] = [exp_version] if exp_version is not None else []
+            participant.save()
+            return make_response("success", 201)
+
+
+@web_experiments.route("/<username>/<path:experiment_title>/update_urlparam", methods=["POST"])
+@login_required
+def update_urlparam(username, experiment_title):
+    # pylint: disable=no-member
+    exp = WebExperiment.objects.get_or_404(title=experiment_title, author=username)
+
+    if exp.author != current_user.username:
+        abort(403)
+
+    exp.urlparam = request.values.get("urlparam")
+    exp.save()
+
+    return ("", 204)
 

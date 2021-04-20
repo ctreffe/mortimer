@@ -96,6 +96,7 @@ class BaseConfig:
     MAIL_USE_TLS = None
     MAIL_USERNAME = None
     MAIL_PASSWORD = None
+    MAIL_SENDER_ADDRESS = None
 
     # Flask-Dropzone settings:
     DROPZONE_ALLOWED_FILE_CUSTOM = True
