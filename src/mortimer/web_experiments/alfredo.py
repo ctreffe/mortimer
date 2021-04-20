@@ -209,7 +209,7 @@ def start(expid):
             abort(500)
     
     try:
-        exp_session.start()
+        exp_session._start()
         experiment_manager.save(sid, exp_session)
     except Exception:
         msg = "An exception occured during experiment startup."
@@ -256,7 +256,7 @@ def experiment():
             data.pop("directjump", None)
             data.pop("par", None)
 
-            experiment.movement_manager.current_page.set_data(data)
+            experiment.movement_manager.current_page._set_data(data)
             if move is None and not data:
                 pass
             elif move:

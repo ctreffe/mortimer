@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Mortimer v0.8.5 (Released 2021-04-20)
+
+### Changed v0.8.5
+
+- Changed some internal functions in alfredo.py for compatibility with
+  alfred3 v2.0.0
+
 ## Mortimer v0.8.4 (Released 2021-04-15)
 
 ### Added v0.8.4
