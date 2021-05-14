@@ -100,7 +100,7 @@ def import_script(experiment_id):
 
 
 class ExperimentManager(object):
-    def __init__(self, timeout=3600):
+    def __init__(self, timeout=60 * 60 * 24 * 2):
         self.timeout = timeout
         self.experiments = {}
         self.lock = Lock()
