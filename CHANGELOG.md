@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Mortimer v0.8.7 (Released 2021-05-14)
+
+### Fixed v0.8.7
+
+- Fixed subdirectory display (#54)
+- Inactive experiments are now in fact unavailable (#53)
+
 ## Mortimer v0.8.6 (Released 2021-05-14)
 
 ### Changed v0.8.6
