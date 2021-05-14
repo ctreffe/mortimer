@@ -235,20 +235,32 @@ def experiment():
         sid = session["sid"]
     except KeyError:
         abort(412)
-        return
 
     experiment = experiment_manager.get(sid)
     tkey = experiment.current_page.name + sid
 
     try:
-        if request.method == "POST":
+        if request.method == "GET":
+            url_pagename = request.args.get("page", None) # https://basepath.de/experiment?page=name
+            if url_pagename:
+                experiment.movement_manager.jump_by_name(name=url_pagename)
+
+            token = session["page_tokens"].get(tkey, uuid4().hex)
+            session["page_tokens"][tkey] = token
+            session.modified = True # because the dict is mutable
+
+            current_page_html = make_response(experiment.ui.render_html(token))
+            current_page_html.cache_control.no_cache = True
+            return current_page_html
+
+        elif request.method == "POST":
             move = request.values.get("move", None)
             submitted_token = request.values.get("page_token", None)
 
             token = session["page_tokens"].pop(tkey, None)
+            session.modified = True # because the dict is mutable
             if not token or not token == submitted_token:
                 return redirect(url_for("alfredo.experiment"))
-            session.modified = True # because the dict is mutable
 
 
             data = request.values.to_dict()
@@ -264,19 +276,7 @@ def experiment():
             else:
                 abort(400)
             return redirect(url_for("alfredo.experiment"))
-
-        elif request.method == "GET":
-            url_pagename = request.args.get("page", None) # https://basepath.de/experiment?page=name
-            if url_pagename:
-                experiment.movement_manager.jump_by_name(name=url_pagename)
-
-            token = session["page_tokens"].get(tkey, uuid4().hex)
-            session["page_tokens"][tkey] = token
-            session.modified = True # because the dict is mutable
-
-            resp = make_response(experiment.user_interface_controller.render_html(token))
-            resp.cache_control.no_cache = True
-            return resp
+        
     except Exception:
         log = alfredlog.QueuedLoggingInterface("alfred3", f"exp.{str(experiment.exp_id)}")
         log.session_id = sid
