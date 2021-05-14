@@ -18,7 +18,7 @@
     </p>
 
     <div class="collapse" id="NewDirectory_{{directory}}_{{call_id}}">
-        <form action="{{new_subdirectory_url}}" , method="POST">
+        <form action="{{new_subdirectory_url}}" method="POST">
             <div><input class="form-control form-control-lg mr-3 mb-3 mt-3" id="new_directory" name="new_directory"
                     required type="text" value="" placeholder="Name">
                 <input class="btn btn-outline-primary btn-sm" type="submit" value="Create">
@@ -33,7 +33,7 @@
     </div>
 
 
-    {{subdirectory_display}}
+    {{subdirectory_display|safe}}
 
 </div>
 

@@ -168,6 +168,9 @@ def start(expid):
             <input type="password" name="password" /><button type="submit">Submit</button></form></div>'
             % exp_url
         )
+    
+    if not experiment.active:
+        return render_template("exp_inactive.html")
 
     # create session id
     sid = str(uuid4())
