@@ -10,13 +10,14 @@
 
 <div class="content-section">
   <div class="article-metadata">
-
-    You can upload files with a size up to 10 MB. For larger files, please use an external hosting solution.
+    You can upload individual files or a <code>.zip</code> archive with multiple files. 
+    Zip-archives are extracted automatically. They are not allowed to contain directories or subdirectories.
+    
     <br> <br>
-
     <b>Note:</b> The names of uploaded files are subject to a security check. If a filename is insecure, the upload will
     change it to a secure form. An allowed filename must for example not contain slashes (<code>/</code>), umlauts
     (<code>äöü</code>) or whitespace. Please make sure that all your filenames are secure.
+    
     <br> <br>
     <b>Example</b><br>
     Not allowed: <code>../../../../home/username/.bashrc</code><br>
@@ -44,5 +45,5 @@
   <!-- Dropzone JavaScript -->
 
   {{ dropzone.load_js() }}
-  {{ dropzone.config(custom_options='autoProcessQueue: false, addRemoveLinks: true, parallelUploads: 20') }}
+  {{ dropzone.config(custom_options='autoProcessQueue: false, addRemoveLinks: true', redirect_url=url_for('web_experiments.upload_resources', experiment_title=experiment.title, username=experiment.author, relative_path=relative_path)) }}
   {% endblock %}

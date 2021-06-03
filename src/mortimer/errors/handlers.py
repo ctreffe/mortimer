@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from flask import Blueprint, render_template
+from flask_wtf.csrf import CSRFError
 
 errors = Blueprint("erros", __name__)
 
@@ -25,3 +26,8 @@ def error_404(error):
 def error_500(error):
     return render_template('errors/500_alfred.html'), 500
 
+
+# handle CSRF error
+@errors.app_errorhandler(CSRFError)
+def csrf_error(e):
+    return e.description, 400

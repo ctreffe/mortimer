@@ -13,6 +13,7 @@ import io
 import csv
 import json
 import hashlib
+import zipfile
 
 from pathlib import Path
 from datetime import datetime
@@ -316,6 +317,38 @@ def delete_experiment(username, experiment_title):
     return redirect(url_for("web_experiments.user_experiments", username=current_user.username))
 
 
+def validate_zipfile_filenames(z: zipfile.ZipFile) -> bool:
+    """
+    Validates the filenames of files contained in the input zipfile
+    object.
+
+    If a filename is a directory or is otherwise not secure, validation
+    will fail.
+
+    Returns:
+        bool: True, if validation succeeds. False otherwise.
+    """
+    valid = True
+    names = z.namelist()
+    sanitized_names = [secure_filename(fname) for fname in names]
+    for n1, n2 in zip(names, sanitized_names):
+        p1 = Path(n1)
+        if not n1 == n2:
+            if not p1.suffix:
+                flash(f"'{n1}' seems to be a directory, which is not allowed.", "danger")
+            else:
+                flash(f"Filename '{n1}' is not secure. Please change it.", "danger")
+            valid = False
+            break
+        if not p1.suffix in current_app.config["DROPZONE_ALLOWED_FILE_TYPE"]:
+            flash(f"Filetype '{p1.suffix}' of {p1} is not allowed. Upload of \
+                '{z.fp.filename}' was aborted.", "danger")
+            valid = False
+            break
+    
+    return valid
+
+
 @web_experiments.route(
     "/<username>/<path:experiment_title>/upload_resources/<path:relative_path>",
     methods=["POST", "GET"],
@@ -326,7 +359,7 @@ def upload_resources(username, experiment_title, relative_path):
     experiment = WebExperiment.objects.get_or_404(title=experiment_title, author=username)
     if experiment.author != current_user.username:
         abort(403)
-
+    
     path = os.path.join(experiment.path, relative_path)
 
     path_list = []
@@ -338,31 +371,31 @@ def upload_resources(username, experiment_title, relative_path):
         tail, head = os.path.split(tail)
 
     if request.method == "POST":
+        # Monkeypatch to get flask to flash messages after upload
+        from flask import get_flashed_messages
+        get_flashed_messages()
 
         for key, f in request.files.items():
 
-            old_filenames = []
-            new_filenames = []
-
             if key.startswith("file"):
-                # exemption from sanitization for __init__.py to allow submodules
-                if f.filename == "__init__.py":
-                    file_fn = f.filename
+                file_fn = secure_filename(f.filename)
+                
+                if f.filename != file_fn:
+                    flash(f"Filename <code>{f.filename}</code> is insecure and was not uploaded. Please change it, for \
+                        example to <code>{file_fn}</code>."
+                        "danger",
+                    )
+                    continue
+                
+                p = Path(f.filename)
+                if p.suffix == ".zip":
+                    z = zipfile.ZipFile(f)
+                    valid = validate_zipfile_filenames(z)
+                    if valid:
+                        z.extractall(path)
+                        flash(f"Extracted content of '{z.fp.filename}' to directory '{relative_path}/'.", "info") 
                 else:
-                    file_fn = secure_filename(f.filename)
-                f.save(os.path.join(path, file_fn))
-
-                old_filenames.append(f.filename)
-                new_filenames.append(file_fn)
-
-        # TODO: Display old and new filenames
-        if old_filenames != new_filenames:
-            for i in range(len(old_filenames)):
-                flash(
-                    "Filename changed from <code>%s</code> to <code>%s</code>."
-                    % (old_filenames[i], new_filenames[i]),
-                    "danger",
-                )
+                    f.save(os.path.join(path, file_fn))
 
     return render_template(
         "upload_resources.html",
