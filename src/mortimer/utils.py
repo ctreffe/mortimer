@@ -99,6 +99,24 @@ def send_reset_email(user):
     mail.send(msg)
 
 
+def send_register_email(user):
+    sender = current_app.config["MAIL_SENDER_ADDRESS"]
+    recip = current_app.config.get("ADMIN_MAIL", sender)
+    msg = Message(
+        "New registration",
+        sender=sender,
+        recipients=[recip]
+    )
+
+    msg.body = render_template(
+        "additional/register_email.html",
+        user=user.username,
+        email=user.email
+    )
+    
+    mail.send(msg)
+
+
 def display_directory(directories: list, parent_directory: str, experiment) -> str:
     """
     This is a recursive function. The endpoint is reached if it is called on
