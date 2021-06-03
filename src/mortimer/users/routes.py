@@ -12,7 +12,7 @@ from mortimer.forms import (
     ResetPasswordForm,
 )
 from mortimer.models import User, WebExperiment
-from mortimer.utils import send_reset_email, create_fernet
+from mortimer.utils import send_reset_email, create_fernet, send_register_email
 from flask_login import login_user, current_user, logout_user, login_required
 
 # pylint: disable=no-member
@@ -43,6 +43,7 @@ def register():
         # save user
         user.save()
         flash("Account created for %s." % form.username.data, "success")
+        send_register_email(user)
         return redirect(url_for("users.login"))
 
     password_hint = "This is a password hint"
