@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
+import copy
 import json, os, re, subprocess
+import importlib.resources as res
+import json
 from datetime import datetime
 from uuid import uuid4
 from typing import Iterator
@@ -11,9 +14,9 @@ from flask_login import current_user
 from flask_mail import Message
 from jinja2 import Template
 import pymongo
-import copy
 
 from mortimer import mail
+from .static import json as jdat
 
 def get_plugin_data_queries(exp) -> Iterator[dict]:
     db = get_user_collection()
@@ -444,3 +447,36 @@ class _DictObj(dict):
     __getattr__ = dict.__getitem__
     __setattr__ = dict.__setitem__
     __delattr__ = dict.__delitem__
+
+
+
+def get_social_media_user_agents():
+    d = res.read_text(jdat, "social_media_user_agents.json")
+    expected_bots = json.loads(d)
+    return expected_bots
+
+def is_social_media_preview(user_agent) -> bool:
+    expected_bots = get_social_media_user_agents()
+    
+    for bot in expected_bots:
+        if bot in user_agent:
+            return True
+    
+    return False
+
+
+def render_social_media_preview(config):
+    style = config.get("layout", "style")
+    title = config.get("layout", "preview_title")
+    desc = config.get("layout", "preview_description")
+    logo = config.get("layout", "preview_image")
+    logo_small = config.get("layout", "preview_image_small")
+
+    logos = {"base": "alfred3_study.png", "goe": "unigoe_study.png"}
+    logos_small = {"base": "alfred3_small.png", "goe": "unigoe_small.png"}
+
+    if not logo:
+        logo = logos.get(style)
+        logo_small = logos_small.get(style)
+    
+    return render_template("exp_preview.html", logo=logo, style=style, title=title, desc=desc)
