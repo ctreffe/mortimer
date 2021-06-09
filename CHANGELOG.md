@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Mortimer v0.8.9 (Released 2021-06-09)
+
+### Added
+
+- Added beta support for social media previews
+
 ## Mortimer v0.8.8 (Released 2021-06-03)
 
 ### Added v0.8.8
