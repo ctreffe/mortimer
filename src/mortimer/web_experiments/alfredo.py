@@ -31,7 +31,7 @@ from flask import (
 from flask_login import current_user
 
 from mortimer.models import WebExperiment, User
-from mortimer.utils import create_fernet
+from mortimer.utils import create_fernet, is_social_media_preview, render_social_media_preview
 from alfred3 import alfredlog
 import alfred3.config
 
@@ -161,6 +161,15 @@ def start(expid):
     # pylint: disable=no-member
     experiment = WebExperiment.objects.get_or_404(id=ObjectId(expid))
 
+    # create session id
+    sid = str(uuid4())
+
+    config = experiment.parse_exp_config(sid)
+    secrets = experiment.parse_exp_secrets()
+
+    if is_social_media_preview(request.headers.get("User-Agent")):
+        return render_social_media_preview(config)
+
     if not experiment.public and experiment.password != request.form.get("password", None):
         exp_url = url_for("alfredo.start", expid=str(experiment.id))
         return (
@@ -172,13 +181,8 @@ def start(expid):
     if not experiment.active:
         return render_template("exp_inactive.html")
 
-    # create session id
-    sid = str(uuid4())
     session["sid"] = sid
     session["page_tokens"] = {}
-
-    config = experiment.parse_exp_config(sid)
-    secrets = experiment.parse_exp_secrets()
 
     # initialize log
     log = alfredlog.QueuedLoggingInterface("alfred3", f"exp.{str(experiment.id)}")
@@ -186,6 +190,7 @@ def start(expid):
     log.setLevel(config.get("log", "level").upper())
     experiment.prepare_logger()
 
+    log.debug("Access from: " + request.headers.get("User-Agent"))
 
     # IMPORT SCRIPT CREATE SESSION
     try:
