@@ -167,7 +167,7 @@ def start(expid):
     config = experiment.parse_exp_config(sid)
     secrets = experiment.parse_exp_secrets()
 
-    if is_social_media_preview(request.header.get("User-Agent")):
+    if is_social_media_preview(request.headers.get("User-Agent")):
         return render_social_media_preview(config)
 
     if not experiment.public and experiment.password != request.form.get("password", None):
