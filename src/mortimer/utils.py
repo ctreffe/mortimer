@@ -466,9 +466,15 @@ def is_social_media_preview(user_agent) -> bool:
 
 
 def render_social_media_preview(config):
+    # fallbacks
+    fb = {
+        "title": "Online-Studie",
+        "desc": "Jetzt mitmachen und Teil der aktuellen Forschung werden."
+    }
+
     style = config.get("layout", "style")
-    title = config.get("layout", "preview_title")
-    desc = config.get("layout", "preview_description")
+    title = config.get("layout", "preview_title", fallback=fb["title"])
+    desc = config.get("layout", "preview_description", fallback=fb["desc"])
     logo = config.get("layout", "preview_image")
     logo_small = config.get("layout", "preview_image_small")
 
