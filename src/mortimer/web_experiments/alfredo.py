@@ -190,6 +190,7 @@ def start(expid):
     log.setLevel(config.get("log", "level").upper())
     experiment.prepare_logger()
 
+    log.debug("Access from: " + request.headers.get("User-Agent"))
 
     # IMPORT SCRIPT CREATE SESSION
     try:
