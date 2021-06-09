@@ -26,6 +26,7 @@ setuptools.setup(
             "static/css/*",
             "static/img/*",
             "static/js/*",
+            "static/json/*",
             "templates/*",
             "templates/elements/*",
             "templates/errors/*",
