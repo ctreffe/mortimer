@@ -101,14 +101,14 @@
       <div class="card-body border-info">
         <span class="text-muted">
           {% if activity["last"] != 'none' %}
-          {{ activity["last"].strftime('%H:%M') }}
+          {{ activity["last"] }}
           {% else %}
           - none -
           {% endif %}
         </span>
         <h3 class="card-text text-info">
           {% if activity["last"] != 'none' %}
-          {{ activity["last"].strftime('%Y-%m-%d') }}
+          {{ activity["last"] }}
           {% else %}
           - none -
           {% endif %}
@@ -118,7 +118,7 @@
       <div class="card-footer text-muted border-info">
         First activity on <span class="badge badge-light">
           {% if activity["first"] != 'none' %}
-          {{ activity["first"].strftime('%Y-%m-%d, %H:%M') }}
+          {{ activity["first"] }}
           {% else %}
           - none -
           {% endif %}
