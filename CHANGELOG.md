@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Mortimer v0.8.11 [unreleased]
+
+### Changed
+
+- Compatibility patch for alfred3 v2.2.0
+
 ## Mortimer v0.8.10 (Released 2021-06-09)
 
 ### Added
