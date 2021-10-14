@@ -43,7 +43,9 @@ def register():
         # save user
         user.save()
         flash("Account created for %s." % form.username.data, "success")
+        
         send_register_email(user)
+
         return redirect(url_for("users.login"))
 
     password_hint = "This is a password hint"

@@ -190,8 +190,12 @@ def experiment(username, exp_title):
 
     activity = {}
     if times:
-        activity["first"] = datetime.fromtimestamp(times[0]["first"])
-        activity["last"] = datetime.fromtimestamp(times[0]["last"])
+        try:
+            activity["first"] = datetime.fromtimestamp(times[0]["first"]).strftime('%Y-%m-%d, %H:%M')
+            activity["last"] = datetime.fromtimestamp(times[0]["last"]).strftime('%H:%M')
+        except TypeError:
+            activity["first"] = times[0]["first"]
+            activity["last"] = times[0]["last"]
     else:
         activity["first"] = "none"
         activity["last"] = "none"
