@@ -27,6 +27,8 @@
           </button>
           <a class="btn btn-success" target="_blank" rel="noopener noreferrer"
             href="{{ url_for('alfredo.start', expid=expid) }}"><i class="fas fa-play mr-2"></i>Start</a>
+          <a class="btn btn-dark" target="_blank" rel="noopener noreferrer"
+            href="{{ url_for('alfredo.start', expid=expid) }}?test=true"><i class="fas fa-play mr-2"></i>Test</a>
         </div>
       </div>
 
@@ -64,6 +66,8 @@
             <img src="{{ url_for('static', filename='clippy.svg')}}" alt="Copy to clipboard" width="20"> Copy Link
           </button>
           <a class="btn btn-success" href="#"><i class="fas fa-play mr-2"></i>Start</a>
+          <a class="btn btn-dark" target="_blank" rel="noopener noreferrer"
+            href="{{ url_for('alfredo.start', expid=expid) }}?test=true"><i class="fas fa-play mr-2"></i>Test</a>
         </div>
       </div>
 

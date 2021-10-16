@@ -178,7 +178,9 @@ def start(expid):
             % exp_url
         )
     
-    if not experiment.active:
+    args = request.args.to_dict()
+    test_mode = args.get("test") in ["true", "True", "TRUE"]
+    if not experiment.active and not test_mode:
         return render_template("exp_inactive.html")
 
     session["sid"] = sid
