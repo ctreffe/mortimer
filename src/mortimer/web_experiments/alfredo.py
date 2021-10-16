@@ -162,7 +162,7 @@ def start(expid):
     experiment = WebExperiment.objects.get_or_404(id=ObjectId(expid))
 
     # create session id
-    sid = str(uuid4())
+    sid = "sid-" + str(uuid4())
 
     config = experiment.parse_exp_config(sid)
     secrets = experiment.parse_exp_secrets()
