@@ -180,7 +180,8 @@ def start(expid):
     
     args = request.args.to_dict()
     test_mode = args.get("test") in ["true", "True", "TRUE"]
-    if not experiment.active and not test_mode:
+    debug_mode = args.get("debug") in ["true", "True", "TRUE"] or config.getboolean("general", "debug")
+    if not experiment.active and not test_mode and not debug_mode:
         return render_template("exp_inactive.html")
 
     session["sid"] = sid
