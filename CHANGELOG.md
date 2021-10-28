@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Mortimer v0.8.12 (Released 2021-10-28)
+
+### Added
+
+- Added support for alfred3's new test mode
+- Added "sid" prefix for session ids
+- Added quickstart options for alfred3's test mode and debug mode
+- Added a warning that will appear upon codebook download if element 
+  labels in *the two newest* datasets are unequal.
+
 ## Mortimer v0.8.11 (Released 2021-10-14)
 
 ### Changed

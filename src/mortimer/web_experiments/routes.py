@@ -780,7 +780,26 @@ def export_codebook_data(username, experiment_title, delim: str, version: str):
     # combine them to a single dictionary, overwriting old values 
     # with newer ones
     data = {}
-    for entry in cbdata_collection:
+    n = len(cbdata_collection)
+    for i, entry in enumerate(cbdata_collection):
+        
+        # check if all labels in the last two data sets match
+        if i == n-1 and data:
+            for name, cb in entry.items():
+                for lab in ["label_top", "label_left", "label_right", "label_bottom", "placeholder"]:
+                    old = data.get(name, "")
+                    oldlab = old.get(lab, "") if old else ""
+                    newlab = cb.get(lab, "")
+                    if not oldlab == newlab:
+                        flash(
+                            (
+                                f"Codebook: {lab} of '{name}' has changed from '{oldlab}' to '{newlab}'. "
+                                "This introduces inconsistencies into the codebook. "
+                                "Do you have dynamic labels that do not match their elements' names? "
+                                "To change a label, increase the experiment version."
+                            ),
+                            "warning"
+                        )
         data.update(entry)
 
     fieldnames = data_manager.DataManager.extract_fieldnames(data.values())

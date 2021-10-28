@@ -162,7 +162,7 @@ def start(expid):
     experiment = WebExperiment.objects.get_or_404(id=ObjectId(expid))
 
     # create session id
-    sid = str(uuid4())
+    sid = "sid-" + str(uuid4())
 
     config = experiment.parse_exp_config(sid)
     secrets = experiment.parse_exp_secrets()
@@ -178,7 +178,10 @@ def start(expid):
             % exp_url
         )
     
-    if not experiment.active:
+    args = request.args.to_dict()
+    test_mode = args.get("test") in ["true", "True", "TRUE"]
+    debug_mode = args.get("debug") in ["true", "True", "TRUE"] or config.getboolean("general", "debug")
+    if not experiment.active and not test_mode and not debug_mode:
         return render_template("exp_inactive.html")
 
     session["sid"] = sid
