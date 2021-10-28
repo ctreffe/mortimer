@@ -788,12 +788,12 @@ def export_codebook_data(username, experiment_title, delim: str, version: str):
             for name, cb in entry.items():
                 for lab in ["label_top", "label_left", "label_right", "label_bottom", "placeholder"]:
                     old = data.get(name, "")
-                    old = old.get(lab, "") if old else ""
-                    new = cb.get(lab, "")
-                    if not old == new:
+                    oldlab = old.get(lab, "") if old else ""
+                    newlab = cb.get(lab, "")
+                    if not oldlab == newlab:
                         flash(
                             (
-                                f"Codebook: {lab} of '{name}' has changed from '{old}' to '{new}'. "
+                                f"Codebook: {lab} of '{name}' has changed from '{oldlab}' to '{newlab}'. "
                                 "This introduces inconsistencies into the codebook. "
                                 "Do you have dynamic labels that do not match their elements' names? "
                                 "To change a label, increase the experiment version."
