@@ -236,7 +236,10 @@ def start(expid):
             )
         else:
             abort(500)
-
+    
+    page = request.args.get("page", None)
+    if page:
+        return redirect(url_for("alfredo.experiment", page=page))
     return redirect(url_for("alfredo.experiment"))
 
 
@@ -254,7 +257,7 @@ def experiment():
         if request.method == "GET":
             url_pagename = request.args.get("page", None) # https://basepath.de/experiment?page=name
             if url_pagename:
-                experiment.movement_manager.jump_by_name(name=url_pagename)
+                experiment.movement_manager.move(direction=f"jump>{url_pagename}")
 
             token = session["page_tokens"].get(tkey, uuid4().hex)
             session["page_tokens"][tkey] = token
