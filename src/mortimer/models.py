@@ -89,7 +89,7 @@ class User(db.Document, UserMixin):
         c_unlinked = {**res, **{"collection": self.alfred_col_unlinked}}
         c_misc = {**res, **{"collection": self.alfred_col_misc}}
 
-        act = ["find", "insert", "update"]
+        act = ["find", "insert", "update", "remove"]
         priv = [{"resource": res_dict, "actions": act} for res_dict in [c_exp, c_unlinked, c_misc]]
         return priv
 
