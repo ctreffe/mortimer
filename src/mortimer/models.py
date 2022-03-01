@@ -163,7 +163,7 @@ class User(db.Document, UserMixin):
             "user": self.alfred_user,
             "password": f.decrypt(self.alfred_pw).decode(),
             "use_ssl": str(appdb_config.get("ssl")).lower(),
-            "ca_file_path": str(appdb_config.get("ssl_ca_certs")),
+            "ca_file_path": str(appdb_config.get("tlsCAFile")),
             "activation_level": "1",
         }
         return {"mongo_saving_agent": mongo_config}
