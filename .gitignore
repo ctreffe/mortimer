@@ -45,3 +45,4 @@ dist/
 mortimer_venv/
 .mortimer/
 .venv/
+.python-version
