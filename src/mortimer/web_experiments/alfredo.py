@@ -135,7 +135,7 @@ class ExperimentManager(object):
         if rv is None:
             molog = logging.getLogger("mortimer")
             molog.warning(
-                f"Tried to access experiment with key '{key}'. Available Keys:"
+                f"Tried to access experiment with session id '{key}'. Available Keys:"
                 f" {list(self.experiments.keys())}"
             )
             abort(412)
@@ -149,7 +149,7 @@ class ExperimentManager(object):
         for k in list(self.experiments.keys()):
             v = self.experiments[k]
             if current_time - v[0] > self.timeout:
-                molog.warning(f"Delete exp with key {k} and last access time {v[0]}")
+                molog.warning(f"Delete exp with session id '{k}' and last access time {v[0]}")
                 del self.experiments[k]
         self.lock.release()
 
