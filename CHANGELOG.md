@@ -16,6 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed support for url-jumping support
 
+### Added
+
+- Added logging capability (#78)
+- Added log calls for 412 server responses (#79)
+
 ## Mortimer v0.8.12 (Released 2021-10-28)
 
 ### Added
