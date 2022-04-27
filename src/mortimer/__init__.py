@@ -27,7 +27,15 @@ dropzone = Dropzone()  # for multiple file upload
 db = MongoEngine()  # mortimer database
 
 # application factory
-def create_app(instance_path=None):
+def create_app(instance_path=None, logfile: str = None):
+    logger = logging.getLogger("mortimer")
+    fh = logging.FileHandler(logfile)
+    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+    fh.setFormatter(formatter)
+    
+    logger.addHandler(fh)
+    logger.setLevel(logging.INFO)
+
     app = Flask(__name__, instance_path=instance_path)
 
     # apply configuration
