@@ -273,14 +273,6 @@ class WebExperiment(db.Document):
         try:
             secrets_string = f.decrypt(self.exp_secrets).decode()
         except TypeError:
-            logger = logging.getLogger(__name__)
-            logger.info(
-                (
-                    "Exception during secrets decryption. "
-                    "To proceed, the value of secrets.conf was set to an empty string."
-                    f" Exp id={str(self.id)}"
-                )
-            )
             secrets_string = ""
 
         exp_secrets = ExperimentSecrets(expdir=self.path)
