@@ -192,13 +192,16 @@ def experiment(username, exp_title):
     if times:
         try:
             activity["first"] = datetime.fromtimestamp(times[0]["first"]).strftime('%Y-%m-%d, %H:%M')
-            activity["last"] = datetime.fromtimestamp(times[0]["last"]).strftime('%H:%M')
+            activity["last_time"] = datetime.fromtimestamp(times[0]["last"]).strftime('%H:%M')
+            activity["last_date"] = datetime.fromtimestamp(times[0]["last"]).strftime('%Y-%m-%d')
         except TypeError:
             activity["first"] = times[0]["first"]
-            activity["last"] = times[0]["last"]
+            activity["last_time"] = times[0]["last"]
+            activity["last_date"] = "none"
     else:
         activity["first"] = "none"
-        activity["last"] = "none"
+        activity["last_time"] = "none"
+        activity["last_date"] = "none"
 
     # Form for script.py upload
     form = NewScriptForm()

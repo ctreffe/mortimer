@@ -146,15 +146,15 @@
       </div>
       <div class="card-body border-info">
         <span class="text-muted">
-          {% if activity["last"] != 'none' %}
-          {{ activity["last"] }}
+          {% if activity["last_time"] != 'none' %}
+          {{ activity["last_time"] }}
           {% else %}
           - none -
           {% endif %}
         </span>
         <h3 class="card-text text-info">
-          {% if activity["last"] != 'none' %}
-          {{ activity["last"] }}
+          {% if activity["last_date"] != 'none' %}
+          {{ activity["last_date"] }}
           {% else %}
           - none -
           {% endif %}
