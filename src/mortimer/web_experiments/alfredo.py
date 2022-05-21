@@ -26,12 +26,16 @@ from flask import (
     send_from_directory,
     session,
     url_for,
-    jsonify
+    jsonify,
 )
 from flask_login import current_user
 
 from mortimer.models import WebExperiment, User
-from mortimer.utils import create_fernet, is_social_media_preview, render_social_media_preview
+from mortimer.utils import (
+    create_fernet,
+    is_social_media_preview,
+    render_social_media_preview,
+)
 from alfred3 import alfredlog
 import alfred3.config
 
@@ -45,7 +49,7 @@ class Script:
         self.config = None
 
     def generate_experiment(self, config=None):  # pylint: disable=method-hidden
-        """Hook for the ``generate_experiment`` function extracted from 
+        """Hook for the ``generate_experiment`` function extracted from
         the user's script.py. It is meant to be replaced in ``run.py``.
         """
 
@@ -75,7 +79,9 @@ def number_of_func_params(func):
 
 
 def import_script(experiment_id):
-    experiment = WebExperiment.objects.get_or_404(id=experiment_id)  # pylint: disable=no-member
+    experiment = WebExperiment.objects.get_or_404(
+        id=experiment_id
+    )  # pylint: disable=no-member
 
     # Fast path: see if the module has already been imported.
     try:
@@ -127,11 +133,11 @@ class ExperimentManager(object):
 
         self.lock.release()
         if rv is None:
-            try:
-                print("Tried to access experiment with key %s" % key)
-                print("Available Keys: %s" % list(self.experiments.keys()))
-            except Exception:
-                pass
+            molog = logging.getLogger("mortimer")
+            molog.warning(
+                f"Tried to access experiment with session id '{key}'. Available Keys:"
+                f" {list(self.experiments.keys())}"
+            )
             abort(412)
         self.save(key, rv)
         return rv
@@ -139,10 +145,11 @@ class ExperimentManager(object):
     def remove_outdated(self):
         self.lock.acquire()
         current_time = int(time())
+        molog = logging.getLogger("mortimer")
         for k in list(self.experiments.keys()):
             v = self.experiments[k]
             if current_time - v[0] > self.timeout:
-                print("delete exp with key %s and last access time %s" % (k, v[0]))
+                molog.warning(f"Delete exp with session id '{k}' and last access time {v[0]}")
                 del self.experiments[k]
         self.lock.release()
 
@@ -170,17 +177,21 @@ def start(expid):
     if is_social_media_preview(request.headers.get("User-Agent")):
         return render_social_media_preview(config)
 
-    if not experiment.public and experiment.password != request.form.get("password", None):
+    if not experiment.public and experiment.password != request.form.get(
+        "password", None
+    ):
         exp_url = url_for("alfredo.start", expid=str(experiment.id))
         return (
-            '<div align="center"><h1>Please enter the password</h1><form method="post" action="%s">\
-            <input type="password" name="password" /><button type="submit">Submit</button></form></div>'
-            % exp_url
+            '<div align="center"><h1>Please enter the password</h1><form method="post"'
+            ' action="%s">            <input type="password" name="password" /><button'
+            ' type="submit">Submit</button></form></div>' % exp_url
         )
-    
+
     args = request.args.to_dict()
     test_mode = args.get("test") in ["true", "True", "TRUE"]
-    debug_mode = args.get("debug") in ["true", "True", "TRUE"] or config.getboolean("general", "debug")
+    debug_mode = args.get("debug") in ["true", "True", "TRUE"] or config.getboolean(
+        "general", "debug"
+    )
     if not experiment.active and not test_mode and not debug_mode:
         return render_template("exp_inactive.html")
 
@@ -199,11 +210,8 @@ def start(expid):
     try:
         user_script = import_script(experiment.id)
         exp_session = user_script.exp.create_session(
-            session_id=sid, 
-            config=config, 
-            secrets=secrets, 
-            **request.args
-            )
+            session_id=sid, config=config, secrets=secrets, **request.args
+        )
 
     except Exception:
         msg = "Error during creation of experiment session."
@@ -215,10 +223,11 @@ def start(expid):
                     "web_experiments.experiment",
                     username=current_user.username,
                     exp_title=experiment.title,
-                ))
+                )
+            )
         else:
             abort(500)
-    
+
     try:
         exp_session._start()
         experiment_manager.save(sid, exp_session)
@@ -237,14 +246,22 @@ def start(expid):
         else:
             abort(500)
 
+    page = request.args.get("page", None)
+    if page:
+        return redirect(url_for("alfredo.experiment", page=page))
     return redirect(url_for("alfredo.experiment"))
 
 
 @alfredo.route("/experiment", methods=["GET", "POST"])
 def experiment():
+    molog = logging.getLogger("mortimer")
     try:
         sid = session["sid"]
     except KeyError:
+        molog.warning(
+            "Experiment route called, but there was no session id in the session"
+            " cookie."
+        )
         abort(412)
 
     experiment = experiment_manager.get(sid)
@@ -252,13 +269,15 @@ def experiment():
 
     try:
         if request.method == "GET":
-            url_pagename = request.args.get("page", None) # https://basepath.de/experiment?page=name
+            url_pagename = request.args.get(
+                "page", None
+            )  # https://basepath.de/experiment?page=name
             if url_pagename:
-                experiment.movement_manager.jump_by_name(name=url_pagename)
+                experiment.movement_manager.move(direction=f"jump>{url_pagename}")
 
             token = session["page_tokens"].get(tkey, uuid4().hex)
             session["page_tokens"][tkey] = token
-            session.modified = True # because the dict is mutable
+            session.modified = True  # because the dict is mutable
 
             current_page_html = make_response(experiment.ui.render_html(token))
             current_page_html.cache_control.no_cache = True
@@ -269,10 +288,9 @@ def experiment():
             submitted_token = request.values.get("page_token", None)
 
             token = session["page_tokens"].pop(tkey, None)
-            session.modified = True # because the dict is mutable
+            session.modified = True  # because the dict is mutable
             if not token or not token == submitted_token:
                 return redirect(url_for("alfredo.experiment"))
-
 
             data = request.values.to_dict()
             data.pop("move", None)
@@ -287,9 +305,11 @@ def experiment():
             else:
                 abort(400)
             return redirect(url_for("alfredo.experiment"))
-        
+
     except Exception:
-        log = alfredlog.QueuedLoggingInterface("alfred3", f"exp.{str(experiment.exp_id)}")
+        log = alfredlog.QueuedLoggingInterface(
+            "alfred3", f"exp.{str(experiment.exp_id)}"
+        )
         log.session_id = sid
         msg = "Exception during experiment execution."
         log.exception(msg)
@@ -311,9 +331,13 @@ def staticfile(identifier):
     try:
         sid = session["sid"]
         experiment = experiment_manager.get(sid)
-        path, content_type = experiment.user_interface_controller.get_static_file(identifier)
+        path, content_type = experiment.user_interface_controller.get_static_file(
+            identifier
+        )
         dirname, filename = os.path.split(path)
-        resp = make_response(send_from_directory(dirname, filename, mimetype=content_type))
+        resp = make_response(
+            send_from_directory(dirname, filename, mimetype=content_type)
+        )
         # resp.cache_control.no_cache = True
         return resp
 
@@ -326,12 +350,15 @@ def dynamicfile(identifier):
     try:
         sid = session["sid"]
         experiment = experiment_manager.get(sid)
-        strIO, content_type = experiment.user_interface_controller.get_dynamic_file(identifier)
+        strIO, content_type = experiment.user_interface_controller.get_dynamic_file(
+            identifier
+        )
     except KeyError:
         abort(404)
     resp = make_response(send_file(strIO, mimetype=content_type))
     resp.cache_control.no_cache = True
     return resp
+
 
 @alfredo.route("/callable/<identifier>", methods=["GET", "POST"])
 def callable(identifier):
@@ -341,14 +368,14 @@ def callable(identifier):
         f = experiment.user_interface_controller.get_callable(identifier)
     except KeyError:
         abort(404)
-    
+
     if request.content_type == "application/json":
         values = request.get_json()
     else:
         values = request.values.to_dict()
-    
-    values.pop("_", None) # remove argument with name "_"
-    
+
+    values.pop("_", None)  # remove argument with name "_"
+
     rv = f(**values)
     if rv is not None:
         resp = jsonify(rv)
@@ -356,4 +383,3 @@ def callable(identifier):
         return resp
     else:
         return (" ", 204)
-

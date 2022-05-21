@@ -84,7 +84,7 @@ class BaseConfig:
     MONGODB_SETTINGS["password"] = None
     MONGODB_SETTINGS["authentication_source"] = "admin"
     MONGODB_SETTINGS["ssl"] = False
-    MONGODB_SETTINGS["ssl_ca_certs"] = None
+    MONGODB_SETTINGS["tlsCAFile"] = None
 
     # Alfred settings
     ALFRED_DB = "alfred"

@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Mortimer v0.8.13 (Released 2022-05-21)
+
+### Changed
+
+- (New) users are now allowed to remove documents in their own alfred3 
+  mongoDB collections.
+
+### Fixed
+
+- Fixed support for url-jumping support
+- Fixed #82
+
+### Added
+
+- Added logging capability (#78)
+- Added log calls for 412 server responses (#79)
+
 ## Mortimer v0.8.12 (Released 2021-10-28)
 
 ### Added

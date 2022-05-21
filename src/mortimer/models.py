@@ -89,7 +89,7 @@ class User(db.Document, UserMixin):
         c_unlinked = {**res, **{"collection": self.alfred_col_unlinked}}
         c_misc = {**res, **{"collection": self.alfred_col_misc}}
 
-        act = ["find", "insert", "update"]
+        act = ["find", "insert", "update", "remove"]
         priv = [{"resource": res_dict, "actions": act} for res_dict in [c_exp, c_unlinked, c_misc]]
         return priv
 
@@ -163,7 +163,7 @@ class User(db.Document, UserMixin):
             "user": self.alfred_user,
             "password": f.decrypt(self.alfred_pw).decode(),
             "use_ssl": str(appdb_config.get("ssl")).lower(),
-            "ca_file_path": str(appdb_config.get("ssl_ca_certs")),
+            "ca_file_path": str(appdb_config.get("tlsCAFile")),
             "activation_level": "1",
         }
         return {"mongo_saving_agent": mongo_config}
@@ -273,14 +273,6 @@ class WebExperiment(db.Document):
         try:
             secrets_string = f.decrypt(self.exp_secrets).decode()
         except TypeError:
-            logger = logging.getLogger(__name__)
-            logger.info(
-                (
-                    "Exception during secrets decryption. "
-                    "To proceed, the value of secrets.conf was set to an empty string."
-                    f" Exp id={str(self.id)}"
-                )
-            )
             secrets_string = ""
 
         exp_secrets = ExperimentSecrets(expdir=self.path)
