@@ -4,11 +4,17 @@ from flask import current_app
 from flask_login import current_user
 from flask_wtf import FlaskForm
 from flask_wtf.file import FileAllowed, FileField
-from wtforms import (BooleanField, PasswordField, RadioField, SelectField,
-                     SelectMultipleField, StringField, SubmitField,
-                     TextAreaField)
-from wtforms.validators import (DataRequired, Email, EqualTo, Length,
-                                ValidationError)
+from wtforms import (
+    BooleanField,
+    PasswordField,
+    RadioField,
+    SelectField,
+    SelectMultipleField,
+    StringField,
+    SubmitField,
+    TextAreaField,
+)
+from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError
 
 from mortimer.models import User, WebExperiment
 
