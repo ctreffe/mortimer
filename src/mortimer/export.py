@@ -1,11 +1,15 @@
-import csv
-import io
+# -*- coding: utf-8 -*-
+
+from builtins import str
+from builtins import range
+from builtins import object
 import json
-import random
+import csv
 import re
+import io
+import random
 
 from bson import json_util
-
 
 # this is necessary, because send_file requires bytes-like objects
 def make_str_bytes(f):
@@ -26,8 +30,8 @@ def to_json(cursor, shuffle=False, decryptor=None):
     """Turns a MongoDB Cursor into a JSON file.
 
     Args:
-        shuffle: If *True*, the document order will be shuffled
-            (useful e.g. for preventing a link of experiment and
+        shuffle: If *True*, the document order will be shuffled 
+            (useful e.g. for preventing a link of experiment and 
             unlinked data).
         decryptor: An alfred3.data_manager.Decryptor instance, which,
             if provided, will be used to try decryption of the values
@@ -47,9 +51,7 @@ def to_json(cursor, shuffle=False, decryptor=None):
     return out
 
 
-def to_csv(
-    cursor, none_value=None, remove_linebreaks=False, dialect="excel", **writerparams
-):
+def to_csv(cursor, none_value=None, remove_linebreaks=False, dialect="excel", **writerparams):
     rows = cursor_to_rows(cursor, none_value)
     if remove_linebreaks:
         for i in range(1, len(rows)):
@@ -115,7 +117,7 @@ def cursor_to_rows(cursor, none_value=None):
     return rows
 
 
-class Header:
+class Header(object):
     def __init__(self, *docs):
         self.tag = docs[0]["tag"]
         self.parent = None
@@ -188,9 +190,7 @@ class Header:
                     raise Exception("break")
             rv = rv + child.getDataFromDoc(subDoc if found else {})
         if self.additional_data:
-            rv = rv + self.additional_data.getDataFromDoc(
-                doc.get("additional_data", {})
-            )
+            rv = rv + self.additional_data.getDataFromDoc(doc.get("additional_data", {}))
         return rv
 
     def getDataFromDocs(self, docs):

@@ -2,14 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/),
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/), 
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## Mortimer v0.8.13 (Released 2022-05-21)
 
 ### Changed
 
-- (New) users are now allowed to remove documents in their own alfred3
+- (New) users are now allowed to remove documents in their own alfred3 
   mongoDB collections.
 
 ### Fixed
@@ -29,7 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Added support for alfred3's new test mode
 - Added "sid" prefix for session ids
 - Added quickstart options for alfred3's test mode and debug mode
-- Added a warning that will appear upon codebook download if element
+- Added a warning that will appear upon codebook download if element 
   labels in *the two newest* datasets are unequal.
 
 ## Mortimer v0.8.11 (Released 2021-10-14)
@@ -186,7 +186,7 @@ pip install mortimer
 
 * Fixed a bug that caused JavaScript to crash on some pages.
 * Fixed a bug that caused an error during data encryption using the key introduced in v0.4.4
-* Fixed a bug that prevented the deletion of experiments with specific filenames
+* Fixed a bug that prevented the deletion of experiments with specific filenames 
 * Fixed the referrer after changing an experiments title
 
 ### Small changes
@@ -197,7 +197,7 @@ pip install mortimer
 
 ### Encryption Keys
 
-* Every user now has a unique fernet encryption key, generated via `cryptography.fernet.Fernet.generate_key()` . The key is passed as an entry in the `config` dictionary (key: `encryption_key` ) to the `generate_experiment()` function in `alfredo.py` .
+* Every user now has a unique fernet encryption key, generated via `cryptography.fernet.Fernet.generate_key()` . The key is passed as an entry in the `config` dictionary (key: `encryption_key` ) to the `generate_experiment()` function in `alfredo.py` . 
 * The key itself is saved to the mortimer database in encrypted form.
 * Usage: See [here](https://github.com/ctreffe/alfred/releases/tag/v1.0.6)
 

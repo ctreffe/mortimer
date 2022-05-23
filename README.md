@@ -32,7 +32,7 @@ Now you need to configure mortimer. You have the following options on where to p
 
 You only need to use one of these options. If you don't know which one to use, we recommend to place the configuration fiel in your instance directory. The files are read in that order, later files override earlier ones.
 
-For a minimal setup, you need to specify the following settings.
+For a minimal setup, you need to specify the following settings. 
 
 Notes:
 
@@ -91,3 +91,4 @@ flask run --host=0.0.0.0 --port=5000
 **Important Note: Do not use this in a production setting. It is not intended to meet security and performance requirements for a production server. Instead, see Flasks [Deployment Options](http://flask.pocoo.org/docs/1.0/deploying/#deployment) for WSGI server recommendations.**
 
 **IMPORTANT NOTE**: Mortimer is currently not easy to set up and use safely. Please contanct us, if you want to use it. Most importantly, you should allow only trusted users to register.
+

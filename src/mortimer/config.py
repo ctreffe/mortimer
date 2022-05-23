@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """Provide basic configuration for mortimer.
 
 The `BaseConfig` class can be used as a parent in order to create different sets of default configuration.
@@ -13,18 +14,18 @@ def configure_app(app):
     1. The apps own default config.py
     2. "/etc/mortimer.conf"
     3. A "mortimer.conf" in the current users home directory
-    4. A "mortimer.conf" in a path provided via an environement variable
+    4. A "mortimer.conf" in a path provided via an environement variable 
         MORTIMER_CONFIG
     5. A "mortimer.conf" in the instance path
 
-    The config files are read in that order. Settings from later files
+    The config files are read in that order. Settings from later files 
     override previous settings.
 
-    The implementation is extensible: It is possible to include multiple
-    configuration objects in `config.py` and utilise a switch to tell
-    mortimer, which one to use. The switch key is provided in an
-    environment variable `MORTIMER_CONFIG`. It needs to be paired with
-    the object's name in this functions dict `switch`. Currently
+    The implementation is extensible: It is possible to include multiple 
+    configuration objects in `config.py` and utilise a switch to tell 
+    mortimer, which one to use. The switch key is provided in an 
+    environment variable `MORTIMER_CONFIG`. It needs to be paired with 
+    the object's name in this functions dict `switch`. Currently 
     available:
 
     * "default" (the default)
@@ -99,9 +100,7 @@ class BaseConfig:
 
     # Flask-Dropzone settings:
     DROPZONE_ALLOWED_FILE_CUSTOM = True
-    DROPZONE_ALLOWED_FILE_TYPE = (
-        ".pdf, image/*, .txt, .xml, .pem, .mp3, .mp4, .ogg, .csv, .py"
-    )
+    DROPZONE_ALLOWED_FILE_TYPE = ".pdf, image/*, .txt, .xml, .pem, .mp3, .mp4, .ogg, .csv, .py"
     DROPZONE_MAX_FILE_SIZE = 20
     DROPZONE_MAX_FILES = 5
     DROPZONE_UPLOAD_ON_CLICK = True

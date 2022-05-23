@@ -1,30 +1,28 @@
-import re
+# -*- coding: utf-8 -*-
 
-from flask import current_app
-from flask_login import current_user
 from flask_wtf import FlaskForm
-from flask_wtf.file import FileAllowed, FileField
+from flask_wtf.file import FileField, FileAllowed
+from flask_login import current_user
 from wtforms import (
-    BooleanField,
-    PasswordField,
-    RadioField,
-    SelectField,
-    SelectMultipleField,
     StringField,
     SubmitField,
+    BooleanField,
+    PasswordField,
     TextAreaField,
+    SelectField,
+    SelectMultipleField,
+    RadioField,
 )
-from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError
-
+from wtforms.validators import DataRequired, Length, Email, EqualTo, ValidationError
 from mortimer.models import User, WebExperiment
+from flask import current_app
+import re
 
 # pylint: disable=no-member
 
 
 class RegistrationForm(FlaskForm):
-    username = StringField(
-        "Username", validators=[DataRequired(), Length(min=2, max=20)]
-    )
+    username = StringField("Username", validators=[DataRequired(), Length(min=2, max=20)])
     email = StringField("Email", validators=[DataRequired(), Email()])
     password = PasswordField("Password", validators=[DataRequired()])
     confirm_password = PasswordField(
@@ -38,9 +36,7 @@ class RegistrationForm(FlaskForm):
     def validate_username(self, username):
         user = User.objects(username__exact=username.data).first()
         if user is not None:
-            raise ValidationError(
-                "That username is taken. Please choose a different one."
-            )
+            raise ValidationError("That username is taken. Please choose a different one.")
 
     def validate_email(self, email):
         user = User.objects(email__exact=email.data).first()
@@ -65,9 +61,7 @@ class LoginForm(FlaskForm):
 
 
 class UpdateAccountForm(FlaskForm):
-    username = StringField(
-        "Username", validators=[DataRequired(), Length(min=2, max=20)]
-    )
+    username = StringField("Username", validators=[DataRequired(), Length(min=2, max=20)])
     email = StringField("Email", validators=[DataRequired(), Email()])
 
     # functions for validation of user input
@@ -77,17 +71,13 @@ class UpdateAccountForm(FlaskForm):
         if username.data != current_user.username:
             user = User.objects(username__exact=username.data).first()
             if user is not None:
-                raise ValidationError(
-                    "That username is taken. Please choose a different one."
-                )
+                raise ValidationError("That username is taken. Please choose a different one.")
 
     def validate_email(self, email):
         if email.data != current_user.email:
             user = User.objects(email__exact=email.data).first()
             if user is not None:
-                raise ValidationError(
-                    "That email is taken. Please choose a different one."
-                )
+                raise ValidationError("That email is taken. Please choose a different one.")
 
     submit = SubmitField("Update")
 

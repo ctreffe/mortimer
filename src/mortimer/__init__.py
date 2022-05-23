@@ -1,13 +1,15 @@
+# -*- coding: utf-8 -*-
 import logging
 from pathlib import Path
 
-from alfred3 import alfredlog
 from flask import Flask
 from flask_bcrypt import Bcrypt
 from flask_dropzone import Dropzone
 from flask_login import LoginManager
 from flask_mail import Mail
 from flask_mongoengine import MongoEngine
+
+from alfred3 import alfredlog
 
 from mortimer.config import configure_app
 
@@ -17,9 +19,7 @@ from ._version import __version__
 bcrypt = Bcrypt()  # for hashing passwords
 login_manager = LoginManager()  # managing login and loggout
 login_manager.login_view = "users.login"  # function name of login route
-login_manager.login_message_category = (
-    "info"  # bootstrap class of "login necessary" message
-)
+login_manager.login_message_category = "info"  # bootstrap class of "login necessary" message
 mail = Mail()  # for sending password reset mails
 dropzone = Dropzone()  # for multiple file upload
 
@@ -32,7 +32,7 @@ def create_app(instance_path=None, logfile: str = None):
     fh = logging.FileHandler(logfile)
     formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
     fh.setFormatter(formatter)
-
+    
     logger.addHandler(fh)
     logger.setLevel(logging.INFO)
 
@@ -42,11 +42,11 @@ def create_app(instance_path=None, logfile: str = None):
     configure_app(app)
 
     # import blueprints
-    from mortimer.errors.handlers import errors
-    from mortimer.main.routes import main
     from mortimer.users.routes import users
-    from mortimer.web_experiments.alfredo import alfredo
     from mortimer.web_experiments.routes import web_experiments
+    from mortimer.web_experiments.alfredo import alfredo
+    from mortimer.main.routes import main
+    from mortimer.errors.handlers import errors
 
     # register blueprints
     app.register_blueprint(users)

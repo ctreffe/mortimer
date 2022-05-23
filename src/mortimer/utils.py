@@ -1,24 +1,22 @@
+# -*- coding: utf-8 -*-
+
 import copy
+import json, os, re, subprocess
 import importlib.resources as res
 import json
-import os
-import re
-import subprocess
 from datetime import datetime
-from typing import Iterator
 from uuid import uuid4
+from typing import Iterator
 
-import pymongo
 from cryptography.fernet import Fernet
 from flask import current_app, render_template, url_for
 from flask_login import current_user
 from flask_mail import Message
 from jinja2 import Template
+import pymongo
 
 from mortimer import mail
-
 from .static import json as jdat
-
 
 def get_plugin_data_queries(exp) -> Iterator[dict]:
     db = get_user_collection()
@@ -36,6 +34,7 @@ def get_plugin_data_queries(exp) -> Iterator[dict]:
             if not q in out:
                 out.append(q)
                 yield q
+    
 
 
 def sanitize_db_cred():
@@ -60,7 +59,7 @@ def get_alfred_db():
 def get_user_collection():
     """Return a users alfred collection.
 
-    For this function to work, the DB User specified in mortimers
+    For this function to work, the DB User specified in mortimers 
     configuration needs to have the right access privileges for the given database.
 
     :return: Collection object.
@@ -106,12 +105,18 @@ def send_reset_email(user):
 def send_register_email(user):
     sender = current_app.config["MAIL_SENDER_ADDRESS"]
     recip = current_app.config.get("ADMIN_MAIL", sender)
-    msg = Message("New registration", sender=sender, recipients=[recip])
-
-    msg.body = render_template(
-        "additional/register_email.html", user=user.username, email=user.email
+    msg = Message(
+        "New registration",
+        sender=sender,
+        recipients=[recip]
     )
 
+    msg.body = render_template(
+        "additional/register_email.html",
+        user=user.username,
+        email=user.email
+    )
+    
     mail.send(msg)
 
 
@@ -252,9 +257,7 @@ def display_directory(directories: list, parent_directory: str, experiment) -> s
         # The function is called again.
         if subdirectory_list != []:
             subdirectory_display = display_directory(
-                directories=subdirectory_list,
-                experiment=experiment,
-                parent_directory=path,
+                directories=subdirectory_list, experiment=experiment, parent_directory=path
             )
         else:
             subdirectory_display = ""
@@ -309,43 +312,41 @@ def display_directory(directories: list, parent_directory: str, experiment) -> s
 
 
 def perform_futurization(file):
-    futurize = subprocess.run(["futurize", "-w", file], check=True, text=True)
+    futurize = subprocess.run(["futurize", "-w", file], check=True, universal_newlines=True)
 
     return futurize
 
 
 def replace_all_patterns(file):
     def load_json(file):
-        with open(file, encoding="utf-8") as json_file:
+        with open(file, "r", encoding="utf-8") as json_file:
             text = json_file.read().replace("\n", "")
             json_data = json.loads(text)
 
         return json_data
 
     def replace_patterns(file, change_dict, write=False, max_iter=10):
-        with open(file, encoding="utf-8") as f:
+        with open(file, "r", encoding="utf-8") as f:
             code = []
             iter = 0
             for line in f.readlines():  # go through code line by line
                 # for each line, go through all changes
                 for old_name, new_name in change_dict.items():
-                    pattern = re.compile(rf"\W?(?P<name>{old_name})\W?")
+                    pattern = re.compile(r"\W?(?P<name>{pattern})\W?".format(pattern=old_name))
                     m = pattern.search(line)
 
                     # while-loop for multiple occurences of old_name per line
                     # with max number of iterations for safety
                     while m and iter <= max_iter:
-                        line = (
-                            line[: m.start("name")] + new_name + line[m.end("name") :]
-                        )
+                        line = line[: m.start("name")] + new_name + line[m.end("name") :]
                         m = pattern.search(line)
                         iter += 1
                         # print each old and new name
                         # print("Old: %s, New: %s" % (old_name, new_name))
                     if iter == max_iter:
                         raise AssertionError(
-                            "One line had at least %i replacements. Something seems to"
-                            " be wrong" % max_iter
+                            "One line had at least %i replacements. Something seems to be wrong"
+                            % max_iter
                         )
                     iter = 0
 
@@ -354,9 +355,7 @@ def replace_all_patterns(file):
                     r"(?P<exp>exp = Experiment\('web', exp_name, exp_version\))"
                 )
 
-                line = gen_pattern.sub(
-                    "def generate_experiment(self, config=None):", line
-                )
+                line = gen_pattern.sub("def generate_experiment(self, config=None):", line)
                 line = exp_pattern.sub("exp = Experiment(config=config)", line)
 
                 code.append(line)
@@ -390,16 +389,13 @@ class ScriptString:
             r"(?P<call>(alfred\.)?run\(generate_experiment\))(?P<comments>([\s]*(#.*)*)*)\Z"
         )
         self.script = p.sub(
-            "# Here, the call to 'run(generate_experiment)' and following comments were"
-            " removed.",
+            "# Here, the call to 'run(generate_experiment)' and following comments were removed.",
             self.script,
         )
 
     def save(self):
         # saves the script to the experiment and to the file system, if changes were made
-        if (self.exp.script != self.script) or not os.path.exists(
-            self.exp.script_fullpath
-        ):
+        if (self.exp.script != self.script) or not os.path.exists(self.exp.script_fullpath):
 
             try:
                 os.remove(self.exp.script_fullpath)
@@ -432,7 +428,7 @@ class ScriptFile(ScriptString):
             pass
         self.file.save(path)
 
-        with open(path, encoding="utf-8") as f:
+        with open(path, "r", encoding="utf-8") as f:
             self.script = f.read()
 
         os.remove(path)
@@ -453,19 +449,19 @@ class _DictObj(dict):
     __delattr__ = dict.__delitem__
 
 
+
 def get_social_media_user_agents():
     d = res.read_text(jdat, "social_media_user_agents.json")
     expected_bots = json.loads(d)
     return expected_bots
 
-
 def is_social_media_preview(user_agent) -> bool:
     expected_bots = get_social_media_user_agents()
-
+    
     for bot in expected_bots:
         if bot in user_agent:
             return True
-
+    
     return False
 
 
@@ -473,7 +469,7 @@ def render_social_media_preview(config):
     # fallbacks
     fb = {
         "title": "Online-Studie",
-        "desc": "Jetzt mitmachen und Teil der aktuellen Forschung werden.",
+        "desc": "Jetzt mitmachen und Teil der aktuellen Forschung werden."
     }
 
     style = config.get("layout", "style")
@@ -488,7 +484,5 @@ def render_social_media_preview(config):
     if not logo:
         logo = logos.get(style)
         logo_small = logos_small.get(style)
-
-    return render_template(
-        "exp_preview.html", logo=logo, style=style, title=title, desc=desc
-    )
+    
+    return render_template("exp_preview.html", logo=logo, style=style, title=title, desc=desc)

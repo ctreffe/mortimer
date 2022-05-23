@@ -1,28 +1,19 @@
-import random
-import string
+# -*- coding: utf-8 -*-
+import string, random
 
-from flask import (
-    Blueprint,
-    abort,
-    current_app,
-    flash,
-    redirect,
-    render_template,
-    request,
-    url_for,
-)
-from flask_login import current_user, login_required, login_user, logout_user
-
+from flask import Blueprint, current_app
+from flask import render_template, url_for, flash, redirect, request, abort
 from mortimer import bcrypt
 from mortimer.forms import (
-    LoginForm,
     RegistrationForm,
+    LoginForm,
+    UpdateAccountForm,
     RequestResetForm,
     ResetPasswordForm,
-    UpdateAccountForm,
 )
 from mortimer.models import User, WebExperiment
-from mortimer.utils import create_fernet, send_register_email, send_reset_email
+from mortimer.utils import send_reset_email, create_fernet, send_register_email
+from flask_login import login_user, current_user, logout_user, login_required
 
 # pylint: disable=no-member
 users = Blueprint("users", __name__)
@@ -44,19 +35,15 @@ def register():
             flash("Email already taken. Please choose a different one.", "error")
             return redirect(url_for("users.register"))
 
-        hashed_password = bcrypt.generate_password_hash(form.password.data).decode(
-            "utf-8"
-        )
-        user = User(
-            username=form.username.data, email=form.email.data, password=hashed_password
-        )
+        hashed_password = bcrypt.generate_password_hash(form.password.data).decode("utf-8")
+        user = User(username=form.username.data, email=form.email.data, password=hashed_password)
         user.encryption_key = User.generate_encryption_key()
         user.set_db_config()
 
         # save user
         user.save()
         flash("Account created for %s." % form.username.data, "success")
-
+        
         send_register_email(user)
 
         return redirect(url_for("users.login"))
@@ -81,9 +68,7 @@ def login():
     if form.validate_on_submit():
         user = User.objects(email=form.email.data).first()  # pylint: disable=no-member
 
-        if user is not None and bcrypt.check_password_hash(
-            user.password, form.password.data
-        ):
+        if user is not None and bcrypt.check_password_hash(user.password, form.password.data):
             login_user(user, remember=form.remember.data)
             next_page = request.args.get("next")
             flash("Login Successful.", "success")
@@ -144,10 +129,7 @@ def request_password_reset():
         return redirect(url_for("main.home"))
 
     if not current_app.config["MAIL_USE"]:
-        flash(
-            "Automatic password reset is disabled. Please contact the administrator.",
-            "warning",
-        )
+        flash("Automatic password reset is disabled. Please contact the administrator.", "warning")
         return redirect(url_for("main.home"))
 
     form = RequestResetForm()
@@ -158,9 +140,7 @@ def request_password_reset():
         flash("An email has been sent with instructions to reset your password", "info")
         return redirect(url_for("users.login"))
 
-    return render_template(
-        "request_password_reset.html", title="Reset Password", form=form
-    )
+    return render_template("request_password_reset.html", title="Reset Password", form=form)
 
 
 @users.route("/reset_password/<token>", methods=["GET", "POST"])
@@ -179,9 +159,7 @@ def reset_password(token):
     form = ResetPasswordForm()
 
     if form.validate_on_submit():
-        hashed_password = bcrypt.generate_password_hash(form.password.data).decode(
-            "utf-8"
-        )
+        hashed_password = bcrypt.generate_password_hash(form.password.data).decode("utf-8")
         user.password = hashed_password
         user.save()
         flash("Your password has been updated.", "success")
