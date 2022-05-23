@@ -1,12 +1,12 @@
 import setuptools
 
-with open("README.md", "r") as fh:
+with open("README.md") as fh:
     long_description = fh.read()
 
 # Parse version from _version.py in package directory
 # See https://packaging.python.org/guides/single-sourcing-package-version/#single-sourcing-the-version
 version = {}
-with open('src/mortimer/_version.py') as f:
+with open("src/mortimer/_version.py") as f:
     exec(f.read(), version)
 
 setuptools.setup(
@@ -30,7 +30,7 @@ setuptools.setup(
             "templates/*",
             "templates/elements/*",
             "templates/errors/*",
-            "templates/additional/*"
+            "templates/additional/*",
         ]
     },
     package_dir={"": "src"},
@@ -45,7 +45,7 @@ setuptools.setup(
         "flask_mail>=0.9.1",
         "flask_mongoengine>=0.9.5",
         "flask-wtf>=0.14.3",
-        "pymongo>=3.10"
+        "pymongo>=3.10",
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
@@ -54,4 +54,3 @@ setuptools.setup(
     ],
     python_requires=">=3.7",
 )
-

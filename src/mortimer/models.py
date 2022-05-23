@@ -1,18 +1,17 @@
-# -*- coding: utf-8 -*-
-import random
-import string
-import secrets
 import logging
+import random
+import secrets
+import string
 from datetime import datetime
 from pathlib import Path
 
-from pymongo import MongoClient
+from alfred3 import alfredlog
+from alfred3.config import ExperimentConfig, ExperimentSecrets
 from cryptography.fernet import Fernet
 from flask import current_app
 from flask_login import UserMixin
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
-from alfred3.config import ExperimentConfig, ExperimentSecrets
-from alfred3 import alfredlog
+from pymongo import MongoClient
 
 from mortimer import db, login_manager
 from mortimer.utils import create_fernet
@@ -90,7 +89,10 @@ class User(db.Document, UserMixin):
         c_misc = {**res, **{"collection": self.alfred_col_misc}}
 
         act = ["find", "insert", "update", "remove"]
-        priv = [{"resource": res_dict, "actions": act} for res_dict in [c_exp, c_unlinked, c_misc]]
+        priv = [
+            {"resource": res_dict, "actions": act}
+            for res_dict in [c_exp, c_unlinked, c_misc]
+        ]
         return priv
 
     def create_db_role(self):
@@ -98,30 +100,34 @@ class User(db.Document, UserMixin):
         attribute to the user model.
         """
 
-        self.db_rolename = "alfredAccess_{}".format(self.user_lower)
+        self.db_rolename = f"alfredAccess_{self.user_lower}"
 
         priv = self._prepare_db_role_privileges()
 
         alfred_db = current_app.config["ALFRED_DB"]
         client = db.connection
-        client[alfred_db].command("createRole", self.db_rolename, privileges=priv, roles=[])
+        client[alfred_db].command(
+            "createRole", self.db_rolename, privileges=priv, roles=[]
+        )
 
     def update_db_role(self):
 
         if not self.alfred_col:
-            self.alfred_col = "col_{}".format(self.user_lower)
+            self.alfred_col = f"col_{self.user_lower}"
         if not self.alfred_col_unlinked:
-            self.alfred_col_unlinked = "col_{}_unlinked".format(self.user_lower)
+            self.alfred_col_unlinked = f"col_{self.user_lower}_unlinked"
         if not self.alfred_col_misc:
-            self.alfred_col_misc = "col_{}_misc".format(self.user_lower)
+            self.alfred_col_misc = f"col_{self.user_lower}_misc"
         if not self.db_rolename:
-            self.db_rolename = "alfredAccess_{}".format(self.user_lower)
+            self.db_rolename = f"alfredAccess_{self.user_lower}"
 
         alfred_db = current_app.config["ALFRED_DB"]
         client = db.connection
         priv = self._prepare_db_role_privileges()
 
-        client[alfred_db].command("updateRole", self.db_rolename, privileges=priv, roles=[])
+        client[alfred_db].command(
+            "updateRole", self.db_rolename, privileges=priv, roles=[]
+        )
 
     def create_db_user(self):
         """Create a new user with appropriate role in the alfred database."""
@@ -138,9 +144,9 @@ class User(db.Document, UserMixin):
 
     def set_db_config(self):
         self.alfred_user = f"alfredUser_{self.user_lower}"
-        self.alfred_col = "col_{}".format(self.user_lower)
-        self.alfred_col_unlinked = "col_{}_unlinked".format(self.user_lower)
-        self.alfred_col_misc = "col_{}_misc".format(self.user_lower)
+        self.alfred_col = f"col_{self.user_lower}"
+        self.alfred_col_unlinked = f"col_{self.user_lower}_unlinked"
+        self.alfred_col_misc = f"col_{self.user_lower}_misc"
 
         self.create_db_role()
         self.create_db_user()
@@ -153,7 +159,7 @@ class User(db.Document, UserMixin):
         """
         f = create_fernet()
         appdb_config = current_app.config["MONGODB_SETTINGS"]
-        
+
         mongo_config = {
             "use": "true",
             "host": appdb_config["host"],
@@ -190,7 +196,10 @@ class User(db.Document, UserMixin):
         string.
         """
         f = create_fernet()
-        encryption_config = {"key": f.decrypt(self.encryption_key).decode(), "public_key": "false"}
+        encryption_config = {
+            "key": f.decrypt(self.encryption_key).decode(),
+            "public_key": "false",
+        }
 
         return {"encryption": encryption_config}
 
@@ -206,7 +215,7 @@ class User(db.Document, UserMixin):
         return User.objects.get(id=user_id)
 
     def __repr__(self):
-        return "User(%s, %s)" % (self.username, self.email)
+        return f"User({self.username}, {self.email})"
 
 
 class WebExperiment(db.Document):
@@ -231,7 +240,7 @@ class WebExperiment(db.Document):
 
     exp_config = db.StringField()  # possibility to include config.conf
     exp_secrets = db.BinaryField()
-    settings = db.DictField() # DEPRECATED
+    settings = db.DictField()  # DEPRECATED
 
     public = db.BooleanField(default=True)
     password = db.StringField()
@@ -252,7 +261,9 @@ class WebExperiment(db.Document):
         lsa_cb_logger.setLevel(logging.WARNING)
 
         explog = Path(self.path) / "exp.log"
-        if not explogger.handlers:  # in order to prevent double or triple adding handlers
+        if (
+            not explogger.handlers
+        ):  # in order to prevent double or triple adding handlers
             exp_file_handler = alfredlog.prepare_file_handler(explog)
             exp_file_handler.setFormatter(formatter)
 
@@ -322,14 +333,14 @@ class WebExperiment(db.Document):
 
         return {"metadata": config, "mortimer_specific": {"runs_on_mortimer": "true"}}
 
-
     def __repr__(self):
-        return "Experiment(Title: %s, Version: %s, Created: %s, Author: %s)" % (
+        return "Experiment(Title: {}, Version: {}, Created: {}, Author: {})".format(
             self.title,
             self.version,
             self.date_created,
             self.author,
         )
+
 
 class Participant(db.Document):
     alias = db.StringField(required=True, unique=True)
