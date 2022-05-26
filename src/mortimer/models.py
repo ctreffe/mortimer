@@ -1,5 +1,4 @@
 import logging
-import random
 import secrets
 import string
 from datetime import datetime
@@ -11,7 +10,6 @@ from cryptography.fernet import Fernet
 from flask import current_app
 from flask_login import UserMixin
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
-from pymongo import MongoClient
 
 from mortimer import db, login_manager
 from mortimer.utils import create_fernet

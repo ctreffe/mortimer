@@ -1,7 +1,5 @@
 import logging
-from pathlib import Path
 
-from alfred3 import alfredlog
 from flask import Flask
 from flask_bcrypt import Bcrypt
 from flask_dropzone import Dropzone
@@ -25,6 +23,7 @@ dropzone = Dropzone()  # for multiple file upload
 
 # databases
 db = MongoEngine()  # mortimer database
+
 
 # application factory
 def create_app(instance_path=None, logfile: str = None):

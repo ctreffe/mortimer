@@ -13,7 +13,6 @@ from cryptography.fernet import Fernet
 from flask import current_app, render_template, url_for
 from flask_login import current_user
 from flask_mail import Message
-from jinja2 import Template
 
 from mortimer import mail
 
@@ -33,7 +32,7 @@ def get_plugin_data_queries(exp) -> Iterator[dict]:
         for q in query_list:
             if not q:
                 continue
-            if not q in out:
+            if q not in out:
                 out.append(q)
                 yield q
 
@@ -267,18 +266,15 @@ def display_directory(directories: list, parent_directory: str, experiment) -> s
             div_open = ""
             div_close = ""
 
-        return (
-            div_open
-            + display_directory_controls(
-                directory=directories[0],
-                path=path,
-                experiment_title=experiment_title,
-                experiment_author=experiment_author,
-                file_display=single_files,
-                subdirectory_display=subdirectory_display,
-            )
-            + div_close
+        controls = display_directory_controls(
+            directory=directories[0],
+            path=path,
+            experiment_title=experiment_title,
+            experiment_author=experiment_author,
+            file_display=single_files,
+            subdirectory_display=subdirectory_display,
         )
+        return div_open + controls + div_close
 
     # --- USUAL FUNCTION CALL --- #
     # The code below will be executed, if the function was called
@@ -479,14 +475,14 @@ def render_social_media_preview(config):
     title = config.get("layout", "preview_title", fallback=fb["title"])
     desc = config.get("layout", "preview_description", fallback=fb["desc"])
     logo = config.get("layout", "preview_image")
-    logo_small = config.get("layout", "preview_image_small")
+    # logo_small = config.get("layout", "preview_image_small")
 
     logos = {"base": "alfred3_study.png", "goe": "unigoe_study.png"}
-    logos_small = {"base": "alfred3_small.png", "goe": "unigoe_small.png"}
+    # logos_small = {"base": "alfred3_small.png", "goe": "unigoe_small.png"}
 
     if not logo:
         logo = logos.get(style)
-        logo_small = logos_small.get(style)
+        # logo_small = logos_small.get(style)
 
     return render_template(
         "exp_preview.html", logo=logo, style=style, title=title, desc=desc

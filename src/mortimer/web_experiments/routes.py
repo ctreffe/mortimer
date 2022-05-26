@@ -2,23 +2,18 @@
 import collections
 import csv
 import hashlib
-import importlib
 import io
 import json
-import logging
 import os
 import random
 import re
 import shutil
-import sys
 import zipfile
 from datetime import datetime
 from pathlib import Path
 from uuid import uuid4
 
-import alfred3
-from alfred3 import alfredlog, data_manager
-from bson import json_util
+from alfred3 import data_manager
 from flask import (
     Blueprint,
     abort,
@@ -35,15 +30,10 @@ from flask import (
 from flask_login import current_user, login_required
 from werkzeug.utils import secure_filename
 
-from mortimer import export as expt
-from mortimer.export import make_str_bytes, to_json
-from mortimer.forms import ExperimentConfigurationForm  # Deprecated
+from mortimer.export import make_str_bytes
 from mortimer.forms import (
     ExperimentConfigForm,
-    ExperimentExportForm,
     ExperimentScriptForm,
-    ExportCodebookForm,
-    ExportExpDataForm,
     FilterLogForm,
     NewScriptForm,
     WebExperimentForm,
@@ -52,7 +42,6 @@ from mortimer.models import Participant, User, WebExperiment
 from mortimer.utils import (
     ScriptFile,
     ScriptString,
-    _DictObj,
     create_fernet,
     display_directory,
     get_alfred_db,
@@ -367,7 +356,7 @@ def validate_zipfile_filenames(z: zipfile.ZipFile) -> bool:
                 flash(f"Filename '{n1}' is not secure. Please change it.", "danger")
             valid = False
             break
-        if not p1.suffix in current_app.config["DROPZONE_ALLOWED_FILE_TYPE"]:
+        if p1.suffix not in current_app.config["DROPZONE_ALLOWED_FILE_TYPE"]:
             flash(
                 f"Filetype '{p1.suffix}' of {p1} is not allowed. Upload of \
                 '{z.fp.filename}' was aborted.",
@@ -819,7 +808,7 @@ def export_main_data(username, experiment_title, delim: str, versions: str):
     f = {"exp_id": str(experiment.id), "type": dtype}
 
     versions = versions.split("$VERSIONSEP$")
-    if not "all" in versions:
+    if "all" not in versions:
         f.update({"exp_version": {"$in": versions}})
 
     cursor = db[col].find(f)
@@ -982,7 +971,7 @@ def export_move_data(username, experiment_title, delim: str, versions: str):
     f = {"exp_id": str(experiment.id), "type": dtype}
 
     versions = versions.split("$VERSIONSEP$")
-    if not "all" in versions:
+    if "all" not in versions:
         f.update({"exp_version": {"$in": versions}})
 
     cursor = db[col].find(f)
@@ -1042,7 +1031,7 @@ def export_unlinked_data(username, experiment_title, delim: str, versions: str):
 
     f = {"exp_id": str(experiment.id), "type": dtype}
     versions = versions.split("$VERSIONSEP$")
-    if not "all" in versions:
+    if "all" not in versions:
         f.update({"exp_version": {"$in": versions}})
 
     cursor = db[col].find(f)
@@ -1117,7 +1106,7 @@ def export_full_data(username, experiment_title, versions: str):
 
     f = {"exp_id": str(experiment.id), "type": dtype}
     versions = versions.split("$VERSIONSEP$")
-    if not "all" in versions:
+    if "all" not in versions:
         f.update({"exp_version": {"$in": versions}})
 
     data = db[col].find(f)
@@ -1160,7 +1149,7 @@ def export_plugin_data(username, experiment_title, versions: str):
         )
 
     versions = versions.split("$VERSIONSEP$")
-    if not "all" in versions:
+    if "all" not in versions:
         query["filter"].update({"exp_version": {"$in": versions}})
 
     data = db[col].find(**query)
@@ -1324,7 +1313,7 @@ def experiment_config(username, experiment_title):
         form.exp_secrets.data = f.decrypt(exp.exp_secrets).decode()
     except TypeError:
         form.exp_secrets.data = ""
-        import traceback
+        # TODO: Maybe something should happen here
 
     return render_template("experiment_config.html", form=form, experiment=exp)
 
@@ -1540,7 +1529,7 @@ def participation():
     if request.method == "GET":
         participant = Participant.objects(alias=alias).first()
 
-        if not participant or not exp_id in participant.experiments:
+        if not participant or exp_id not in participant.experiments:
             return make_response("false", 200)
 
         elif exp_id in participant.experiments:

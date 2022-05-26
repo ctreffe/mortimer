@@ -1,9 +1,5 @@
-import random
-import string
-
 from flask import (
     Blueprint,
-    abort,
     current_app,
     flash,
     redirect,
@@ -22,7 +18,7 @@ from mortimer.forms import (
     UpdateAccountForm,
 )
 from mortimer.models import User, WebExperiment
-from mortimer.utils import create_fernet, send_register_email, send_reset_email
+from mortimer.utils import send_register_email, send_reset_email
 
 # pylint: disable=no-member
 users = Blueprint("users", __name__)

@@ -42,9 +42,9 @@ def configure_app(app):
 
     # Then: Read user-defined config files
     locations = ["/etc", os.path.expanduser("~"), os.getenv("MORTIMER_CONFIG")]
-    for l in locations:
+    for loc in locations:
         try:
-            f = os.path.join(l, "mortimer.conf")
+            f = os.path.join(loc, "mortimer.conf")
             app.config.from_pyfile(f)
         except (FileNotFoundError, TypeError):
             pass
