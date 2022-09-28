@@ -2,21 +2,16 @@ import importlib.util
 import inspect
 import logging
 import os
-import re
 import sys
-import traceback
-from pathlib import Path
 from threading import Lock
 from time import time
 from uuid import uuid4
 
-import alfred3.config
 from alfred3 import alfredlog
 from bson.objectid import ObjectId
 from flask import (
     Blueprint,
     abort,
-    current_app,
     flash,
     jsonify,
     make_response,
@@ -30,12 +25,8 @@ from flask import (
 )
 from flask_login import current_user
 
-from mortimer.models import User, WebExperiment
-from mortimer.utils import (
-    create_fernet,
-    is_social_media_preview,
-    render_social_media_preview,
-)
+from mortimer.models import WebExperiment
+from mortimer.utils import is_social_media_preview, render_social_media_preview
 
 
 class Script:

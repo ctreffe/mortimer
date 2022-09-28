@@ -1,6 +1,5 @@
 import csv
 import io
-import json
 import random
 import re
 
@@ -93,14 +92,14 @@ def to_excel_csv(cursor, none_value=None, **writerparams):
 #     return f
 
 
-def natural_sort(l):
+def natural_sort(inp):
     def convert(text):
         return int(text) if text.isdigit() else text.lower()
 
     def alphanum_key(key):
         return [convert(c) for c in re.split("([0-9]+)", key[0])]
 
-    return sorted(l, key=alphanum_key)
+    return sorted(inp, key=alphanum_key)
 
 
 def cursor_to_rows(cursor, none_value=None):

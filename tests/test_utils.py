@@ -1,5 +1,3 @@
-import pytest
-
 import mortimer.utils as utils
 
 

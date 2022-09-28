@@ -2,19 +2,10 @@ import os
 import time
 from uuid import uuid4
 
-from flask import (
-    Blueprint,
-    after_this_request,
-    current_app,
-    redirect,
-    render_template,
-    request,
-    send_file,
-    url_for,
-)
+from flask import Blueprint, current_app, redirect, render_template, url_for
 from flask_login import current_user, login_required
 
-from mortimer.forms import FuturizeScriptForm, NewScriptForm
+from mortimer.forms import FuturizeScriptForm
 from mortimer.utils import perform_futurization, replace_all_patterns
 
 main = Blueprint("main", __name__)

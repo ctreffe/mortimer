@@ -47,6 +47,17 @@ setuptools.setup(
         "flask-wtf>=0.14.3",
         "pymongo>=3.10",
     ],
+    extras_require={
+        "dev": [
+            "pytest",
+            "pre-commit",
+            "black",
+            "flake8",
+            "python-dotenv",
+            "bs4",
+            "mongomock",
+        ]
+    },
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",
