@@ -9,16 +9,16 @@ from flask import (
 )
 from flask_login import current_user, login_required, login_user, logout_user
 
-from mortimer import bcrypt
-from mortimer.forms import (
+from alfredo import bcrypt
+from alfredo.forms import (
     LoginForm,
     RegistrationForm,
     RequestResetForm,
     ResetPasswordForm,
     UpdateAccountForm,
 )
-from mortimer.models import User, WebExperiment
-from mortimer.utils import send_register_email, send_reset_email
+from alfredo.models import User, WebExperiment
+from alfredo.utils import send_register_email, send_reset_email
 
 # pylint: disable=no-member
 users = Blueprint("users", __name__)

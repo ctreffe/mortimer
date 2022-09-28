@@ -14,7 +14,7 @@ from flask import current_app, render_template, url_for
 from flask_login import current_user
 from flask_mail import Message
 
-from mortimer import mail
+from alfredo import mail
 
 from .static import json as jdat
 

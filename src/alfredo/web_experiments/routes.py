@@ -30,16 +30,16 @@ from flask import (
 from flask_login import current_user, login_required
 from werkzeug.utils import secure_filename
 
-from mortimer.export import make_str_bytes
-from mortimer.forms import (
+from alfredo.export import make_str_bytes
+from alfredo.forms import (
     ExperimentConfigForm,
     ExperimentScriptForm,
     FilterLogForm,
     NewScriptForm,
     WebExperimentForm,
 )
-from mortimer.models import Participant, User, WebExperiment
-from mortimer.utils import (
+from alfredo.models import Participant, User, WebExperiment
+from alfredo.utils import (
     ScriptFile,
     ScriptString,
     create_fernet,
@@ -448,7 +448,7 @@ def manage_resources(username, experiment_title):
     # this is valuable feedback during development
     if not os.path.exists(experiment.path):
         flash(
-            "Experiment path doesn't exist. You probably created the experiment while running mortimer on a \
+            "Experiment path doesn't exist. You probably created the experiment while running alfredo on a \
         different server.",
             "warning",
         )

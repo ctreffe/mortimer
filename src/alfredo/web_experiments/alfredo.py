@@ -25,8 +25,8 @@ from flask import (
 )
 from flask_login import current_user
 
-from mortimer.models import WebExperiment
-from mortimer.utils import is_social_media_preview, render_social_media_preview
+from alfredo.models import WebExperiment
+from alfredo.utils import is_social_media_preview, render_social_media_preview
 
 
 class Script:
@@ -122,7 +122,7 @@ class ExperimentManager:
 
         self.lock.release()
         if rv is None:
-            molog = logging.getLogger("mortimer")
+            molog = logging.getLogger("alfredo")
             molog.warning(
                 f"Tried to access experiment with session id '{key}'. Available Keys:"
                 f" {list(self.experiments.keys())}"
@@ -134,7 +134,7 @@ class ExperimentManager:
     def remove_outdated(self):
         self.lock.acquire()
         current_time = int(time())
-        molog = logging.getLogger("mortimer")
+        molog = logging.getLogger("alfredo")
         for k in list(self.experiments.keys()):
             v = self.experiments[k]
             if current_time - v[0] > self.timeout:
@@ -245,7 +245,7 @@ def start(expid):
 
 @alfredo.route("/experiment", methods=["GET", "POST"])
 def experiment():
-    molog = logging.getLogger("mortimer")
+    molog = logging.getLogger("alfredo")
     try:
         sid = session["sid"]
     except KeyError:
