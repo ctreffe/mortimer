@@ -16,7 +16,7 @@ from wtforms import (
 )
 from wtforms.validators import DataRequired, Email, EqualTo, Length, ValidationError
 
-from mortimer.models import User, WebExperiment
+from alfredo.models import User, WebExperiment
 
 # pylint: disable=no-member
 

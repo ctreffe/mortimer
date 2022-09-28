@@ -1,4 +1,4 @@
-import mortimer.utils as utils
+import alfredo.utils as utils
 
 
 class TestSocialMediaPreview:

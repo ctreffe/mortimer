@@ -17,7 +17,7 @@ setuptools.setup(
     description="A web-appication for the administration of alfred experiments.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/ctreffe/mortimer",
+    url="https://github.com/ctreffe/alfredo",
     packages=setuptools.find_packages("src"),
     package_data={
         "mortimer": [

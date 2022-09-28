@@ -11,8 +11,8 @@ from flask import current_app
 from flask_login import UserMixin
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
 
-from mortimer import db, login_manager
-from mortimer.utils import create_fernet
+from alfredo import db, login_manager
+from alfredo.utils import create_fernet
 
 # pylint: disable=no-member
 

@@ -5,8 +5,8 @@ from uuid import uuid4
 from flask import Blueprint, current_app, redirect, render_template, url_for
 from flask_login import current_user, login_required
 
-from mortimer.forms import FuturizeScriptForm
-from mortimer.utils import perform_futurization, replace_all_patterns
+from alfredo.forms import FuturizeScriptForm
+from alfredo.utils import perform_futurization, replace_all_patterns
 
 main = Blueprint("main", __name__)
 

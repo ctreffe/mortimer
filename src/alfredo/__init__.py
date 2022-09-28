@@ -7,7 +7,7 @@ from flask_login import LoginManager
 from flask_mail import Mail
 from flask_mongoengine import MongoEngine
 
-from mortimer.config import configure_app
+from alfredo.config import configure_app
 
 from ._version import __version__
 
@@ -41,11 +41,11 @@ def create_app(instance_path=None, logfile: str = None):
     configure_app(app)
 
     # import blueprints
-    from mortimer.errors.handlers import errors
-    from mortimer.main.routes import main
-    from mortimer.users.routes import users
-    from mortimer.web_experiments.alfredo import alfredo
-    from mortimer.web_experiments.routes import web_experiments
+    from alfredo.errors.handlers import errors
+    from alfredo.main.routes import main
+    from alfredo.users.routes import users
+    from alfredo.web_experiments.alfredo import alfredo
+    from alfredo.web_experiments.routes import web_experiments
 
     # register blueprints
     app.register_blueprint(users)
