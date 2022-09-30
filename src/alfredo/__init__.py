@@ -22,12 +22,12 @@ mail = Mail()  # for sending password reset mails
 dropzone = Dropzone()  # for multiple file upload
 
 # databases
-db = MongoEngine()  # mortimer database
+db = MongoEngine()  # alfredo database
 
 
 # application factory
 def create_app(instance_path=None, logfile: str = None):
-    logger = logging.getLogger("mortimer")
+    logger = logging.getLogger("alfredo")
     fh = logging.FileHandler(logfile)
     formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
     fh.setFormatter(formatter)
@@ -60,7 +60,7 @@ def create_app(instance_path=None, logfile: str = None):
         mv = __version__
         from alfred3 import __version__ as av
 
-        return {"mortimer": mv, "alfred": av}
+        return {"alfredo": mv, "alfred": av}
 
     # bind extensions to app instance
     db.init_app(app)

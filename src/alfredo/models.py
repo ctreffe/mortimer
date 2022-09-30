@@ -270,7 +270,7 @@ class WebExperiment(db.Document):
     def parse_exp_config(self, session_id: str) -> ExperimentConfig:
         exp_config = ExperimentConfig(expdir=self.path)
 
-        # parse config from mortimer
+        # parse config from alfredo
         exp_config.read_dict(self.metadata_config(session_id))
         exp_config.read_string(self.exp_config)
 
@@ -310,7 +310,7 @@ class WebExperiment(db.Document):
         parsing with :class:`alfred3.config.ExperimentConfig`.
 
         It also includes the boolean 'True' value for the option
-        *runs_on_mortimer* in section *mortimer_specific*.
+        *runs_on_alfredo* in section *alfredo_specific*.
 
         The included metadata are:
 
@@ -329,7 +329,7 @@ class WebExperiment(db.Document):
         config["session_id"] = session_id
         config["version"] = self.version
 
-        return {"metadata": config, "mortimer_specific": {"runs_on_mortimer": "true"}}
+        return {"metadata": config, "alfredo_specific": {"runs_on_alfredo": "true"}}
 
     def __repr__(self):
         return "Experiment(Title: {}, Version: {}, Created: {}, Author: {})".format(

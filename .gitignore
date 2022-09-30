@@ -11,15 +11,15 @@ experiments/
 exp/
 alfred/
 archive/
-mortimer/web_experiments/change_names.py
-mortimer/static/CA_server_public.pem
-mortimer/static/mongodb_client_keypair.pem
-mortimer/static/mongodb_client_public.crt
+alfredo/web_experiments/change_names.py
+alfredo/static/CA_server_public.pem
+alfredo/static/mongodb_client_keypair.pem
+alfredo/static/mongodb_client_public.crt
 temp/
 *.pem
 set_environ_vars.py
-log_mortimer.md
-mortimer/pym.py
+log_alfredo.md
+alfredo/pym.py
 wsgi.py
 move_to_default_alfred.conf
 alfredo2_ca_chain.pem
@@ -34,15 +34,15 @@ test_copy2.py
 .vscode/
 
 
-development_mortimer.conf
+development_alfredo.conf
 .envrc
-mortimer.conf
+alfredo.conf
 tests/run_locally/*
 tests/run_locally/run.py
-src/mortimer.egg-info
+src/alfredo.egg-info
 build/
 dist/
-mortimer_venv/
-.mortimer/
+alfredo_venv/
+.alfredo/
 .venv/
 .python-version

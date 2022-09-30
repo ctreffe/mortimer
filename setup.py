@@ -6,11 +6,11 @@ with open("README.md") as fh:
 # Parse version from _version.py in package directory
 # See https://packaging.python.org/guides/single-sourcing-package-version/#single-sourcing-the-version
 version = {}
-with open("src/mortimer/_version.py") as f:
+with open("src/alfredo/_version.py") as f:
     exec(f.read(), version)
 
 setuptools.setup(
-    name="mortimer",
+    name="alfredo",
     version=version["__version__"],
     author="Christian Treffenstädt, Paul Wiemann, Johannes Brachem",
     author_email="alfred@psych.uni-goettingen.de",
@@ -20,7 +20,7 @@ setuptools.setup(
     url="https://github.com/ctreffe/alfredo",
     packages=setuptools.find_packages("src"),
     package_data={
-        "mortimer": [
+        "alfredo": [
             "static/*",
             "static/futurizing_alfred_scripts/*",
             "static/css/*",

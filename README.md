@@ -1,8 +1,8 @@
-# Welcome to Mortimer
+# Welcome to Alfredo
 
-Mortimer is a free, open source web application written in the [Flask Framework](http://flask.pocoo.org/). It's purpose is to host and manage [Alfred](https://github.com/ctreffe/alfred) experiments and surveys.
+Alfredo is a free, open source web application written in the [Flask Framework](http://flask.pocoo.org/). It's purpose is to host and manage [Alfred](https://github.com/ctreffe/alfred) experiments and surveys.
 
-**IMPORTANT NOTE**: Mortimer is currently not easy to set up and use safely. Please contanct us, if you want to use it. Most importantly, you should allow only trusted users to register.
+**IMPORTANT NOTE**: Alfredo is currently not easy to set up and use safely. Please contanct us, if you want to use it. Most importantly, you should allow only trusted users to register.
 
 # Installation
 
@@ -16,13 +16,13 @@ Mortimer is a free, open source web application written in the [Flask Framework]
 
 ## Installation
 
-**IMPORTANT NOTE**: Mortimer is currently not easy to set up and use safely. Please contanct us, if you want to use it. Most importantly, you should only ever allow trusted users to register.
+**IMPORTANT NOTE**: Alfredo is currently not easy to set up and use safely. Please contanct us, if you want to use it. Most importantly, you should only ever allow trusted users to register.
 
 ``` BASH
 pip install mortimer
 ```
 
-### Configure Mortimer
+### Configure Alfredo
 Now you need to configure mortimer. You have the following options on where to place it:
 
 1. If you are operating on a unix-based operating system, you can create a file `mortimer.conf` in `/etc`.
@@ -73,14 +73,14 @@ if __name__ == "__main__":
 ```
 
 
-You are now ready to start Mortimer. In a shell, execute the following command (make sure that you are inside the mortimer directory):
+You are now ready to start Alfredo. In a shell, execute the following command (make sure that you are inside the mortimer directory):
 
 ```bash
 export FLASK_APP=run.py
 flask run
 ```
 
-This will allow you to access Mortimer locally via `127.0.0.1/5000` from your webbrowser. You can make the app available externally with these commands:
+This will allow you to access Alfredo locally via `127.0.0.1/5000` from your webbrowser. You can make the app available externally with these commands:
 
 ```bash
 export FLASK_APP=run.py
@@ -90,4 +90,4 @@ flask run --host=0.0.0.0 --port=5000
 
 **Important Note: Do not use this in a production setting. It is not intended to meet security and performance requirements for a production server. Instead, see Flasks [Deployment Options](http://flask.pocoo.org/docs/1.0/deploying/#deployment) for WSGI server recommendations.**
 
-**IMPORTANT NOTE**: Mortimer is currently not easy to set up and use safely. Please contanct us, if you want to use it. Most importantly, you should allow only trusted users to register.
+**IMPORTANT NOTE**: Alfredo is currently not easy to set up and use safely. Please contanct us, if you want to use it. Most importantly, you should allow only trusted users to register.

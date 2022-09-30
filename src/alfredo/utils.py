@@ -60,7 +60,7 @@ def get_alfred_db():
 def get_user_collection():
     """Return a users alfred collection.
 
-    For this function to work, the DB User specified in mortimers
+    For this function to work, the DB User specified in alfredos
     configuration needs to have the right access privileges for the given database.
 
     :return: Collection object.
@@ -80,7 +80,7 @@ def get_user_misc_collection():
 
 
 def create_fernet():
-    """Create a fernet instance for encryption, using mortimers secret key."""
+    """Create a fernet instance for encryption, using alfredos secret key."""
 
     app_fernet_key = current_app.config["SECRET_KEY"].encode()
     return Fernet(app_fernet_key)
@@ -382,7 +382,7 @@ class ScriptString:
         self.script = script
 
     def parse(self):
-        # removes the run(generate_experiment) command from the end of a script.py allow mortimer to run it
+        # removes the run(generate_experiment) command from the end of a script.py allow alfredo to run it
         p = re.compile(
             r"(?P<call>(alfred\.)?run\(generate_experiment\))(?P<comments>([\s]*(#.*)*)*)\Z"
         )
