@@ -42,7 +42,8 @@ def sanitize_db_cred():
 
     dbauth.pop("db", None)
     auth_source = dbauth.pop("authentication_source", None)
-    dbauth["authSource"] = auth_source
+    if auth_source is not None:
+        dbauth["authSource"] = auth_source
 
     return dbauth
 
