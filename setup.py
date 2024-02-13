@@ -36,8 +36,10 @@ setuptools.setup(
     package_dir={"": "src"},
     install_requires=[
         "alfred3>=2.0.0",
+        "alfred3_interact>=0.2.4",
         "cryptography>=3.4",
         "email_validator>=1.1",
+        "itsdangerous>=2.1.2",
         "flask>=1.1.2",
         "flask_bcrypt>=0.7.1",
         "flask_dropzone>=1.5.4",
@@ -45,7 +47,8 @@ setuptools.setup(
         "flask_mail>=0.9.1",
         "flask_mongoengine>=0.9.5",
         "flask-wtf>=0.14.3",
-        "pymongo>=3.10"
+        "pymongo>=3.10",
+        "python-dotenv"
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
