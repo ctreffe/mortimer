@@ -60,8 +60,12 @@ def create_app(instance_path=None, logfile: str = None):
     def version_processor():  # pylint: disable=unused-variable
         mv = __version__
         from alfred3 import __version__ as av
+        try:
+            from alfred3_interact._version import __version__ as ali_version
+        except Exception:
+            ali_version = "n/a"
 
-        return {"mortimer": mv, "alfred": av}
+        return {"mortimer": mv, "alfred": av, "alfred3_interact": ali_version}
 
     # bind extensions to app instance
     db.init_app(app)
