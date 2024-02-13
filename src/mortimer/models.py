@@ -10,7 +10,7 @@ from pymongo import MongoClient
 from cryptography.fernet import Fernet
 from flask import current_app
 from flask_login import UserMixin
-from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from itsdangerous.url_safe import URLSafeTimedSerializer as Serializer
 from alfred3.config import ExperimentConfig, ExperimentSecrets
 from alfred3 import alfredlog
 

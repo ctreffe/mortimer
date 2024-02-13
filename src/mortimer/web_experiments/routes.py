@@ -733,8 +733,8 @@ def export_main_data(username, experiment_title, delim: str, versions: str):
             make_str_bytes(f),
             mimetype="text/csv",
             as_attachment=True,
-            attachment_filename=fn,
-            cache_timeout=1,
+            download_name=fn,
+            max_age=1,
         )
 
 
@@ -823,8 +823,8 @@ def export_codebook_data(username, experiment_title, delim: str, version: str):
             make_str_bytes(f),
             mimetype="text/csv",
             as_attachment=True,
-            attachment_filename=fn,
-            cache_timeout=1,
+            download_name=fn,
+            max_age=1,
         )
 
 
@@ -879,8 +879,8 @@ def export_move_data(username, experiment_title, delim: str, versions: str):
             make_str_bytes(f),
             mimetype="text/csv",
             as_attachment=True,
-            attachment_filename=fn,
-            cache_timeout=1,
+            download_name=fn,
+            max_age=1,
         )
 
 
@@ -930,8 +930,8 @@ def export_unlinked_data(username, experiment_title, delim: str, versions: str):
             make_str_bytes(f),
             mimetype="application/json",
             as_attachment=True,
-            attachment_filename=fn,
-            cache_timeout=1,
+            download_name=fn,
+            max_age=1,
         )
     
     else:
@@ -950,8 +950,8 @@ def export_unlinked_data(username, experiment_title, delim: str, versions: str):
                 make_str_bytes(f),
                 mimetype="text/csv",
                 as_attachment=True,
-                attachment_filename=fn,
-                cache_timeout=1,
+                download_name=fn,
+                max_age=1,
             )
 
 
@@ -992,8 +992,8 @@ def export_full_data(username, experiment_title, versions: str):
         make_str_bytes(f),
         mimetype="application/json",
         as_attachment=True,
-        attachment_filename=fn,
-        cache_timeout=1,
+        download_name=fn,
+        max_age=1,
     )
 
 
@@ -1050,8 +1050,8 @@ def export_plugin_data(username, experiment_title, versions: str):
         make_str_bytes(f),
         mimetype="application/json",
         as_attachment=True,
-        attachment_filename=fn,
-        cache_timeout=1,
+        download_name=fn,
+        max_age=1,
     )
 
 
