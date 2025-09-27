@@ -29,7 +29,7 @@ class User(db.Document, UserMixin):
 
     encryption_key = db.BinaryField()
     password = db.StringField(required=True)
-    experiments = db.ListField(db.ObjectIdField())
+    experiments = db.ListField(field=db.ObjectIdField())
 
     db_rolename = db.StringField()
     alfred_user = db.StringField()
@@ -220,7 +220,7 @@ class WebExperiment(db.Document):
     author_id = db.ObjectIdField()
     title = db.StringField(required=True, unique_with="author")
     version = db.StringField(required=True)
-    available_versions = db.ListField(db.StringField())
+    available_versions = db.ListField(field=db.StringField())
     date_created = db.DateTimeField(default=datetime.now, required=True)
     last_update = db.DateTimeField(default=datetime.now, required=True)
     description = db.StringField()
@@ -233,7 +233,7 @@ class WebExperiment(db.Document):
     script_fullpath = db.StringField()
     path = db.StringField()  # full path to exp directory
     directory_name = db.StringField()  # name of exp directory
-    user_directories = db.ListField(db.StringField())  # user-created directories
+    user_directories = db.ListField(field=db.StringField())  # user-created directories
 
     exp_config = db.StringField()  # possibility to include config.conf
     exp_secrets = db.BinaryField()
