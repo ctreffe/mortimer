@@ -50,3 +50,4 @@ mortimer_venv/
 deploy/docker/.env
 deploy/docker/.env.example
 /deploy/docker/log
+/deploy
