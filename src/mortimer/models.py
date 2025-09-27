@@ -13,6 +13,7 @@ from itsdangerous.url_safe import URLSafeTimedSerializer as Serializer
 
 from mortimer import db, login_manager
 from mortimer.utils import create_fernet
+from mongoengine import get_connection
 
 # pylint: disable=no-member
 
@@ -103,7 +104,7 @@ class User(db.Document, UserMixin):
         priv = self._prepare_db_role_privileges()
 
         alfred_db = current_app.config["ALFRED_DB"]
-        client = db.connection
+        client = get_connection()
         client[alfred_db].command(
             "createRole", self.db_rolename, privileges=priv, roles=[]
         )
@@ -119,7 +120,7 @@ class User(db.Document, UserMixin):
             self.db_rolename = f"alfredAccess_{self.user_lower}"
 
         alfred_db = current_app.config["ALFRED_DB"]
-        client = db.connection
+        client = get_connection()
         priv = self._prepare_db_role_privileges()
 
         client[alfred_db].command(
@@ -134,7 +135,7 @@ class User(db.Document, UserMixin):
         pw_dec = f.decrypt(self.alfred_pw).decode()
 
         alfred_db = current_app.config["ALFRED_DB"]
-        client = db.connection
+        client = get_connection()
         client[alfred_db].command(
             "createUser", self.alfred_user, pwd=pw_dec, roles=[self.db_rolename]
         )
