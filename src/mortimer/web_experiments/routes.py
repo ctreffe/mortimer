@@ -55,11 +55,9 @@ web_experiments = Blueprint("web_experiments", __name__)
 @web_experiments.route("/experiment/new", methods=["GET", "POST"])
 @login_required
 def new_experiment():
-
     form = WebExperimentForm()
 
     if form.validate_on_submit():
-
         exp = WebExperiment(
             title=form.title.data,
             author=current_user.username,
@@ -119,7 +117,6 @@ def new_experiment():
 @web_experiments.route("/<username>/<path:exp_title>", methods=["POST", "GET"])
 @login_required
 def experiment(username, exp_title):
-
     exp = WebExperiment.objects.get_or_404(  # pylint: disable=no-member
         title=exp_title, author=username
     )
@@ -204,7 +201,6 @@ def experiment(username, exp_title):
     form = NewScriptForm()
 
     if form.validate_on_submit() and form.script.data:
-
         # process script.py
         if form.script.data:
             script = ScriptFile(exp, form.script.data)
@@ -256,7 +252,6 @@ def experiment(username, exp_title):
 @web_experiments.route("/<username>/<path:exp_title>/script", methods=["GET", "POST"])
 @login_required
 def experiment_script(username, exp_title):
-
     exp = WebExperiment.objects.get_or_404(  # pylint: disable=no-member
         title=exp_title, author=username
     )
@@ -267,7 +262,6 @@ def experiment_script(username, exp_title):
     form = ExperimentScriptForm()
 
     if form.validate_on_submit():
-
         # update script
         script = ScriptString(exp, form.script.data)
         script.parse()
@@ -310,7 +304,6 @@ def experiment_script(username, exp_title):
 )  # only allow POST request
 @login_required
 def delete_experiment(username, experiment_title):
-
     # pylint: disable=no-member
     experiment = WebExperiment.objects.get_or_404(
         title=experiment_title, author=username
@@ -398,7 +391,6 @@ def upload_resources(username, experiment_title, relative_path):
         get_flashed_messages()
 
         for key, f in request.files.items():
-
             if key.startswith("file"):
                 file_fn = secure_filename(f.filename)
 
@@ -476,7 +468,6 @@ def manage_resources(username, experiment_title):
 
 @web_experiments.route("/experiments")
 def experiments():
-
     if current_user.is_authenticated:
         return redirect(
             url_for("web_experiments.user_experiments", username=current_user.username)
@@ -489,7 +480,6 @@ def experiments():
 @web_experiments.route("/<string:username>/experiments")
 @login_required
 def user_experiments(username):
-
     user = User.objects.get_or_404(username=username)  # pylint: disable=no-member
 
     if user.username != current_user.username:
@@ -511,7 +501,6 @@ def user_experiments(username):
 )  # only allow POST requests
 @login_required
 def delete_all_files(username, experiment_title):
-
     # pylint: disable=no-member
     experiment = WebExperiment.objects.get_or_404(
         title=experiment_title, author=username
@@ -523,9 +512,7 @@ def delete_all_files(username, experiment_title):
         path = os.path.join(experiment.path, dir)
         shutil.rmtree(path)  # remove directory
 
-    experiment.user_directories = (
-        []
-    )  # empty the file list in the experiment document in mongoDB
+    experiment.user_directories = []  # empty the file list in the experiment document in mongoDB
     experiment.save()
 
     flash("All files and directories deleted.", "info")
@@ -835,8 +822,8 @@ def export_main_data(username, experiment_title, delim: str, versions: str):
         make_str_bytes(f),
         mimetype="text/csv",
         as_attachment=True,
-        attachment_filename=fn,
-        cache_timeout=1,
+        download_name=fn,
+        max_age=1,
     )
 
 
@@ -892,7 +879,6 @@ def export_codebook_data(username, experiment_title, delim: str, version: str):
     data = {}
     n = len(cbdata_collection)
     for i, entry in enumerate(cbdata_collection):
-
         # check if all labels in the last two data sets match
         if i == n - 1 and data:
             for name, cb in entry.items():
@@ -938,8 +924,8 @@ def export_codebook_data(username, experiment_title, delim: str, version: str):
         make_str_bytes(f),
         mimetype="text/csv",
         as_attachment=True,
-        attachment_filename=fn,
-        cache_timeout=1,
+        download_name=fn,
+        max_age=1,
     )
 
 
@@ -998,8 +984,8 @@ def export_move_data(username, experiment_title, delim: str, versions: str):
         make_str_bytes(f),
         mimetype="text/csv",
         as_attachment=True,
-        attachment_filename=fn,
-        cache_timeout=1,
+        download_name=fn,
+        max_age=1,
     )
 
 
@@ -1051,8 +1037,8 @@ def export_unlinked_data(username, experiment_title, delim: str, versions: str):
             make_str_bytes(f),
             mimetype="application/json",
             as_attachment=True,
-            attachment_filename=fn,
-            cache_timeout=1,
+            download_name=fn,
+            max_age=1,
         )
 
     else:
@@ -1073,8 +1059,8 @@ def export_unlinked_data(username, experiment_title, delim: str, versions: str):
             make_str_bytes(f),
             mimetype="text/csv",
             as_attachment=True,
-            attachment_filename=fn,
-            cache_timeout=1,
+            download_name=fn,
+            max_age=1,
         )
 
 
@@ -1117,8 +1103,8 @@ def export_full_data(username, experiment_title, versions: str):
         make_str_bytes(f),
         mimetype="application/json",
         as_attachment=True,
-        attachment_filename=fn,
-        cache_timeout=1,
+        download_name=fn,
+        max_age=1,
     )
 
 
@@ -1183,8 +1169,8 @@ def export_plugin_data(username, experiment_title, versions: str):
         make_str_bytes(f),
         mimetype="application/json",
         as_attachment=True,
-        attachment_filename=fn,
-        cache_timeout=1,
+        download_name=fn,
+        max_age=1,
     )
 
 
@@ -1354,7 +1340,6 @@ def experiment_log(username, experiment_title, end, start):
         traceback_lines = 0
         i = 0
         for i, line in enumerate(reversed(f.readlines()), start=1):
-
             # for newest first sorting
             if start == "default":
                 start_check = 1
@@ -1503,7 +1488,6 @@ def update_users():
         abort(403)
 
     for user in User.objects:
-
         user.update_db_role()
 
         user.save()
@@ -1515,7 +1499,6 @@ def update_users():
 
 @web_experiments.route("/participation", methods=["POST", "GET"])
 def participation():
-
     alias = request.values.get("alias")
     exp_id = request.values.get("exp_id")
     exp_version = request.values.get("exp_version", None)
@@ -1533,7 +1516,6 @@ def participation():
             return make_response("false", 200)
 
         elif exp_id in participant.experiments:
-
             if not exp_version:
                 return make_response("true", 200)
 
@@ -1554,7 +1536,6 @@ def participation():
             participant = Participant(alias=alias)
 
         if exp_id in participant.experiments:
-
             if exp_version in participant.experiments[exp_id]["versions"]:
                 return make_response("already registered", 200)
 

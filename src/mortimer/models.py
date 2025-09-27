@@ -9,7 +9,7 @@ from alfred3.config import ExperimentConfig, ExperimentSecrets
 from cryptography.fernet import Fernet
 from flask import current_app
 from flask_login import UserMixin
-from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
+from itsdangerous.url_safe import URLSafeTimedSerializer as Serializer
 
 from mortimer import db, login_manager
 from mortimer.utils import create_fernet
@@ -109,7 +109,6 @@ class User(db.Document, UserMixin):
         )
 
     def update_db_role(self):
-
         if not self.alfred_col:
             self.alfred_col = f"col_{self.user_lower}"
         if not self.alfred_col_unlinked:
@@ -296,7 +295,6 @@ class WebExperiment(db.Document):
         return exp_secrets
 
     def parse_encryption_key(self):
-
         f = create_fernet()
         exp_author = User.objects.get_or_404(id=self.author_id)
         key = f.decrypt(exp_author.encryption_key).decode()
