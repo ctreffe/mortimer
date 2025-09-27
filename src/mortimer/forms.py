@@ -228,7 +228,6 @@ class ExportExpDataForm(FlaskForm):
 
 
 class ExperimentExportForm(FlaskForm):
-
     file_type = SelectField(
         "File Type", choices=[(x, x) for x in ["csv", "excel_csv", "json", "excel"]]
     )

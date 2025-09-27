@@ -37,7 +37,6 @@ def impressum():
 @main.route("/futurize_script", methods=["POST", "GET"])
 @login_required
 def futurize_script(script_name=None):
-
     # clean up operation: delete files from the temp directory, if they are older than 15 minutes
     temp_path = os.path.join(current_app.instance_path, "tmp", "futurize_scripts")
     if not os.path.isdir(temp_path):

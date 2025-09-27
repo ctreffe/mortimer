@@ -172,7 +172,6 @@ def display_directory(directories: list, parent_directory: str, experiment) -> s
         file_display: str,
         subdirectory_display: str,
     ) -> str:
-
         # ignore __pycache__ directory
         if directory == "__pycache__":
             return ""
@@ -217,7 +216,6 @@ def display_directory(directories: list, parent_directory: str, experiment) -> s
     # If the Input to the function is a single directory,
     # the code below will be executed
     if len(directories) == 1:
-
         # Get directory path
         path = os.path.join(relative_path, directories[0])
         full_path = os.path.join(experiment.path, path)
@@ -396,7 +394,6 @@ class ScriptString:
         if (self.exp.script != self.script) or not os.path.exists(
             self.exp.script_fullpath
         ):
-
             try:
                 os.remove(self.exp.script_fullpath)
             except (FileNotFoundError, TypeError):

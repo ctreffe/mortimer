@@ -69,7 +69,7 @@ def to_excel_csv(cursor, none_value=None, **writerparams):
         remove_linebreaks=True,
         delimiter=";",
         dialect="excel",
-        **writerparams
+        **writerparams,
     )
 
 

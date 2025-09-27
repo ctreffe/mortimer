@@ -58,7 +58,6 @@ def configure_app(app):
 
 
 class BaseConfig:
-
     # Must be URL-safe base64-encoded 32-byte key for fernet encryption
     SECRET_KEY = None
 

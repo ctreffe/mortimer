@@ -31,7 +31,6 @@ from mortimer.utils import is_social_media_preview, render_social_media_preview
 
 class Script:
     def __init__(self):
-
         self.experiment = None
         self.exp_session = None
         self.expdir = None
@@ -68,9 +67,7 @@ def number_of_func_params(func):
 
 
 def import_script(experiment_id):
-    experiment = WebExperiment.objects.get_or_404(
-        id=experiment_id
-    )  # pylint: disable=no-member
+    experiment = WebExperiment.objects.get_or_404(id=experiment_id)  # pylint: disable=no-member
 
     # Fast path: see if the module has already been imported.
     try:

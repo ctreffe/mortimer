@@ -26,7 +26,6 @@ users = Blueprint("users", __name__)
 
 @users.route("/register", methods=["GET", "POST"])
 def register():
-
     if current_user.is_authenticated:
         return redirect(url_for("main.home"))
 
@@ -68,7 +67,6 @@ def register():
 
 @users.route("/login", methods=["GET", "POST"])
 def login():
-
     if current_user.is_authenticated:
         return redirect(url_for("main.home"))
 
@@ -98,7 +96,6 @@ def login():
 
 @users.route("/logout")
 def logout():
-
     logout_user()
     flash("Succesfully logged out", "info")
 
@@ -112,7 +109,6 @@ def account():
     form = UpdateAccountForm()
 
     if form.validate_on_submit():  # if all field are filled out correctly
-
         if current_user.username != form.username.data:
             for exp in WebExperiment.objects(author=current_user.username):
                 exp.author = form.username.data
@@ -134,7 +130,6 @@ def account():
 
 @users.route("/request_password_reset", methods=["GET", "POST"])
 def request_password_reset():
-
     if current_user.is_authenticated:
         flash("You are currently logged in.", "info")
         return redirect(url_for("main.home"))
@@ -161,7 +156,6 @@ def request_password_reset():
 
 @users.route("/reset_password/<token>", methods=["GET", "POST"])
 def reset_password(token):
-
     if current_user.is_authenticated:
         flash("You are currently logged in.", "info")
         return redirect(url_for("main.home"))
