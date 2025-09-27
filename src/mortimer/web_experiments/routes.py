@@ -1516,6 +1516,10 @@ def participation():
             return make_response("false", 200)
 
         elif exp_id in participant.experiments:
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
             if not exp_version:
                 return make_response("true", 200)
 
