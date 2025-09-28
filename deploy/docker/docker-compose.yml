@@ -53,7 +53,8 @@ services:
   mortimer-nginx:
     image: nginx:alpine
     depends_on:
-      - mortimer-app
+      mortimer-app:
+        condition: service_healthy
     ports:
       - "80:80"
       - "443:443"
@@ -76,8 +77,8 @@ services:
       ENABLE_WEBSOCKETS: ${ENABLE_WEBSOCKETS}
     entrypoint: ["/bin/sh","/etc/nginx/entrypoint.sh"]
     volumes:
-      - ./deploy/docker/nginx/entrypoint.sh:/etc/nginx/entrypoint.sh:ro
-      - ./deploy/docker/nginx/templates:/etc/nginx/templates:ro
+      - ./nginx/entrypoint.sh:/etc/nginx/entrypoint.sh:ro
+      - ./nginx/templates:/etc/nginx/templates:ro
       # optionally, if you want Nginx to serve uploads directly:
       # - mortimer-uploads:/srv/mortimer/uploads:ro
       # Certbot / ACME webroot — harmless if TLS_MODE=off
