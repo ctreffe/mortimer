@@ -20,10 +20,8 @@ temp/
 set_environ_vars.py
 log_mortimer.md
 mortimer/pym.py
-wsgi.py
 move_to_default_alfred.conf
 alfredo2_ca_chain.pem
-alfred.conf
 exp/
 .vscode/settings.json
 test.py
@@ -36,7 +34,6 @@ test_copy2.py
 
 development_mortimer.conf
 .envrc
-mortimer.conf
 tests/run_locally/*
 tests/run_locally/run.py
 src/mortimer.egg-info
@@ -50,3 +47,4 @@ mortimer_venv/
 deploy/docker/.env
 /deploy/docker/log
 /deploy/docker/mortimer-logs
+/deploy/docker/mortimer-instance
