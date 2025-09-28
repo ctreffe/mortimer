@@ -47,7 +47,5 @@ RUN chmod +x /app/entrypoint.sh \
 
 USER mortimer
 
-EXPOSE 8000
-
 ENTRYPOINT ["/app/entrypoint.sh"]
 CMD ["/app/start.sh"]

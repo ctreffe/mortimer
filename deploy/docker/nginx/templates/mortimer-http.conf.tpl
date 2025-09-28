@@ -1,4 +1,4 @@
-upstream mortimer { server mortimer-app:8000; keepalive 32; }
+upstream mortimer { server mortimer-app:8001; keepalive 32; }
 
 server {
   listen 80 default_server;

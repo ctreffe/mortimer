@@ -32,7 +32,7 @@ def _fallback_workers() -> int:
     return count if count > 0 else 3
 
 
-bind = os.getenv("GUNICORN_BIND", "0.0.0.0:8000")
+bind = os.getenv("GUNICORN_BIND", "0.0.0.0:8000")  # Overwritten in start.sh
 workers = _int_env("WEB_CONCURRENCY", 1)
 threads = _int_env("GUNICORN_THREADS", 10)
 worker_class = os.getenv("GUNICORN_WORKER_CLASS", "sync")

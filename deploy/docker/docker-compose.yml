@@ -40,11 +40,12 @@ services:
       - mortimer-uploads:/app/uploads
       - ./mortimer-logs:/app/log
       - ./mortimer-instance:/app/instance
+    expose: ["8001"]
     healthcheck:
       test:
         - "CMD-SHELL"
         - |
-          python -c "import sys, urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/login').status < 500 else 1)"
+          python -c "import sys, urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8001/login').status < 500 else 1)"
       interval: 30s
       timeout: 5s
       retries: 5
