@@ -27,16 +27,16 @@ wheels = [
 
 [[package]]
 name = "alfred3-interact"
-version = "0.3.1"
+version = "0.4.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "alfred3" },
     { name = "bleach" },
     { name = "packaging" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/56/ce/a20ceed13159afb32694678b9cfc1a1f9daa211bcffd499f8c174621c4d8/alfred3_interact-0.3.1.tar.gz", hash = "sha256:3284bf1315d6871d11a11593cebf5d8352cc8ca2211d8b08dc9199ae21386b0d", size = 37502, upload-time = "2024-03-27T15:38:31Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/b9/77/e3ab5a3bbdb41deefe4eee71998d639c5be7c76e5987bdc4befc1d178d07/alfred3_interact-0.4.1.tar.gz", hash = "sha256:a21be211d0a6ef07510a7b2e90f286f57d1f172c08c5ef2637fbd85b167633ff", size = 3926169, upload-time = "2025-09-28T08:33:02.137Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/38/09/f863b1f34564ed45f49f027510583b94baf853c99cb5d9d54776f33c8441/alfred3_interact-0.3.1-py3-none-any.whl", hash = "sha256:ae5579aad03d42f9daf3b80c1880d7e42591e5f39f47d9a4ba039bfc6a34b2ec", size = 44449, upload-time = "2024-03-27T15:38:28.976Z" },
+    { url = "https://files.pythonhosted.org/packages/16/e5/d8166487553adc7fadfebb66ec7edfd8ec4446cfff398700944e7d821895/alfred3_interact-0.4.1-py3-none-any.whl", hash = "sha256:cffc626fae49ce93603fab7af052382ddb192edfcdf7d236af08814e45ad7466", size = 44186, upload-time = "2025-09-28T08:33:00.966Z" },
 ]
 
 [[package]]
@@ -668,7 +668,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "alfred3", specifier = ">=3.0.2" },
-    { name = "alfred3-interact", specifier = ">=0.2.4" },
+    { name = "alfred3-interact", specifier = ">=0.4.1" },
     { name = "cryptography", specifier = ">=3.4" },
     { name = "email-validator", specifier = ">=1.1" },
     { name = "flask", specifier = ">=1.1.2" },
