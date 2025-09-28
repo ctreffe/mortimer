@@ -4,6 +4,7 @@ from pathlib import Path
 from alfred3 import alfredlog
 from mortimer import create_app
 from dotenv import load_dotenv
+
 load_dotenv()
 
 path = Path(sys.argv[0]).resolve()
