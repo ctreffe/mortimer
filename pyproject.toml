@@ -21,7 +21,7 @@ classifiers = [
 ]
 dependencies = [
   "alfred3>=3.0.2",
-  "alfred3_interact>=0.2.4",
+  "alfred3_interact>=0.4.1",
   "cryptography>=3.4",
   "email_validator>=1.1",
   "itsdangerous>=2.1.2",
