@@ -1,0 +1,64 @@
+services:
+  mortimer-nginx:
+    image: nginx:alpine
+    depends_on:
+      - mortimer-app
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      # required / switchable
+      TLS_MODE: ${TLS_MODE}                      # letsencrypt | off
+      SERVER_NAME: ${SERVER_NAME}
+      # only used when TLS_MODE=letsencrypt
+      SSL_FULLCHAIN_PATH: ${SSL_FULLCHAIN_PATH}
+      SSL_PRIVKEY_PATH: ${SSL_PRIVKEY_PATH}
+      # optional tuning (defaults exist in entrypoint.sh)
+      CLIENT_MAX_BODY_SIZE: ${CLIENT_MAX_BODY_SIZE}
+      PROXY_READ_TIMEOUT: ${PROXY_READ_TIMEOUT}
+      PROXY_SEND_TIMEOUT: ${PROXY_SEND_TIMEOUT}
+      PROXY_CONNECT_TIMEOUT: ${PROXY_CONNECT_TIMEOUT}
+      PROXY_BUFFERING: ${PROXY_BUFFERING}
+      RATE_LIMIT_REQS: ${RATE_LIMIT_REQS}
+      RATE_LIMIT_BURST: ${RATE_LIMIT_BURST}
+      LOG_FORMAT: ${LOG_FORMAT}
+      ENABLE_WEBSOCKETS: ${ENABLE_WEBSOCKETS}
+    entrypoint: ["/bin/sh","/etc/nginx/entrypoint.sh"]
+    volumes:
+      - ./deploy/docker/nginx/entrypoint.sh:/etc/nginx/entrypoint.sh:ro
+      - ./deploy/docker/nginx/templates:/etc/nginx/templates:ro
+      - mortimer-static:/srv/mortimer:ro          # static assets
+      # optionally, if you want Nginx to serve uploads directly:
+      # - mortimer-uploads:/srv/mortimer/uploads:ro
+      # Certbot / ACME webroot — harmless if TLS_MODE=off
+      - certs:/etc/letsencrypt:ro
+      - acme-webroot:/var/www/certbot:ro
+    networks:
+      - mortimer-edge
+
+  nginx-certbot:
+    image: certbot/certbot
+    profiles: ["tls"]                  # only run when you enable this profile
+    volumes:
+      - certs:/etc/letsencrypt          # stores certificates
+      - acme-webroot:/var/www/certbot   # ACME HTTP-01 challenges
+    command: >
+      sh -c 'while true;
+             do certbot renew --quiet
+                  --deploy-hook "nginx -s reload";
+             sleep 12h;
+             done'
+    depends_on:
+      - mortimer-nginx
+    networks:
+      - mortimer-edge
+
+# ---- shared volumes and networks ----
+volumes:
+  certs:
+  acme-webroot:
+  mortimer-static:
+  # mortimer-uploads:
+
+networks:
+  mortimer-edge: {}
