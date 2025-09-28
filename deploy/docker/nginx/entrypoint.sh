@@ -40,12 +40,22 @@ export TLS_MODE SERVER_NAME \
   PROXY_CONNECT_TIMEOUT PROXY_BUFFERING RATE_LIMIT_REQS RATE_LIMIT_BURST \
   LOG_FORMAT ENABLE_WEBSOCKETS
 
+# Limit envsubst to the variables we actually export so nginx runtime
+# variables such as $host or $uri stay intact in the rendered config.
+ENV_VARS='${SERVER_NAME} ${CLIENT_MAX_BODY_SIZE} ${PROXY_READ_TIMEOUT} ${PROXY_SEND_TIMEOUT} \
+${PROXY_CONNECT_TIMEOUT} ${PROXY_BUFFERING} ${RATE_LIMIT_REQS} ${RATE_LIMIT_BURST} \
+${LOG_FORMAT} ${ENABLE_WEBSOCKETS} ${SSL_FULLCHAIN_PATH} ${SSL_PRIVKEY_PATH}'
+
 # Pick template based on TLS_MODE
 if [ "$TLS_MODE" = "letsencrypt" ]; then
-  envsubst < "$TEMPLATE_DIR/mortimer-https.conf.tpl" > "$CONF_OUT"
+  envsubst "$ENV_VARS" < "$TEMPLATE_DIR/mortimer-https.conf.tpl" > "$CONF_OUT"
 else
-  envsubst < "$TEMPLATE_DIR/mortimer-http.conf.tpl" > "$CONF_OUT"
+  envsubst "$ENV_VARS" < "$TEMPLATE_DIR/mortimer-http.conf.tpl" > "$CONF_OUT"
 fi
+
+# Remove the default site so Mortimer handles all traffic
+rm -f /etc/nginx/conf.d/default.conf
+
 
 # Validate config and start Nginx
 nginx -t

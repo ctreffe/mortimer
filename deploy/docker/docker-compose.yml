@@ -35,9 +35,9 @@ services:
     networks:
       - mortimer-internal
       - mortimer-edge
-    ports:
-      - "${MORTIMER_APP_PORT:-8000}:8000"
     volumes:
+      - mortimer-static:/opt/venv/lib/python3.13/site-packages/mortimer/static:ro
+      - mortimer-uploads:/app/uploads
       - ./mortimer-logs:/app/log
       - ./mortimer-instance:/app/instance
     healthcheck:
@@ -79,6 +79,7 @@ services:
     volumes:
       - ./nginx/entrypoint.sh:/etc/nginx/entrypoint.sh:ro
       - ./nginx/templates:/etc/nginx/templates:ro
+      - mortimer-static:/srv/mortimer/static:ro
       # optionally, if you want Nginx to serve uploads directly:
       # - mortimer-uploads:/srv/mortimer/uploads:ro
       # Certbot / ACME webroot — harmless if TLS_MODE=off
@@ -107,6 +108,10 @@ services:
 volumes:
   mongo-data:
     name: mortimer-mongo-data
+  mortimer-static:
+    name: mortimer-static
+  mortimer-uploads:
+    name: mortimer-uploads
   mortimer-logs:
     name: mortimer-logs
   mortimer-instance:

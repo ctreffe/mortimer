@@ -1,5 +1,3 @@
-map $LOG_FORMAT $access_format { default combined; json json; }
-
 upstream mortimer { server mortimer-app:8000; keepalive 32; }
 
 # HTTP -> HTTPS (+ ACME webroot)
@@ -20,7 +18,7 @@ server {
   ssl_protocols TLSv1.2 TLSv1.3;
   ssl_session_cache shared:SSL:10m;
 
-  access_log /dev/stdout $access_format;
+  access_log /dev/stdout combined;
   error_log  /dev/stderr warn;
   client_max_body_size ${CLIENT_MAX_BODY_SIZE};
 
@@ -35,12 +33,9 @@ server {
   gzip on; gzip_comp_level 5; gzip_min_length 1024; gzip_vary on;
   gzip_types text/plain text/css text/xml application/xml application/json application/javascript application/rss+xml image/svg+xml;
 
-  # rate limit (optional)
-  limit_req_zone $binary_remote_addr zone=req_zone:10m rate=${RATE_LIMIT_REQS}r/s;
-
   # static
   location /static/ {
-    alias /srv/mortimer/;
+    alias /srv/mortimer/static/;
     expires 7d;
     add_header Cache-Control "public, max-age=604800, immutable";
     try_files $uri =404;
@@ -48,8 +43,6 @@ server {
 
   # app proxy
   location / {
-    limit_req zone=req_zone burst=${RATE_LIMIT_BURST} nodelay;
-
     proxy_http_version 1.1;
     proxy_set_header Host              $host;
     proxy_set_header X-Real-IP         $remote_addr;
