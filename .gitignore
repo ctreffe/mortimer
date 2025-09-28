@@ -48,6 +48,4 @@ mortimer_venv/
 .python-version
 /deploy/docker/mongo-data
 deploy/docker/.env
-deploy/docker/.env.example
 /deploy/docker/log
-/deploy

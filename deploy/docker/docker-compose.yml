@@ -1,0 +1,33 @@
+services:
+  mongo:
+    image: mongo:7.0
+    container_name: mortimer-mongo
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "${MORTIMER_MONGO_PORT:-27017}:27017"
+    command:
+      - "--auth"
+      - "--bind_ip_all"
+      - "--wiredTigerCacheSizeGB=1"
+    volumes:
+      - ./mongo-data:/data/db
+      - ./initdb:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mongosh --quiet --eval 'db.runCommand({ ping: 1 })'"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+    networks:
+      - mortimer-net
+
+volumes:
+  mongo-data:
+    name: mortimer-mongo-data
+
+networks:
+  mortimer-net:
+    name: mortimer-net
+    driver: bridge
