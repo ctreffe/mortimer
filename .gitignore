@@ -49,3 +49,4 @@ mortimer_venv/
 /deploy/docker/mongo-data
 deploy/docker/.env
 /deploy/docker/log
+/deploy/docker/mortimer-logs
