@@ -1,14 +1,16 @@
 # Mortimer Docker assets
 
 This directory contains Docker resources for running Mortimer with a properly
-configured MongoDB instance. The focus here is providing a secure, reusable
-MongoDB service that mirrors production expectations. A follow-up step can add
-the Mortimer web application container to the same stack.
+configured MongoDB instance. Phase 1 produced the Mortimer application image; in
+Phase 2 the compose stack now wires it together with MongoDB.
 
 ## Files
 
-- `docker-compose.yml` – spins up a MongoDB 7 container with authentication,
-  health checks, and persistent storage.
+- `docker-compose.yml` – starts MongoDB 7 **and** the Mortimer Gunicorn image,
+  wiring them onto private/internal networks. It also provisions named
+  volumes for MongoDB data, Mortimer's writable instance folder (experiment
+  files), optional user uploads, and Mortimer's rotating logs so this state
+  survives container rebuilds.
 - `.env.example` – template for the environment variables consumed by the
   Compose file. Copy it to `.env` and adjust the secrets before starting the
   stack.
@@ -26,31 +28,62 @@ why no manual step is required to trigger `001-create-databases.js`.
 
 1. Copy the example environment file and edit secrets:
 
-   ```bash
-   cp .env.example .env
-   # then edit .env to set strong passwords
-   ```
+    ```bash
+    cp .env.example .env
+    # then edit .env to set strong passwords
+    ```
 
-1. Start MongoDB:
+1. Build the Mortimer image (from the repository root):
 
-   ```bash
-   docker compose up -d
-   ```
+  ```bash
+  docker compose -f deploy/docker/docker-compose.yml build mortimer-app
+  ```
 
-  MongoDB will bind to `localhost:${HOST_MONGO_PORT:-27017}`. Data lives in the
-  named volume `mortimer-mongo-data`.
+1. Start the application stack (from this folder):
+
+  ```bash
+  docker compose up -d mortimer-app
+  ```
+
+  This starts both `mortimer-app` and `mongo`. Mortimer is reachable at
+  `http://localhost:${MORTIMER_APP_PORT:-8000}` (exposed for Phase 2 testing;
+  once Nginx is added the host binding will move to the proxy). Runtime
+  state is stored in named volumes:
+
+- `mortimer-mongo-data` → MongoDB databases
+- `mortimer-instance` → Mortimer instance folder (`/app/instance`) that stores
+  experiments and uploaded resources
+- `mortimer-uploads` → legacy `/app/uploads` directory (kept for future UI
+  features)
+- `mortimer-logs` → Mortimer and Alfredo log files under `/app/log`
 
 1. Inspect the logs if you want to confirm the initialization ran:
 
-   ```bash
-   docker compose logs mongo
-   ```
+    ```bash
+    docker compose logs mongo
+    ```
 
 1. When you are done:
 
-   ```bash
-   docker compose down
-   ```
+    ```bash
+    docker compose down
+    ```
+
+## Persistent storage locations
+
+Docker keeps the named volumes declared in `docker-compose.yml` even if you
+stop and remove the containers, so Mortimer's experiment directories and logs
+survive restarts. To inspect them, list the volumes and mount any of them
+temporarily, for example:
+
+```bash
+docker volume ls | grep mortimer
+docker run --rm -it -v mortimer-instance:/data alpine ls /data
+```
+
+If you prefer binding to a host directory instead, edit the volume mapping for
+`mortimer-instance` (and optionally the uploads/log volumes) to point to an
+absolute path on the host.
 
 ## Phase 1 Mortimer smoke test
 
@@ -59,19 +92,20 @@ the Phase 1 work produced.
 
 1. Build the image from the repository root (one directory above this README):
 
-  ```bash
-  docker build -f deploy/docker/Dockerfile -t mortimer-app:v1 .
-  ```
+    ```bash
+    docker build -f deploy/docker/Dockerfile -t mortimer-app:v1 .
+    ```
 
 1. Run a throwaway container on the same Docker network as MongoDB:
 
-  ```bash
-  cd deploy/docker
-  sh test.sh
-  ```
+    ```bash
+    cd deploy/docker
+    sh test.sh
+    ```
 
-  The script attaches the container to the `mortimer-net` network, injects the
-  environment variables from `.env`, and forwards port `8000` to the host.
+  The script invokes `docker compose up --build mortimer-app`, bringing up both
+  services on the compose-defined networks and forwarding port `8000` to the
+  host for the foreground run.
 
 1. Visit `http://localhost:8000/login` in your browser. On the first run the
   app redirects `/` to `/login`, so browsing directly to the login page avoids
@@ -107,8 +141,6 @@ MONGODB_SETTINGS = {
 
 ## Next steps for full dockerization
 
-- Create an application image for Mortimer (multi-stage build containing the
-  Python project and static assets) and add it as a service to the compose file.
 - Provide an Nginx or Caddy reverse proxy for TLS termination.
 - Externalize configuration through environment variables or mounted config
   files.

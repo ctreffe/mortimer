@@ -5,8 +5,6 @@ services:
     restart: unless-stopped
     env_file:
       - .env
-    ports:
-      - "${MORTIMER_MONGO_PORT:-27017}:27017"
     command:
       - "--auth"
       - "--bind_ip_all"
@@ -21,13 +19,53 @@ services:
       retries: 5
       start_period: 15s
     networks:
-      - mortimer-net
+      - mortimer-internal
+
+  mortimer-app:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/Dockerfile
+    image: mortimer-app:latest
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - mortimer-internal
+      - mortimer-edge
+    ports:
+      - "${MORTIMER_APP_PORT:-8000}:8000"
+    volumes:
+      - ./mortimer-logs:/app/log
+      - ./mortimer-instance:/app/instance
+    healthcheck:
+      test:
+        - "CMD-SHELL"
+        - |
+          python -c "import sys, urllib.request; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8000/login').status < 500 else 1)"
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
 volumes:
   mongo-data:
     name: mortimer-mongo-data
+  mortimer-static:
+    name: mortimer-static
+  mortimer-uploads:
+    name: mortimer-uploads
+  mortimer-logs:
+    name: mortimer-logs
+  mortimer-instance:
+    name: mortimer-instance
 
 networks:
-  mortimer-net:
-    name: mortimer-net
+  mortimer-internal:
+    name: mortimer-internal
+    internal: true
+  mortimer-edge:
+    name: mortimer-edge
     driver: bridge
