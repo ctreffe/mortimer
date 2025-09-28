@@ -36,6 +36,7 @@ LOG_FILE=${MORTIMER_LOG_FILE:-${LOG_DIR_DEFAULT%/}/mortimer.log}
 mkdir -p "${INSTANCE_PATH}" "${LOG_DIR_DEFAULT}"
 if [[ ! -f "${INSTANCE_PATH}/mortimer.conf" && -f "/app/config/mortimer.conf" ]]; then
   cp /app/config/mortimer.conf "${INSTANCE_PATH}/mortimer.conf"
+  cp /app/config/alfred.conf "${INSTANCE_PATH}/alfred.conf"
 fi
 
 ALFRED_LOGFILE_DEFAULT=${ALFRED_LOGFILE:-${LOG_DIR_DEFAULT%/}/alfred.log}

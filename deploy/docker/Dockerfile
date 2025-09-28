@@ -36,6 +36,7 @@ COPY deploy/docker/gunicorn.conf.py ./gunicorn.conf.py
 COPY deploy/docker/wsgi.py ./mortimer_docker/wsgi.py
 COPY deploy/docker/entrypoint.sh ./entrypoint.sh
 COPY deploy/docker/mortimer.conf ./config/mortimer.conf
+COPY deploy/docker/alfred.conf ./config/alfred.conf
 
 RUN chmod +x /app/entrypoint.sh \
     && mkdir -p /app/instance /app/log /app/mortimer_docker \

@@ -52,6 +52,39 @@ why no manual step is required to trigger `001-create-databases.js`.
    docker compose down
    ```
 
+## Phase 1 Mortimer smoke test
+
+Once MongoDB is healthy you can exercise the Mortimer application image that
+the Phase 1 work produced.
+
+1. Build the image from the repository root (one directory above this README):
+
+  ```bash
+  docker build -f deploy/docker/Dockerfile -t mortimer-app:v1 .
+  ```
+
+1. Run a throwaway container on the same Docker network as MongoDB:
+
+  ```bash
+  cd deploy/docker
+  sh test.sh
+  ```
+
+  The script attaches the container to the `mortimer-net` network, injects the
+  environment variables from `.env`, and forwards port `8000` to the host.
+
+1. Visit `http://localhost:8000/login` in your browser. On the first run the
+  app redirects `/` to `/login`, so browsing directly to the login page avoids
+  the appearance of a blank screen while your browser follows the redirect.
+
+1. Create the initial Mortimer account at `http://localhost:8000/register`. Use
+  the parole password from `.env` (default: `changeme`) along with the email
+  and password you want for the administrator. After registration you can log
+  in and access the dashboard.
+
+If you want to stop the app container, interrupt the `test.sh` script or run
+`docker stop <container-name>` in another terminal.
+
 ## Connecting Mortimer locally
 
 In your local `mortimer.conf`, point the `MONGODB_SETTINGS` to the database and

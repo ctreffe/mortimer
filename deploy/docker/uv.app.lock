@@ -68,6 +68,8 @@ flask-wtf==1.2.2
     # via
     #   flask-mongoengine-3
     #   mortimer
+gunicorn==23.0.0
+    # via -r deploy/docker/requirements.app.in
 idna==3.10
     # via
     #   email-validator
@@ -96,6 +98,7 @@ mortimer==0.10.0
 packaging==25.0
     # via
     #   alfred3-interact
+    #   gunicorn
     #   mongomock
 pycparser==2.23
     # via cffi

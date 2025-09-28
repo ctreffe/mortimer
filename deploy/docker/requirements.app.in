@@ -1,2 +1,3 @@
 # Pin the Mortimer release to install from PyPI inside the container build.
 mortimer==0.10.0
+gunicorn>=21.2
