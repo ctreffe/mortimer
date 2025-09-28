@@ -4,7 +4,7 @@ requires-python = ">=3.13"
 
 [[package]]
 name = "alfred3"
-version = "2.6.1"
+version = "3.0.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "bleach" },
@@ -14,14 +14,15 @@ dependencies = [
     { name = "emoji" },
     { name = "flask" },
     { name = "jinja2" },
+    { name = "mongomock" },
     { name = "pymongo" },
     { name = "pyyaml" },
     { name = "requests" },
     { name = "thesmuggler" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/8f/6f/7f1865437d64924848c97880e575cee8679b2706eff0a99d0eb3190e648a/alfred3-2.6.1.tar.gz", hash = "sha256:fcc38517a7940ad248da0dc3d5842a70b98e65517c635be03670158660830585", size = 913895, upload-time = "2024-10-22T07:50:23.511Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d2/f2/ea6850fd0bdf568e2d36f820eca5fb6cf42488144f056de13c7e053671c9/alfred3-3.0.2.tar.gz", hash = "sha256:c70c1191ba5b150b15dd53debd8fec319313fa68e467ecf529039e6a297b7d4c", size = 14780410, upload-time = "2025-09-28T08:18:21.436Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/27/fa/7d79cd2ed486d4f56dceeda95b160e3d2c5a018df08074e447c8e4491ae2/alfred3-2.6.1-py3-none-any.whl", hash = "sha256:23784d79038f6bdcf13cf644e0ef654043b3534c00b18ba58e32cb10ff6e1f91", size = 934086, upload-time = "2024-10-22T07:50:21.267Z" },
+    { url = "https://files.pythonhosted.org/packages/f5/de/196a3ebfe86c2f4a6b0f3e22bfd6831b680bb1cb45c003e43a66ed88f1e0/alfred3-3.0.2-py3-none-any.whl", hash = "sha256:defd4a0b0ff3baa60a0d0d1787230261638ce772db1d770a396a5834b6500c00", size = 1017561, upload-time = "2025-09-28T08:18:19.977Z" },
 ]
 
 [[package]]
@@ -653,7 +654,7 @@ dependencies = [
     { name = "python-dotenv" },
 ]
 
-[package.optional-dependencies]
+[package.dev-dependencies]
 dev = [
     { name = "black" },
     { name = "bs4" },
@@ -664,20 +665,12 @@ dev = [
     { name = "python-dotenv" },
 ]
 
-[package.dev-dependencies]
-dev = [
-    { name = "mortimer", extra = ["dev"] },
-]
-
 [package.metadata]
 requires-dist = [
-    { name = "alfred3", specifier = ">=2.0.0" },
+    { name = "alfred3", specifier = ">=3.0.2" },
     { name = "alfred3-interact", specifier = ">=0.2.4" },
-    { name = "black", marker = "extra == 'dev'" },
-    { name = "bs4", marker = "extra == 'dev'" },
     { name = "cryptography", specifier = ">=3.4" },
     { name = "email-validator", specifier = ">=1.1" },
-    { name = "flake8", marker = "extra == 'dev'" },
     { name = "flask", specifier = ">=1.1.2" },
     { name = "flask-bcrypt", specifier = ">=0.7.1" },
     { name = "flask-dropzone", specifier = ">=1.5.4" },
@@ -686,17 +679,20 @@ requires-dist = [
     { name = "flask-mongoengine-3", extras = ["wtf"], specifier = ">=1.1.0" },
     { name = "flask-wtf", specifier = ">=0.14.3" },
     { name = "itsdangerous", specifier = ">=2.1.2" },
-    { name = "mongomock", marker = "extra == 'dev'" },
-    { name = "pre-commit", marker = "extra == 'dev'" },
     { name = "pymongo", specifier = ">=3.10" },
-    { name = "pytest", marker = "extra == 'dev'" },
     { name = "python-dotenv" },
-    { name = "python-dotenv", marker = "extra == 'dev'" },
 ]
-provides-extras = ["dev"]
 
 [package.metadata.requires-dev]
-dev = [{ name = "mortimer", extras = ["dev"] }]
+dev = [
+    { name = "black" },
+    { name = "bs4" },
+    { name = "flake8" },
+    { name = "mongomock" },
+    { name = "pre-commit" },
+    { name = "pytest" },
+    { name = "python-dotenv" },
+]
 
 [[package]]
 name = "mypy-extensions"

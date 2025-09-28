@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools>=69", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling>=1.18"]
+build-backend = "hatchling.build"
 
 [project]
 name = "mortimer"
@@ -12,7 +12,7 @@ license = { text = "MIT" }
 authors = [
   { name = "Christian Treffenstädt" },
   { name = "Paul Wiemann" },
-  { name = "Johannes Brachem", email = "alfred@psych.uni-goettingen.de" },
+  { name = "Johannes Brachem" },
 ]
 classifiers = [
   "Programming Language :: Python :: 3",
@@ -20,7 +20,7 @@ classifiers = [
   "Operating System :: OS Independent",
 ]
 dependencies = [
-  "alfred3>=2.0.0",
+  "alfred3>=3.0.2",
   "alfred3_interact>=0.2.4",
   "cryptography>=3.4",
   "email_validator>=1.1",
@@ -36,7 +36,7 @@ dependencies = [
   "flask-mongoengine-3[wtf]>=1.1.0",
 ]
 
-[project.optional-dependencies]
+[dependency-groups]
 dev = [
   "pytest",
   "pre-commit",
@@ -47,29 +47,8 @@ dev = [
   "mongomock",
 ]
 
-[tool.setuptools]
-package-dir = { "" = "src" }
+[tool.hatch.version]
+path = "src/mortimer/_version.py"
 
-[tool.setuptools.dynamic]
-version = { attr = "mortimer._version.__version__" }
-
-[tool.setuptools.packages.find]
-where = ["src"]
-include = ["mortimer*"]
-
-[tool.setuptools.package-data]
-"mortimer" = [
-  "static/*",
-  "static/futurizing_alfred_scripts/*",
-  "static/css/*",
-  "static/img/*",
-  "static/js/*",
-  "static/json/*",
-  "templates/*",
-  "templates/elements/*",
-  "templates/errors/*",
-  "templates/additional/*",
-]
-
-[tool.uv]
-dev-dependencies = ["mortimer[dev]"]
+[tool.hatch.build.targets.wheel]
+packages = ["src/mortimer"]
