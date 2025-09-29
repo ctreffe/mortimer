@@ -1,4 +1,27 @@
-upstream mortimer { server mortimer-app:8001; keepalive 32; }
+# --- Sticky sessions via dedicated "route" cookie ---
+
+# 1) Derive sticky key:
+# - If the client already has a "route" cookie, use its value.
+# - Otherwise, fall back to the client IP until a cookie is issued.
+map $cookie_route $sticky_key {
+    ""      $remote_addr;
+    default $cookie_route;
+}
+
+# 2) Issue a persistent "route" cookie if the client doesn't have one yet.
+# - Value format: "<ip>-<timestamp>" ensures uniqueness
+# - Max-Age: 1 year, Path=/, HttpOnly, SameSite=Lax
+map $cookie_route $set_route_cookie {
+    ""      "route=$remote_addr-$msec; Path=/; Max-Age=31536000; HttpOnly; SameSite=Lax";
+    default "";
+}
+
+# 3) Upstream pool: hash based on the sticky key
+upstream mortimer {
+${UPSTREAM_SERVERS}
+  hash $sticky_key consistent;
+  keepalive 32;
+}
 
 # HTTP -> HTTPS (+ ACME webroot)
 server {
@@ -58,6 +81,9 @@ server {
 
     proxy_set_header Upgrade $http_upgrade;
     proxy_set_header Connection "upgrade";
+
+    # Routing Cookie
+    add_header Set-Cookie $set_route_cookie always;
 
     proxy_pass http://mortimer;
   }

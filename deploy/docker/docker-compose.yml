@@ -75,6 +75,7 @@ services:
       # required / switchable
       TLS_MODE: ${TLS_MODE}                      # letsencrypt | off
       SERVER_NAME: ${SERVER_NAME}
+      UPSTREAM_BACKENDS: ${UPSTREAM_BACKENDS}
       # only used when TLS_MODE=letsencrypt
       SSL_FULLCHAIN_PATH: ${SSL_FULLCHAIN_PATH}
       SSL_PRIVKEY_PATH: ${SSL_PRIVKEY_PATH}
