@@ -37,6 +37,9 @@ COPY deploy/docker/wsgi.py ./mortimer_docker/wsgi.py
 COPY deploy/docker/entrypoint.sh ./entrypoint.sh
 COPY deploy/docker/mortimer.conf ./config/mortimer.conf
 COPY deploy/docker/alfred.conf ./config/alfred.conf
+COPY deploy/docker/start.sh /app/start.sh
+
+RUN chmod +x /app/start.sh
 
 RUN chmod +x /app/entrypoint.sh \
     && mkdir -p /app/instance /app/log /app/mortimer_docker \
@@ -44,7 +47,5 @@ RUN chmod +x /app/entrypoint.sh \
 
 USER mortimer
 
-EXPOSE 8000
-
 ENTRYPOINT ["/app/entrypoint.sh"]
-CMD ["gunicorn", "mortimer_docker.wsgi:app", "--config", "/app/gunicorn.conf.py"]
+CMD ["/app/start.sh"]

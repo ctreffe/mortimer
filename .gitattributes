@@ -1,0 +1,28 @@
+# Normalize all text files to use LF in the repository
+* text=auto eol=lf
+
+# Shell scripts must always use LF
+*.sh text eol=lf
+
+# Dockerfiles should also always use LF
+Dockerfile text eol=lf
+*.dockerfile text eol=lf
+
+# Makefiles must use LF
+Makefile text eol=lf
+
+# Markdown, YAML, JSON files usually should use LF
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.json text eol=lf
+
+# Prevent Git from trying to normalize binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.exe binary
+*.dll binary

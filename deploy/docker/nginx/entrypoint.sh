@@ -34,17 +34,22 @@ case "$TLS_MODE" in
     ;;
 esac
 
+# Build upstream server list with real newlines
+: "${UPSTREAM_BACKENDS:?missing UPSTREAM_BACKENDS}"
+UPSTREAM_SERVERS="$(printf '    server %s;\n' $UPSTREAM_BACKENDS)"
+
 # Export common variables for envsubst
 export TLS_MODE SERVER_NAME \
   CLIENT_MAX_BODY_SIZE PROXY_READ_TIMEOUT PROXY_SEND_TIMEOUT \
   PROXY_CONNECT_TIMEOUT PROXY_BUFFERING RATE_LIMIT_REQS RATE_LIMIT_BURST \
-  LOG_FORMAT ENABLE_WEBSOCKETS
+  LOG_FORMAT ENABLE_WEBSOCKETS UPSTREAM_SERVERS
 
 # Limit envsubst to the variables we actually export so nginx runtime
 # variables such as $host or $uri stay intact in the rendered config.
 ENV_VARS='${SERVER_NAME} ${CLIENT_MAX_BODY_SIZE} ${PROXY_READ_TIMEOUT} ${PROXY_SEND_TIMEOUT} \
 ${PROXY_CONNECT_TIMEOUT} ${PROXY_BUFFERING} ${RATE_LIMIT_REQS} ${RATE_LIMIT_BURST} \
-${LOG_FORMAT} ${ENABLE_WEBSOCKETS} ${SSL_FULLCHAIN_PATH} ${SSL_PRIVKEY_PATH}'
+${LOG_FORMAT} ${ENABLE_WEBSOCKETS} ${SSL_FULLCHAIN_PATH} ${SSL_PRIVKEY_PATH} \
+${UPSTREAM_SERVERS}'
 
 # Pick template based on TLS_MODE
 if [ "$TLS_MODE" = "letsencrypt" ]; then
