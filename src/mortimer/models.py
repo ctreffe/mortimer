@@ -9,6 +9,7 @@ from alfred3.config import ExperimentConfig, ExperimentSecrets
 from cryptography.fernet import Fernet
 from flask import current_app
 from flask_login import UserMixin
+from itsdangerous import BadData
 from itsdangerous.url_safe import URLSafeTimedSerializer as Serializer
 from mongoengine import get_connection
 
@@ -207,7 +208,7 @@ class User(db.Document, UserMixin):
         s = Serializer(current_app.config["SECRET_KEY"])
         try:
             user_id = s.loads(token)["user_id"]
-        except Exception:
+        except (BadData, KeyError, TypeError):
             return None
 
         return User.objects.get(id=user_id)

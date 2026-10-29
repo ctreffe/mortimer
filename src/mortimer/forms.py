@@ -116,7 +116,7 @@ class WebExperimentForm(FlaskForm):
     def validate_version(self, version):
         try:
             int(version.data.replace(".", ""))
-        except Exception:
+        except ValueError:
             raise ValidationError(
                 "Please use only points and digits for the version number. Example: '1.3.2'"
             )
@@ -131,7 +131,7 @@ class ExperimentScriptForm(FlaskForm):
     def validate_version(self, version):
         try:
             int(version.data.replace(".", ""))
-        except Exception:
+        except ValueError:
             raise ValidationError(
                 "Please use only points and digits for the version number. Example: '1.3.2'"
             )
@@ -155,7 +155,7 @@ class NewScriptForm(FlaskForm):
     def validate_version(self, version):
         try:
             int(version.data.replace(".", ""))
-        except Exception:
+        except ValueError:
             raise ValidationError(
                 "Please use only points and digits for the version number. Example: '1.3.2'"
             )
@@ -171,7 +171,7 @@ class NewExperimentVersionForm(FlaskForm):
     def validate_updated_version(self, updated_version):
         try:
             int(updated_version.data.replace(".", ""))
-        except Exception:
+        except ValueError:
             raise ValidationError(
                 "Please use only points and digits for the version number. Example: '1.3.2'"
             )
