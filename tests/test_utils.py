@@ -1,4 +1,4 @@
-import mortimer.utils as utils
+from mortimer import utils
 
 
 class TestSocialMediaPreview:

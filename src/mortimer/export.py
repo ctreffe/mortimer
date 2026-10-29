@@ -53,8 +53,8 @@ def to_csv(
     if remove_linebreaks:
         for i in range(1, len(rows)):
             for j in range(len(rows[i])):
-                if isinstance(rows[i][j], str) or isinstance(rows[i][j], str):
-                    rows[i][j].replace("\n", "")
+                if isinstance(rows[i][j], str):
+                    rows[i][j] = rows[i][j].replace("\n", "")
     csvfile = io.StringIO()
     writer = csv.writer(csvfile, dialect=dialect, **writerparams)
     for row in rows:
@@ -183,8 +183,7 @@ class Header:
                         found = True
                         break
                 except KeyError:
-                    print(subDoc)
-                    raise Exception("break")
+                    raise KeyError(f"Subtree document has no 'tag': {subDoc}") from None
             rv = rv + child.getDataFromDoc(subDoc if found else {})
         if self.additional_data:
             rv = rv + self.additional_data.getDataFromDoc(

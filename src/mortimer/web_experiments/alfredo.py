@@ -171,8 +171,8 @@ def start(expid):
         exp_url = url_for("alfredo.start", expid=str(experiment.id))
         return (
             '<div align="center"><h1>Please enter the password</h1><form method="post"'
-            ' action="%s">            <input type="password" name="password" /><button'
-            ' type="submit">Submit</button></form></div>' % exp_url
+            f' action="{exp_url}">            <input type="password" name="password" /><button'
+            ' type="submit">Submit</button></form></div>'
         )
 
     args = request.args.to_dict()
@@ -187,7 +187,7 @@ def start(expid):
     session["page_tokens"] = {}
 
     # initialize log
-    log = alfredlog.QueuedLoggingInterface("alfred3", f"exp.{str(experiment.id)}")
+    log = alfredlog.QueuedLoggingInterface("alfred3", f"exp.{experiment.id!s}")
     log.session_id = sid
     log.setLevel(config.get("log", "level").upper())
     experiment.prepare_logger()
@@ -277,7 +277,7 @@ def experiment():
 
             token = session["page_tokens"].pop(tkey, None)
             session.modified = True  # because the dict is mutable
-            if not token or not token == submitted_token:
+            if not token or token != submitted_token:
                 return redirect(url_for("alfredo.experiment"))
 
             data = request.values.to_dict()
@@ -295,9 +295,7 @@ def experiment():
             return redirect(url_for("alfredo.experiment"))
 
     except Exception:
-        log = alfredlog.QueuedLoggingInterface(
-            "alfred3", f"exp.{str(experiment.exp_id)}"
-        )
+        log = alfredlog.QueuedLoggingInterface("alfred3", f"exp.{experiment.exp_id!s}")
         log.session_id = sid
         msg = "Exception during experiment execution."
         log.exception(msg)

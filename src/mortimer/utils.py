@@ -4,8 +4,8 @@ import json
 import os
 import re
 import subprocess
+from collections.abc import Iterator
 from datetime import datetime
-from typing import Iterator
 from uuid import uuid4
 
 import pymongo
@@ -300,7 +300,7 @@ def display_directory(directories: list, parent_directory: str, experiment) -> s
     )
 
     # Return the full html code for display
-    return "<br>".join([display_first_directory, display_other_directories])
+    return f"{display_first_directory}<br>{display_other_directories}"
 
 
 def perform_futurization(file):
@@ -321,7 +321,7 @@ def replace_all_patterns(file):
         with open(file, encoding="utf-8") as f:
             code = []
             iter = 0
-            for line in f.readlines():  # go through code line by line
+            for line in f:  # go through code line by line
                 # for each line, go through all changes
                 for old_name, new_name in change_dict.items():
                     pattern = re.compile(rf"\W?(?P<name>{old_name})\W?")
@@ -339,8 +339,8 @@ def replace_all_patterns(file):
                         # print("Old: %s, New: %s" % (old_name, new_name))
                     if iter == max_iter:
                         raise AssertionError(
-                            "One line had at least %i replacements. Something seems to be wrong"
-                            % max_iter
+                            f"One line had at least {max_iter} replacements."
+                            " Something seems to be wrong"
                         )
                     iter = 0
 

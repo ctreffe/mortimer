@@ -26,13 +26,14 @@ db = MongoEngine()  # mortimer database
 
 
 # application factory
-def create_app(instance_path=None, logfile: str = None):
+def create_app(instance_path=None, logfile: str | None = None):
     logger = logging.getLogger("mortimer")
-    fh = logging.FileHandler(logfile)
-    formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-    fh.setFormatter(formatter)
+    if logfile:
+        fh = logging.FileHandler(logfile)
+        formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+        fh.setFormatter(formatter)
+        logger.addHandler(fh)
 
-    logger.addHandler(fh)
     logger.setLevel(logging.INFO)
 
     app = Flask(__name__, instance_path=instance_path)
@@ -62,7 +63,7 @@ def create_app(instance_path=None, logfile: str = None):
 
         try:
             from alfred3_interact._version import __version__ as ali_version
-        except Exception:
+        except ImportError:
             ali_version = "n/a"
 
         return {"mortimer": mv, "alfred": av, "alfred3_interact": ali_version}

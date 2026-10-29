@@ -1,9 +1,11 @@
-import sys
 import logging
+import sys
 from pathlib import Path
+
 from alfred3 import alfredlog
-from mortimer import create_app
 from dotenv import load_dotenv
+
+from mortimer import create_app
 
 load_dotenv()
 

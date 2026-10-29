@@ -1,4 +1,5 @@
 import re
+from typing import ClassVar
 
 from flask import current_app
 from flask_login import current_user
@@ -115,7 +116,7 @@ class WebExperimentForm(FlaskForm):
     def validate_version(self, version):
         try:
             int(version.data.replace(".", ""))
-        except Exception:
+        except ValueError:
             raise ValidationError(
                 "Please use only points and digits for the version number. Example: '1.3.2'"
             )
@@ -130,7 +131,7 @@ class ExperimentScriptForm(FlaskForm):
     def validate_version(self, version):
         try:
             int(version.data.replace(".", ""))
-        except Exception:
+        except ValueError:
             raise ValidationError(
                 "Please use only points and digits for the version number. Example: '1.3.2'"
             )
@@ -154,7 +155,7 @@ class NewScriptForm(FlaskForm):
     def validate_version(self, version):
         try:
             int(version.data.replace(".", ""))
-        except Exception:
+        except ValueError:
             raise ValidationError(
                 "Please use only points and digits for the version number. Example: '1.3.2'"
             )
@@ -170,7 +171,7 @@ class NewExperimentVersionForm(FlaskForm):
     def validate_updated_version(self, updated_version):
         try:
             int(updated_version.data.replace(".", ""))
-        except Exception:
+        except ValueError:
             raise ValidationError(
                 "Please use only points and digits for the version number. Example: '1.3.2'"
             )
@@ -202,7 +203,7 @@ class ResetPasswordForm(FlaskForm):
 
 
 class ExportCodebookForm(FlaskForm):
-    choices = [
+    choices: ClassVar = [
         ("csv1", "csv ( , )"),
         ("csv2", "csv ( ; )"),
         ("json", "json"),
@@ -212,7 +213,7 @@ class ExportCodebookForm(FlaskForm):
 
 
 class ExportExpDataForm(FlaskForm):
-    choices = [
+    choices: ClassVar = [
         ("csv1", "csv ( , )"),
         ("csv2", "csv ( ; )"),
         ("json", "json"),

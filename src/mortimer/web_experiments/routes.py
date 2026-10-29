@@ -340,7 +340,7 @@ def validate_zipfile_filenames(z: zipfile.ZipFile) -> bool:
     sanitized_names = [secure_filename(fname) for fname in names]
     for n1, n2 in zip(names, sanitized_names):
         p1 = Path(n1)
-        if not n1 == n2:
+        if n1 != n2:
             if not p1.suffix:
                 flash(
                     f"'{n1}' seems to be a directory, which is not allowed.", "danger"
@@ -536,7 +536,9 @@ def delete_all_files(username, experiment_title):
     methods=["POST"],
 )
 @login_required
-def new_directory(username: str, experiment_title: str, relative_path: str = None):
+def new_directory(
+    username: str, experiment_title: str, relative_path: str | None = None
+):
     """Create a new directory inside the experiment directory.
 
     :param str experiment_title: Title of the experiment
@@ -892,7 +894,7 @@ def export_codebook_data(username, experiment_title, delim: str, version: str):
                     old = data.get(name, "")
                     oldlab = old.get(lab, "") if old else ""
                     newlab = cb.get(lab, "")
-                    if not oldlab == newlab:
+                    if oldlab != newlab:
                         flash(
                             (
                                 f"Codebook: {lab} of '{name}' has changed from '{oldlab}' to '{newlab}'. "
@@ -1516,10 +1518,10 @@ def participation():
             return make_response("false", 200)
 
         elif exp_id in participant.experiments:
-            if not exp_version:
-                return make_response("true", 200)
-
-            elif exp_version in participant.experiments[exp_id]["versions"]:
+            if (
+                not exp_version
+                or exp_version in participant.experiments[exp_id]["versions"]
+            ):
                 return make_response("true", 200)
 
             else:
