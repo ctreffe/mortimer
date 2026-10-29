@@ -10,10 +10,10 @@ from cryptography.fernet import Fernet
 from flask import current_app
 from flask_login import UserMixin
 from itsdangerous.url_safe import URLSafeTimedSerializer as Serializer
+from mongoengine import get_connection
 
 from mortimer import db, login_manager
 from mortimer.utils import create_fernet
-from mongoengine import get_connection
 
 # pylint: disable=no-member
 
@@ -83,9 +83,9 @@ class User(db.Document, UserMixin):
         alfred_db = current_app.config["ALFRED_DB"]
         res = {"db": alfred_db}
 
-        c_exp = {**res, **{"collection": self.alfred_col}}
-        c_unlinked = {**res, **{"collection": self.alfred_col_unlinked}}
-        c_misc = {**res, **{"collection": self.alfred_col_misc}}
+        c_exp = {**res, "collection": self.alfred_col}
+        c_unlinked = {**res, "collection": self.alfred_col_unlinked}
+        c_misc = {**res, "collection": self.alfred_col_misc}
 
         act = ["find", "insert", "update", "remove"]
         priv = [
@@ -251,7 +251,7 @@ class WebExperiment(db.Document):
         logger.
         """
         formatter = alfredlog.prepare_alfred_formatter(str(self.id))
-        explogger = logging.getLogger(f"exp.{str(self.id)}")
+        explogger = logging.getLogger(f"exp.{self.id!s}")
         lsa_logger = explogger.getChild("saving_agent.AutoLocalSavingAgent")
         lsa_cb_logger = explogger.getChild("saving_agent.CodebookLocalSavingAgent")
 
@@ -331,12 +331,7 @@ class WebExperiment(db.Document):
         return {"metadata": config, "mortimer_specific": {"runs_on_mortimer": "true"}}
 
     def __repr__(self):
-        return "Experiment(Title: {}, Version: {}, Created: {}, Author: {})".format(
-            self.title,
-            self.version,
-            self.date_created,
-            self.author,
-        )
+        return f"Experiment(Title: {self.title}, Version: {self.version}, Created: {self.date_created}, Author: {self.author})"
 
 
 class Participant(db.Document):

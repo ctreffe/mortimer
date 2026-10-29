@@ -63,13 +63,12 @@ Before starting, you need to create a run.py and specify your instance path. The
 ``` Python
 from mortimer import create_app
 
-path = "" # fill in your instance path here!
+path = ""  # fill in your instance path here!
 
 app = create_app(instance_path=path)
 
 if __name__ == "__main__":
     app.run(debug=True)
-
 ```
 
 

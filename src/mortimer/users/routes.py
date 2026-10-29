@@ -50,7 +50,7 @@ def register():
 
         # save user
         user.save()
-        flash("Account created for %s." % form.username.data, "success")
+        flash(f"Account created for {form.username.data}.", "success")
 
         send_register_email(user)
 

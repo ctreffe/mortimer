@@ -1,4 +1,5 @@
 import re
+from typing import ClassVar
 
 from flask import current_app
 from flask_login import current_user
@@ -202,7 +203,7 @@ class ResetPasswordForm(FlaskForm):
 
 
 class ExportCodebookForm(FlaskForm):
-    choices = [
+    choices: ClassVar = [
         ("csv1", "csv ( , )"),
         ("csv2", "csv ( ; )"),
         ("json", "json"),
@@ -212,7 +213,7 @@ class ExportCodebookForm(FlaskForm):
 
 
 class ExportExpDataForm(FlaskForm):
-    choices = [
+    choices: ClassVar = [
         ("csv1", "csv ( , )"),
         ("csv2", "csv ( ; )"),
         ("json", "json"),

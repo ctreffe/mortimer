@@ -52,3 +52,7 @@ path = "src/mortimer/_version.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/mortimer"]
+
+[tool.ruff.lint.per-file-ignores]
+# Flask config classes hold their settings as class attributes by design
+"src/mortimer/config.py" = ["RUF012"]
