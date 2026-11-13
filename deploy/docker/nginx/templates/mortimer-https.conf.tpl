@@ -2,17 +2,17 @@
 
 # 1) Derive sticky key:
 # - If the client already has a "route" cookie, use its value.
-# - Otherwise, fall back to the client IP until a cookie is issued.
+# - Otherwise, generate a per-request key for both routing and the new cookie.
 map $cookie_route $sticky_key {
-    ""      $remote_addr;
+    ""      $request_id;
     default $cookie_route;
 }
 
 # 2) Issue a persistent "route" cookie if the client doesn't have one yet.
-# - Value format: "<ip>-<timestamp>" ensures uniqueness
+# - Reuse the sticky key so the next request hashes to the same backend.
 # - Max-Age: 1 year, Path=/, HttpOnly, SameSite=Lax
 map $cookie_route $set_route_cookie {
-    ""      "route=$remote_addr-$msec; Path=/; Max-Age=31536000; HttpOnly; SameSite=Lax";
+    ""      "route=$sticky_key; Path=/; Max-Age=31536000; HttpOnly; SameSite=Lax";
     default "";
 }
 
